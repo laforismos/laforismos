@@ -1,0 +1,257 @@
+<!DOCTYPE html>
+<html lang="pt-BR">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>LAFORISMOS</title>
+
+  <!-- 🚀 PRELOAD DO VÍDEO -->
+  <link rel="preload" href="./VIDEOBALAO.mp4" as="video" type="video/mp4">
+
+  <style>
+    body {
+      margin: 0;
+      font-family: Helvetica, Arial, sans-serif;
+      color: white;
+      display: flex;
+      flex-direction: column;
+      height: 100vh;
+      overflow: hidden;
+    }
+
+    #bg-video {
+      position: fixed;
+      top: 0;
+      left: 0;
+      width: 100%;
+      height: 100%;
+      object-fit: cover;
+      z-index: -1;
+      filter: contrast(1.4) brightness(1.2);
+    }
+
+    main {
+      flex: 1;
+      display: flex;
+      flex-direction: column;
+      justify-content: center;
+      align-items: center;
+      text-align: center;
+      padding: 20px;
+      gap: 30px;
+    }
+
+    h1 {
+      letter-spacing: 4px;
+      margin-bottom: 40px;
+    }
+
+    .box {
+      position: relative;
+      border: 1px solid rgba(255,255,255,0.6);
+      padding: 20px 30px;
+      max-width: 90%;
+      line-height: 1.4;
+      cursor: pointer;
+      overflow: hidden;
+    }
+
+    .frase {
+      transition: opacity 0.3s ease;
+      white-space: pre-line;
+    }
+
+    /* OVERLAY */
+    .overlay {
+      position: absolute;
+      inset: 0;
+      background: white;
+      color: black;
+      display: flex;
+      align-items: center;
+      overflow: hidden;
+      opacity: 0;
+      pointer-events: none;
+    }
+
+    .track {
+      display: flex;
+      white-space: nowrap;
+      animation: scroll 8s linear infinite;
+      font-size: 0.9rem;
+      letter-spacing: 1px;
+      text-transform: lowercase;
+    }
+
+    @keyframes scroll {
+      from { transform: translateX(0); }
+      to { transform: translateX(-50%); }
+    }
+
+    /* HOVER NORMAL */
+    .box:hover .overlay {
+      opacity: 1;
+    }
+
+    .box:hover .frase {
+      opacity: 0;
+    }
+
+    /* BLOQUEIO DE HOVER APÓS CLIQUE */
+    .box.disable-hover:hover .overlay {
+      opacity: 0;
+    }
+
+    .box.disable-hover:hover .frase {
+      opacity: 1;
+    }
+
+    /* LEVE ACELERAÇÃO NO HOVER */
+    .box:hover .track {
+      animation-duration: 6.4s;
+    }
+
+    footer {
+      text-align: center;
+      padding: 20px;
+      font-size: 0.8rem;
+    }
+
+    footer span {
+      cursor: pointer;
+      margin: 0 6px;
+      text-decoration: underline;
+    }
+  </style>
+</head>
+
+<body>
+
+<video autoplay muted loop playsinline id="bg-video">
+  <source src="./VIDEOBALAO.mp4" type="video/mp4">
+</video>
+
+<main>
+  <h1>LAFORISMOS</h1>
+
+  <div class="box" id="box" onclick="proximaFrase()">
+    <div class="frase" id="frase"></div>
+
+    <div class="overlay">
+      <div class="track">
+        <span>
+desculpa • foda-se • desculpa • foda-se • desculpa • foda-se • desculpa • foda-se • desculpa • foda-se • desculpa • foda-se • desculpa • foda-se • desculpa • foda-se • desculpa • foda-se • desculpa • foda-se •
+        </span>
+        <span>
+desculpa • foda-se • desculpa • foda-se • desculpa • foda-se • desculpa • foda-se • desculpa • foda-se • desculpa • foda-se • desculpa • foda-se • desculpa • foda-se • desculpa • foda-se • desculpa • foda-se •
+        </span>
+      </div>
+    </div>
+  </div>
+</main>
+
+<footer>
+  <div>Pensei, falei ou postei?</div>
+  <div>
+    <span onclick="wa()">WZ</span> |
+    <span onclick="lk()">LKN</span> |
+    <span onclick="ig()">IG</span>
+  </div>
+</footer>
+
+<script>
+const frases = [
+`Elevador. Vizinho tira o fone:
+– Você disse algo?
+– Não.
+– Ainda bem.
+Coloca o fone.`,
+
+`“Seu diagnóstico: refluxo de ideias.”`,
+
+`E os grisalhos manifestantes insultavam os jovens:
+“Vida longa aos etaristas!”`
+];
+
+let fila = [];
+let acabou = false;
+let clicado = false;
+let hoverTimer = null;
+
+function embaralhar(array) {
+  return array
+    .map(a => [Math.random(), a])
+    .sort((a, b) => a[0] - b[0])
+    .map(a => a[1]);
+}
+
+function iniciar() {
+  fila = embaralhar([...frases]);
+  mostrarFrase(fila.shift());
+}
+
+function mostrarFrase(texto) {
+  const el = document.getElementById("frase");
+
+  el.style.opacity = 0;
+
+  setTimeout(() => {
+    el.innerText = texto;
+    el.style.opacity = 1;
+  }, 200);
+}
+
+function proximaFrase() {
+  const box = document.getElementById("box");
+
+  clicado = true;
+  box.classList.add("disable-hover");
+
+  if (hoverTimer) clearTimeout(hoverTimer);
+
+  let texto;
+
+  if (acabou) {
+    texto = "Saiu tudo, amanhã tem mais.";
+  } else if (fila.length === 0) {
+    acabou = true;
+    texto = "Saiu tudo, amanhã tem mais.";
+  } else {
+    texto = fila.shift();
+  }
+
+  mostrarFrase(texto);
+
+  hoverTimer = setTimeout(() => {
+    if (clicado) {
+      box.classList.remove("disable-hover");
+      clicado = false;
+    }
+  }, 5000);
+}
+
+document.getElementById("box").addEventListener("mouseleave", () => {
+  if (clicado) {
+    document.getElementById("box").classList.remove("disable-hover");
+    clicado = false;
+    if (hoverTimer) clearTimeout(hoverTimer);
+  }
+});
+
+function wa() {
+  window.open("https://wa.me/?text=" + encodeURIComponent(window.location.href));
+}
+
+function lk() {
+  window.open("https://www.linkedin.com/sharing/share-offsite/?url=" + encodeURIComponent(window.location.href));
+}
+
+function ig() {
+  window.open("https://www.instagram.com/");
+}
+
+iniciar();
+</script>
+
+</body>
+</html>
