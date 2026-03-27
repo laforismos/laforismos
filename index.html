@@ -5,7 +5,6 @@
   <meta name="viewport" content="width=device-width, initial-scale=1.0">
   <title>LAFORISMOS</title>
 
-  <!-- 🚀 PRELOAD DO VÍDEO -->
   <link rel="preload" href="./VIDEOBALAO.mp4" as="video" type="video/mp4">
 
   <style>
@@ -61,7 +60,6 @@
       white-space: pre-line;
     }
 
-    /* OVERLAY */
     .overlay {
       position: absolute;
       inset: 0;
@@ -88,7 +86,6 @@
       to { transform: translateX(-50%); }
     }
 
-    /* HOVER NORMAL */
     .box:hover .overlay {
       opacity: 1;
     }
@@ -97,7 +94,6 @@
       opacity: 0;
     }
 
-    /* BLOQUEIO DE HOVER APÓS CLIQUE */
     .box.disable-hover:hover .overlay {
       opacity: 0;
     }
@@ -106,7 +102,6 @@
       opacity: 1;
     }
 
-    /* LEVE ACELERAÇÃO NO HOVER */
     .box:hover .track {
       animation-duration: 6.4s;
     }
@@ -122,6 +117,26 @@
       margin: 0 6px;
       text-decoration: underline;
     }
+
+    @media (max-width: 768px) {
+      body {
+        background: url("./Vapor saindo da panela de pressão.png") no-repeat center center;
+        background-size: cover;
+      }
+
+      #bg-video {
+        display: none;
+      }
+
+      body::before {
+        content: "";
+        position: fixed;
+        inset: 0;
+        background: rgba(0,0,0,0.3);
+        z-index: 0;
+      }
+    }
+
   </style>
 </head>
 
@@ -140,10 +155,10 @@
     <div class="overlay">
       <div class="track">
         <span>
-desculpa • foda-se • desculpa • foda-se • desculpa • foda-se • desculpa • foda-se • desculpa • foda-se • desculpa • foda-se • desculpa • foda-se • desculpa • foda-se • desculpa • foda-se • desculpa • foda-se •
+desculpa • foda-se • desculpa • foda-se • desculpa • foda-se • desculpa • foda-se • desculpa • foda-se • desculpa • foda-se •
         </span>
         <span>
-desculpa • foda-se • desculpa • foda-se • desculpa • foda-se • desculpa • foda-se • desculpa • foda-se • desculpa • foda-se • desculpa • foda-se • desculpa • foda-se • desculpa • foda-se • desculpa • foda-se •
+desculpa • foda-se • desculpa • foda-se • desculpa • foda-se • desculpa • foda-se • desculpa • foda-se • desculpa • foda-se •
         </span>
       </div>
     </div>
@@ -161,16 +176,34 @@ desculpa • foda-se • desculpa • foda-se • desculpa • foda-se • descu
 
 <script>
 const frases = [
-`Elevador. Vizinho tira o fone:
-– Você disse algo?
-– Não.
-– Ainda bem.
-Coloca o fone.`,
+
+`Metalinguagem é a linguagem se metendo. 
+Tipo agora.`,
+
+`Provérbio universal #3: 
+“Chega uma hora em que você tá velho demais pra fazer merda e também pra mudar.”`,
+
+`Provérbio universal #2: 
+“Idade é questão de cabeça.
+Quanto mais branca, mais velho.”`,
+
+`Ela é meio falsa.
+A outra metade é interesseira.`,
+
+`“Bença, Nietzsche.”`,
+
+`Só um favor: não me pede favor.`,
+
+`Elevador. 
+– Oi? – pergunta o meu vizinho, tirando um dos fones.
+– Não falei nada, não – respondo.
+– Ainda bem! – e recoloca o fone no ouvido.`,
 
 `“Seu diagnóstico: refluxo de ideias.”`,
 
 `E os grisalhos manifestantes insultavam os jovens:
 “Vida longa aos etaristas!”`
+
 ];
 
 let fila = [];
@@ -212,10 +245,10 @@ function proximaFrase() {
   let texto;
 
   if (acabou) {
-    texto = "Saiu tudo, amanhã tem mais.";
+    texto = "Por enquanto é isso aí.";
   } else if (fila.length === 0) {
     acabou = true;
-    texto = "Saiu tudo, amanhã tem mais.";
+    texto = "Por enquanto é isso aí.";
   } else {
     texto = fila.shift();
   }
