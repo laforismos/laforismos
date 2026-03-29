@@ -60,6 +60,18 @@
     .frase {
       transition: opacity 0.3s ease;
       white-space: pre-line;
+      text-align: center;
+      width: 100%;
+      max-width: 700px;
+      margin: 0 auto;
+      box-sizing: border-box;
+    }
+
+    .frase.dialogo {
+      text-align: left;
+      padding-left: 24px;
+      padding-right: 24px;
+      max-width: 620px;
     }
 
     .overlay {
@@ -179,8 +191,8 @@ carregando espasmo • carregando espasmo • carregando espasmo • carregando 
 
 <script>
 const SHEET_ID = "1HvRlbHQQWguVkOIWp4gTBoIBFtJ7yCjHrvaC92neYmw";
-const GID = "0"; // primeira aba; se der problema, me passe o gid correto
-const SHEET_JSON_URL = `https://docs.google.com/spreadsheets/d/${SHEET_ID}/gviz/tq?tqx=out:json&gid=${GID}`;
+const GID = "0";
+const CSV_URL = `https://docs.google.com/spreadsheets/d/${SHEET_ID}/export?format=csv&gid=${GID}`;
 
 let frases = [];
 let fila = [];
@@ -197,11 +209,20 @@ function embaralhar(array) {
 
 function mostrarFrase(texto) {
   const el = document.getElementById("frase");
-
   el.style.opacity = 0;
 
   setTimeout(() => {
     el.innerText = texto;
+
+    const textoLimpo = String(texto).trim();
+    const ehDialogo = /^[-–—]\s/.test(textoLimpo);
+
+    if (ehDialogo) {
+      el.classList.add("dialogo");
+    } else {
+      el.classList.remove("dialogo");
+    }
+
     el.style.opacity = 1;
   }, 200);
 }
@@ -268,53 +289,62 @@ function ig() {
   window.open("https://www.instagram.com/");
 }
 
-function valorDaCelula(celula) {
-  if (!celula) return "";
-  if (celula.v !== undefined && celula.v !== null) return celula.v;
-  if (celula.f !== undefined && celula.f !== null) return celula.f;
-  return "";
+function parseCSV(text) {
+  const lines = text.split(/\r?\n/).filter(l => l.trim() !== "");
+  return lines.map(line => {
+    const result = [];
+    let current = "";
+    let inQuotes = false;
+
+    for (let i = 0; i < line.length; i++) {
+      const char = line[i];
+
+      if (char === '"') {
+        inQuotes = !inQuotes;
+      } else if (char === "," && !inQuotes) {
+        result.push(current);
+        current = "";
+      } else {
+        current += char;
+      }
+    }
+
+    result.push(current);
+    return result;
+  });
 }
 
 function ehAtivo(valor) {
-  if (typeof valor === "boolean") return valor;
-  if (typeof valor === "string") {
-    const v = valor.trim().toLowerCase();
-    return v === "true" || v === "verdadeiro" || v === "1" || v === "sim";
-  }
-  if (typeof valor === "number") return valor === 1;
-  return false;
+  const v = String(valor).trim().toLowerCase();
+  return v === "true" || v === "1" || v === "sim";
 }
 
 async function carregarFrasesDaPlanilha() {
   try {
-    const response = await fetch(SHEET_JSON_URL);
-    const text = await response.text();
+    const response = await fetch(CSV_URL);
+    const csv = await response.text();
 
-    const match = text.match(/google\.visualization\.Query\.setResponse\(([\s\S]+)\);/);
+    const rows = parseCSV(csv);
 
-    if (!match || !match[1]) {
-      throw new Error("Não foi possível ler os dados da planilha.");
-    }
-
-    const data = JSON.parse(match[1]);
-    const rows = data.table.rows || [];
+    const header = rows[0].map(h => h.trim().toLowerCase());
+    const iFrase = header.indexOf("frase");
+    const iAtivo = header.indexOf("ativo");
 
     frases = rows
-      .map(row => {
-        const frase = valorDaCelula(row.c[0]);
-        const ativo = valorDaCelula(row.c[1]);
-        return { frase, ativo };
-      })
-      .filter(item => item.frase && String(item.frase).trim() !== "")
+      .slice(1)
+      .map(r => ({
+        frase: r[iFrase],
+        ativo: r[iAtivo]
+      }))
+      .filter(item => item.frase && item.frase.trim() !== "")
       .filter(item => ehAtivo(item.ativo))
-      .map(item => String(item.frase).trim());
+      .map(item => item.frase);
 
     iniciar();
 
-  } catch (erro) {
-    console.error("Erro ao carregar frases da planilha:", erro);
-    frases = ["Erro ao carregar frases da planilha."];
-    iniciar();
+  } catch (e) {
+    console.error(e);
+    mostrarFrase("Erro ao carregar frases da planilha.");
   }
 }
 
