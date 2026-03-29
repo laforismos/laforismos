@@ -195,7 +195,7 @@ carregando espasmo • carregando espasmo • carregando espasmo • carregando 
 <script>
 const SHEET_ID = "1HvRlbHQQWguVkOIWp4gTBoIBFtJ7yCjHrvaC92neYmw";
 const GID = "0";
-const CSV_URL = `https://docs.google.com/spreadsheets/d/${SHEET_ID}/export?format=csv&gid=${GID}`;
+const SHEET_URL = `https://docs.google.com/spreadsheets/d/${SHEET_ID}/gviz/tq?gid=${GID}&tqx=out:json`;
 
 let frases = [];
 let fila = [];
@@ -223,8 +223,8 @@ function mostrarFrase(texto) {
       .filter(Boolean);
 
     const ehDialogo = paragrafos.some(p => /^[-–—]\s+/.test(p));
-
     el.classList.toggle("dialogo", ehDialogo);
+
     el.style.opacity = 1;
   }, 200);
 }
@@ -291,85 +291,57 @@ function ig() {
   window.open("https://www.instagram.com/");
 }
 
-function parseCSV(text) {
-  const rows = [];
-  let row = [];
-  let current = "";
-  let inQuotes = false;
-
-  for (let i = 0; i < text.length; i++) {
-    const char = text[i];
-    const next = text[i + 1];
-
-    if (char === '"') {
-      if (inQuotes && next === '"') {
-        current += '"';
-        i++;
-      } else {
-        inQuotes = !inQuotes;
-      }
-    } else if (char === "," && !inQuotes) {
-      row.push(current);
-      current = "";
-    } else if ((char === "\n" || char === "\r") && !inQuotes) {
-      if (char === "\r" && next === "\n") i++;
-      row.push(current);
-      current = "";
-
-      if (row.some(cell => String(cell).trim() !== "")) {
-        rows.push(row);
-      }
-      row = [];
-    } else {
-      current += char;
-    }
-  }
-
-  row.push(current);
-  if (row.some(cell => String(cell).trim() !== "")) {
-    rows.push(row);
-  }
-
-  return rows;
+function normalizarTexto(valor) {
+  if (valor === null || valor === undefined) return "";
+  return String(valor).replace(/\r\n/g, "\n").trim();
 }
 
 function ehAtivo(valor) {
-  const v = String(valor).trim().toLowerCase();
-  return v === "true" || v === "1" || v === "sim";
+  if (typeof valor === "boolean") return valor;
+  if (typeof valor === "number") return valor === 1;
+
+  const v = String(valor ?? "").trim().toLowerCase();
+  return v === "true" || v === "verdadeiro" || v === "1" || v === "sim";
 }
 
 async function carregarFrasesDaPlanilha() {
   try {
-    const response = await fetch(CSV_URL, { cache: "no-store" });
+    const response = await fetch(SHEET_URL, { cache: "no-store" });
 
     if (!response.ok) {
       throw new Error("Falha ao acessar a planilha: " + response.status);
     }
 
-    const csv = await response.text();
-    const rows = parseCSV(csv);
+    const text = await response.text();
+    const match = text.match(/google\.visualization\.Query\.setResponse\(([\s\S]+)\);/);
 
-    if (!rows.length) {
-      throw new Error("Planilha vazia.");
+    if (!match || !match[1]) {
+      throw new Error("Resposta inválida da planilha.");
     }
 
-    const header = rows[0].map(h => String(h).trim().toLowerCase());
-    const iFrase = header.indexOf("frase");
-    const iAtivo = header.indexOf("ativo");
+    const data = JSON.parse(match[1]);
+    const cols = data.table?.cols || [];
+    const rows = data.table?.rows || [];
+
+    const headers = cols.map(col => String(col.label || "").trim().toLowerCase());
+    const iFrase = headers.indexOf("frase");
+    const iAtivo = headers.indexOf("ativo");
 
     if (iFrase === -1 || iAtivo === -1) {
-      throw new Error('O cabeçalho precisa conter "frase" e "ativo".');
+      throw new Error('As colunas da planilha precisam se chamar exatamente "frase" e "ativo".');
     }
 
     frases = rows
-      .slice(1)
-      .map(r => ({
-        frase: r[iFrase] ?? "",
-        ativo: r[iAtivo] ?? ""
-      }))
-      .filter(item => String(item.frase).trim() !== "")
+      .map(row => {
+        const cells = row.c || [];
+        return {
+          frase: normalizarTexto(cells[iFrase]?.v),
+          ativo: cells[iAtivo]?.v
+        };
+      })
+      .filter(item => item.frase !== "")
       .filter(item => ehAtivo(item.ativo))
-      .map(item => String(item.frase));
+      .map(item => item.frase);
 
     iniciar();
 
