@@ -122,10 +122,9 @@
       text-decoration: underline;
     }
 
-    /* ===== MOBILE ===== */
     @media (max-width: 768px) {
       body {
-        background: url("./balaocolor.png") no-repeat center center;
+        background: url("./vapor.png") no-repeat center center;
         background-size: cover;
       }
 
@@ -141,7 +140,6 @@
         z-index: -1;
       }
     }
-
   </style>
 </head>
 
@@ -155,15 +153,15 @@
   <h1>LAFORISMOS</h1>
 
   <div class="box" id="box" onclick="proximaFrase()">
-    <div class="frase" id="frase"></div>
+    <div class="frase" id="frase">Carregando frases...</div>
 
     <div class="overlay">
       <div class="track">
         <span>
-carregando espasmo • carregando espasmo • carregando espasmo • carregando espasmo • carregando espasmo • carregando espasmo • carregando espasmo • carregando espasmo • clica • carregando espasmo •
+desculpa • foda-se • desculpa • foda-se • desculpa • foda-se • desculpa • foda-se • desculpa • foda-se •
         </span>
         <span>
-carregando espasmo • carregando espasmo • carregando espasmo • carregando espasmo • carregando espasmo • vamos, clica • carregando espasmo • carregando espasmo • carregando espasmo •
+desculpa • foda-se • desculpa • foda-se • desculpa • foda-se • desculpa • foda-se • desculpa • foda-se •
         </span>
       </div>
     </div>
@@ -180,37 +178,11 @@ carregando espasmo • carregando espasmo • carregando espasmo • carregando 
 </footer>
 
 <script>
-const frases = [
+const SHEET_ID = "1HvRlbHQQWguVkOIWp4gTBoIBFtJ7yCjHrvaC92neYmw";
+const GID = "0"; // primeira aba; se der problema, me passe o gid correto
+const SHEET_JSON_URL = `https://docs.google.com/spreadsheets/d/${SHEET_ID}/gviz/tq?tqx=out:json&gid=${GID}`;
 
-`Metalinguagem é a linguagem se metendo. 
-Tipo agora.`,
-
-`Provérbio universal #3: 
-“Chega uma hora em que você tá velho demais pra fazer merda e também pra mudar.”`,
-
-`Provérbio universal #2: 
-“Idade é questão de cabeça.
-Quanto mais branca, mais velho.”`,
-
-`Ela é meio falsa.
-A outra metade é interesseira.`,
-
-`“Bença, Nietzsche.”`,
-
-`Só um favor: não me pede favor.`,
-
-`Elevador. 
-– Oi? – pergunta o meu vizinho, tirando um dos fones para me ouvir.
-– Não falei nada, não – respondo.
-– Ainda bem. – ele retruca e recoloca o fone.`,
-
-`“Seu diagnóstico: refluxo de ideias.”`,
-
-`E os grisalhos manifestantes insultavam os jovens:
-“Vida longa aos etaristas!”`
-
-];
-
+let frases = [];
 let fila = [];
 let acabou = false;
 let clicado = false;
@@ -221,11 +193,6 @@ function embaralhar(array) {
     .map(a => [Math.random(), a])
     .sort((a, b) => a[0] - b[0])
     .map(a => a[1]);
-}
-
-function iniciar() {
-  fila = embaralhar([...frases]);
-  mostrarFrase(fila.shift());
 }
 
 function mostrarFrase(texto) {
@@ -239,6 +206,17 @@ function mostrarFrase(texto) {
   }, 200);
 }
 
+function iniciar() {
+  acabou = false;
+  fila = embaralhar([...frases]);
+
+  if (fila.length > 0) {
+    mostrarFrase(fila.shift());
+  } else {
+    mostrarFrase("Nenhuma frase ativa disponível.");
+  }
+}
+
 function proximaFrase() {
   const box = document.getElementById("box");
 
@@ -249,7 +227,9 @@ function proximaFrase() {
 
   let texto;
 
-  if (acabou) {
+  if (frases.length === 0) {
+    texto = "Nenhuma frase ativa disponível.";
+  } else if (acabou) {
     texto = "Por enquanto é isso aí.";
   } else if (fila.length === 0) {
     acabou = true;
@@ -288,7 +268,57 @@ function ig() {
   window.open("https://www.instagram.com/");
 }
 
-iniciar();
+function valorDaCelula(celula) {
+  if (!celula) return "";
+  if (celula.v !== undefined && celula.v !== null) return celula.v;
+  if (celula.f !== undefined && celula.f !== null) return celula.f;
+  return "";
+}
+
+function ehAtivo(valor) {
+  if (typeof valor === "boolean") return valor;
+  if (typeof valor === "string") {
+    const v = valor.trim().toLowerCase();
+    return v === "true" || v === "verdadeiro" || v === "1" || v === "sim";
+  }
+  if (typeof valor === "number") return valor === 1;
+  return false;
+}
+
+async function carregarFrasesDaPlanilha() {
+  try {
+    const response = await fetch(SHEET_JSON_URL);
+    const text = await response.text();
+
+    const match = text.match(/google\.visualization\.Query\.setResponse\(([\s\S]+)\);/);
+
+    if (!match || !match[1]) {
+      throw new Error("Não foi possível ler os dados da planilha.");
+    }
+
+    const data = JSON.parse(match[1]);
+    const rows = data.table.rows || [];
+
+    frases = rows
+      .map(row => {
+        const frase = valorDaCelula(row.c[0]);
+        const ativo = valorDaCelula(row.c[1]);
+        return { frase, ativo };
+      })
+      .filter(item => item.frase && String(item.frase).trim() !== "")
+      .filter(item => ehAtivo(item.ativo))
+      .map(item => String(item.frase).trim());
+
+    iniciar();
+
+  } catch (erro) {
+    console.error("Erro ao carregar frases da planilha:", erro);
+    frases = ["Erro ao carregar frases da planilha."];
+    iniciar();
+  }
+}
+
+carregarFrasesDaPlanilha();
 </script>
 
 </body>
