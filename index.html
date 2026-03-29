@@ -60,18 +60,21 @@
     .frase {
       transition: opacity 0.3s ease;
       white-space: pre-line;
-      text-align: center;
+      display: block;
       width: 100%;
       max-width: 700px;
       margin: 0 auto;
       box-sizing: border-box;
+      text-align: center;
     }
 
     .frase.dialogo {
-      text-align: left;
+      text-align: left !important;
+      max-width: 620px;
       padding-left: 24px;
       padding-right: 24px;
-      max-width: 620px;
+      margin-left: auto;
+      margin-right: auto;
     }
 
     .overlay {
@@ -214,15 +217,14 @@ function mostrarFrase(texto) {
   setTimeout(() => {
     el.innerText = texto;
 
-    const textoLimpo = String(texto).trim();
-    const ehDialogo = /^[-–—]\s/.test(textoLimpo);
+    const paragrafos = String(texto)
+      .split(/\n+/)
+      .map(p => p.trim())
+      .filter(Boolean);
 
-    if (ehDialogo) {
-      el.classList.add("dialogo");
-    } else {
-      el.classList.remove("dialogo");
-    }
+    const ehDialogo = paragrafos.some(p => /^[-–—]\s+/.test(p));
 
+    el.classList.toggle("dialogo", ehDialogo);
     el.style.opacity = 1;
   }, 200);
 }
