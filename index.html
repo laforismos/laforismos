@@ -37,14 +37,14 @@
       align-items: center;
       text-align: center;
       padding: 20px;
-      gap: 30px;
+      gap: 24px;
       position: relative;
       z-index: 1;
     }
 
     h1 {
       letter-spacing: 4px;
-      margin-bottom: 40px;
+      margin-bottom: 16px;
     }
 
     .box {
@@ -123,6 +123,59 @@
       animation-duration: 6.4s;
     }
 
+    .filtro-obceno {
+      display: flex;
+      flex-direction: column;
+      align-items: center;
+      gap: 10px;
+      margin-top: -4px;
+    }
+
+    .filtro-obceno .titulo {
+      font-size: 0.9rem;
+      letter-spacing: 0.5px;
+    }
+
+    .toggle-wrap {
+      display: flex;
+      flex-direction: column;
+      align-items: center;
+      gap: 8px;
+    }
+
+    .toggle {
+      position: relative;
+      width: 74px;
+      height: 34px;
+      border: 1px solid rgba(255,255,255,0.6);
+      background: transparent;
+      cursor: pointer;
+      transition: background 0.2s ease, border-color 0.2s ease;
+    }
+
+    .toggle::after {
+      content: "";
+      position: absolute;
+      top: 4px;
+      left: 4px;
+      width: 24px;
+      height: 24px;
+      background: white;
+      transition: transform 0.25s ease;
+    }
+
+    .toggle.on::after {
+      transform: translateX(40px);
+    }
+
+    .toggle-labels {
+      display: flex;
+      justify-content: space-between;
+      width: 74px;
+      font-size: 0.72rem;
+      letter-spacing: 1px;
+    }
+
     footer {
       text-align: center;
       padding: 20px;
@@ -154,6 +207,10 @@
         background: rgba(0,0,0,0.3);
         z-index: -1;
       }
+
+      .box {
+        padding: 18px 20px;
+      }
     }
   </style>
 </head>
@@ -181,6 +238,18 @@ carregando espasmo • carregando espasmo • carregando espasmo • carregando 
       </div>
     </div>
   </div>
+
+  <div class="filtro-obceno">
+    <div class="titulo">Com obcenidades?</div>
+
+    <div class="toggle-wrap">
+      <button id="toggleObceno" class="toggle" type="button" aria-pressed="false" onclick="alternarObceno()"></button>
+      <div class="toggle-labels">
+        <span>SIM</span>
+        <span>NÃO</span>
+      </div>
+    </div>
+  </div>
 </main>
 
 <footer>
@@ -198,10 +267,12 @@ const GID = "0";
 const SHEET_URL = `https://docs.google.com/spreadsheets/d/${SHEET_ID}/gviz/tq?gid=${GID}&tqx=out:json`;
 
 let frases = [];
+let frasesFiltradas = [];
 let fila = [];
 let acabou = false;
 let clicado = false;
 let hoverTimer = null;
+let mostrarObcenas = false;
 
 function embaralhar(array) {
   return array
@@ -229,9 +300,16 @@ function mostrarFrase(texto) {
   }, 200);
 }
 
+function atualizarFrasesFiltradas() {
+  frasesFiltradas = frases
+    .filter(item => mostrarObcenas || !item.obceno)
+    .map(item => item.frase);
+}
+
 function iniciar() {
   acabou = false;
-  fila = embaralhar([...frases]);
+  atualizarFrasesFiltradas();
+  fila = embaralhar([...frasesFiltradas]);
 
   if (fila.length > 0) {
     mostrarFrase(fila.shift());
@@ -250,7 +328,7 @@ function proximaFrase() {
 
   let texto;
 
-  if (frases.length === 0) {
+  if (frasesFiltradas.length === 0) {
     texto = "Nenhuma frase ativa disponível.";
   } else if (acabou) {
     texto = "Por enquanto é isso aí.";
@@ -279,6 +357,16 @@ document.getElementById("box").addEventListener("mouseleave", () => {
   }
 });
 
+function alternarObceno() {
+  mostrarObcenas = !mostrarObcenas;
+
+  const botao = document.getElementById("toggleObceno");
+  botao.classList.toggle("on", mostrarObcenas);
+  botao.setAttribute("aria-pressed", String(mostrarObcenas));
+
+  iniciar();
+}
+
 function wa() {
   window.open("https://wa.me/?text=" + encodeURIComponent(window.location.href));
 }
@@ -304,6 +392,11 @@ function ehAtivo(valor) {
   return v === "true" || v === "verdadeiro" || v === "1" || v === "sim";
 }
 
+function ehObceno(valor) {
+  const v = String(valor ?? "").trim().toLowerCase();
+  return v === "sim" || v === "true" || v === "1" || v === "verdadeiro";
+}
+
 async function carregarFrasesDaPlanilha() {
   try {
     const response = await fetch(SHEET_URL, { cache: "no-store" });
@@ -326,9 +419,10 @@ async function carregarFrasesDaPlanilha() {
     const headers = cols.map(col => String(col.label || "").trim().toLowerCase());
     const iFrase = headers.indexOf("frase");
     const iAtivo = headers.indexOf("ativo");
+    const iObceno = headers.indexOf("obceno");
 
-    if (iFrase === -1 || iAtivo === -1) {
-      throw new Error('As colunas da planilha precisam se chamar exatamente "frase" e "ativo".');
+    if (iFrase === -1 || iAtivo === -1 || iObceno === -1) {
+      throw new Error('As colunas da planilha precisam se chamar exatamente "frase", "ativo" e "obceno".');
     }
 
     frases = rows
@@ -336,12 +430,16 @@ async function carregarFrasesDaPlanilha() {
         const cells = row.c || [];
         return {
           frase: normalizarTexto(cells[iFrase]?.v),
-          ativo: cells[iAtivo]?.v
+          ativo: cells[iAtivo]?.v,
+          obceno: cells[iObceno]?.v
         };
       })
       .filter(item => item.frase !== "")
       .filter(item => ehAtivo(item.ativo))
-      .map(item => item.frase);
+      .map(item => ({
+        frase: item.frase,
+        obceno: ehObceno(item.obceno)
+      }));
 
     iniciar();
 
