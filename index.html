@@ -49,12 +49,16 @@
 
     .box {
       position: relative;
+      z-index: 1;
       border: 1px solid rgba(255,255,255,0.6);
       padding: 20px 30px;
       max-width: 90%;
       line-height: 1.4;
       cursor: pointer;
       overflow: hidden;
+      background: rgba(255,255,255,0.28);
+      backdrop-filter: blur(3px);
+      box-shadow: inset 0 0 12px rgba(255,255,255,0.08);
     }
 
     .frase {
@@ -123,43 +127,82 @@
       animation-duration: 6.4s;
     }
 
+    .filtro-obceno {
+      display: flex;
+      flex-direction: column;
+      align-items: center;
+      gap: 6px;
+    }
+
     .filtro-obceno-titulo {
-  font-size: 0.75rem;
-  letter-spacing: 0.6px;
-  opacity: 0.9;
-}
+      font-size: 0.68rem;
+      letter-spacing: 0.7px;
+      opacity: 0.9;
+      text-transform: uppercase;
+    }
 
-.toggle-area {
-  display: flex;
-  flex-direction: column;
-  align-items: center;
-  gap: 4px;
-}
+    .toggle-area {
+      display: flex;
+      flex-direction: column;
+      align-items: center;
+      gap: 4px;
+    }
 
-.box {
-  position: relative;
-  border: 1px solid rgba(255,255,255,0.6);
-  padding: 20px 30px;
-  max-width: 90%;
-  line-height: 1.4;
-  cursor: pointer;
-  overflow: hidden;
+    .toggle-btn {
+      position: relative;
+      width: 46px;
+      height: 32px;
+      border-radius: 999px;
+      border: 1px solid rgba(255,255,255,0.6);
+      background: rgba(255,255,255,0.18);
+      padding: 0;
+      cursor: pointer;
+      appearance: none;
+      -webkit-appearance: none;
+      backdrop-filter: blur(2px);
+      box-shadow: inset 0 0 6px rgba(255,255,255,0.08);
+      overflow: hidden;
+    }
 
-  background: rgba(255,255,255,0.28); /* ~30% */
-  backdrop-filter: blur(3px);
+    .toggle-btn::before {
+      content: "";
+      position: absolute;
+      inset: 0;
+      border-radius: 999px;
+      background: rgba(255,255,255,0.08);
+      opacity: 0.45;
+      transition: opacity 0.22s ease;
+    }
 
-  box-shadow:
-    inset 0 0 12px rgba(255,255,255,0.08);
-}
+    .toggle-btn.on::before {
+      opacity: 0.8;
+    }
 
-.toggle-labels {
-  width: 52px;
-  display: flex;
-  justify-content: space-between;
-  font-size: 0.6rem;
-  letter-spacing: 1px;
-  opacity: 0.85;
-}
+    .toggle-btn::after {
+      content: "";
+      position: absolute;
+      top: 4px;
+      left: 22px; /* estado inicial = NÃO (direita) */
+      width: 18px;
+      height: 18px;
+      border-radius: 50%;
+      background: rgba(255,255,255,0.95);
+      box-shadow: 0 1px 3px rgba(0,0,0,0.3);
+      transition: transform 0.22s ease;
+    }
+
+    .toggle-btn.on::after {
+      transform: translateX(-18px); /* quando SIM, vai para a esquerda */
+    }
+
+    .toggle-labels {
+      width: 46px;
+      display: flex;
+      justify-content: space-between;
+      font-size: 0.54rem;
+      letter-spacing: 0.8px;
+      opacity: 0.85;
+    }
 
     footer {
       text-align: center;
@@ -225,7 +268,7 @@ carregando espasmo • carregando espasmo • carregando espasmo • carregando 
   </div>
 
   <div class="filtro-obceno">
-    <div class="filtro-obceno-titulo">Com obcenidades?</div>
+    <div class="filtro-obceno-titulo">Com obscenidades?</div>
     <div class="toggle-area">
       <button
         id="toggleObceno"
@@ -236,7 +279,7 @@ carregando espasmo • carregando espasmo • carregando espasmo • carregando 
       ></button>
       <div class="toggle-labels">
         <span>SIM</span>
-        <span>NÃO</span> 
+        <span>NÃO</span>
       </div>
     </div>
   </div>
@@ -386,8 +429,11 @@ function ehAtivo(valor) {
 }
 
 function ehObceno(valor) {
+  if (typeof valor === "boolean") return valor;
+  if (typeof valor === "number") return valor === 1;
+
   const v = String(valor ?? "").trim().toLowerCase();
-  return v === "sim" || v === "true" || v === "1" || v === "verdadeiro";
+  return v === "sim" || v === "true" || v === "verdadeiro" || v === "1";
 }
 
 async function carregarFrasesDaPlanilha() {
