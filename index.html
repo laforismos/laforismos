@@ -123,62 +123,61 @@
       animation-duration: 6.4s;
     }
 
-    .filtro-obceno {
-      display: flex;
-      flex-direction: column;
-      align-items: center;
-      gap: 8px;
-    }
-
     .filtro-obceno-titulo {
-      font-size: 0.9rem;
-      letter-spacing: 0.5px;
-    }
+  font-size: 0.75rem;
+  letter-spacing: 0.6px;
+  opacity: 0.9;
+}
 
-    .toggle-area {
-      display: flex;
-      flex-direction: column;
-      align-items: center;
-      gap: 6px;
-    }
+.toggle-area {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  gap: 4px;
+}
 
-    .toggle-btn {
-      position: relative;
-      width: 58px;
-      height: 30px;
-      border: 1px solid rgba(255,255,255,0.65);
-      background: rgba(255,255,255,0.22);
-      padding: 0;
-      cursor: pointer;
-      appearance: none;
-      -webkit-appearance: none;
-      backdrop-filter: blur(2px);
-      box-shadow: inset 0 0 4px rgba(255,255,255,0.08);
-    }
+.toggle-btn {
+  position: relative;
+  width: 52px;
+  height: 32px;
+  border-radius: 999px; /* deixa orgânico */
+  border: 1px solid rgba(255,255,255,0.6);
+  background: rgba(255,255,255,0.18);
+  padding: 0;
+  cursor: pointer;
+  appearance: none;
+  -webkit-appearance: none;
+  backdrop-filter: blur(2px);
 
-    .toggle-btn::after {
-      content: "";
-      position: absolute;
-      top: 3px;
-      left: 3px;
-      width: 22px;
-      height: 22px;
-      background: rgba(255,255,255,0.95);
-      box-shadow: 0 1px 3px rgba(0,0,0,0.28);
-      transition: transform 0.22s ease;
-    }
+  box-shadow:
+    inset 0 0 6px rgba(255,255,255,0.08);
+}
 
-    .toggle-btn.on::after {
-      transform: translateX(30px);
-    }
+.toggle-btn::after {
+  content: "";
+  position: absolute;
+  top: 4px;
+  left: 4px;
+  width: 20px;
+  height: 20px;
+  border-radius: 50%;
+  background: rgba(255,255,255,0.95);
+  box-shadow: 0 1px 3px rgba(0,0,0,0.3);
+  transition: transform 0.22s ease;
+}
 
-    .toggle-labels {
-      width: 58px;
-      display: flex;
-      justify-content: space-between;
-      font-size: 0.68rem;
-      letter-spacing: 1px;
-    }
+.toggle-btn.on::after {
+  transform: translateX(24px);
+}
+
+.toggle-labels {
+  width: 52px;
+  display: flex;
+  justify-content: space-between;
+  font-size: 0.6rem;
+  letter-spacing: 1px;
+  opacity: 0.85;
+}
 
     footer {
       text-align: center;
@@ -254,8 +253,8 @@ carregando espasmo • carregando espasmo • carregando espasmo • carregando 
         onclick="alternarObceno(event)"
       ></button>
       <div class="toggle-labels">
-        <span>NÃO</span>
         <span>SIM</span>
+        <span>NÃO</span> 
       </div>
     </div>
   </div>
