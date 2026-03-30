@@ -136,38 +136,20 @@
   gap: 4px;
 }
 
-.toggle-btn {
+.box {
   position: relative;
-  width: 52px;
-  height: 32px;
-  border-radius: 999px; /* deixa orgânico */
   border: 1px solid rgba(255,255,255,0.6);
-  background: rgba(255,255,255,0.18);
-  padding: 0;
+  padding: 20px 30px;
+  max-width: 90%;
+  line-height: 1.4;
   cursor: pointer;
-  appearance: none;
-  -webkit-appearance: none;
-  backdrop-filter: blur(2px);
+  overflow: hidden;
+
+  background: rgba(255,255,255,0.28); /* ~30% */
+  backdrop-filter: blur(3px);
 
   box-shadow:
-    inset 0 0 6px rgba(255,255,255,0.08);
-}
-
-.toggle-btn::after {
-  content: "";
-  position: absolute;
-  top: 4px;
-  left: 4px;
-  width: 20px;
-  height: 20px;
-  border-radius: 50%;
-  background: rgba(255,255,255,0.95);
-  box-shadow: 0 1px 3px rgba(0,0,0,0.3);
-  transition: transform 0.22s ease;
-}
-
-.toggle-btn.on::after {
-  transform: translateX(24px);
+    inset 0 0 12px rgba(255,255,255,0.08);
 }
 
 .toggle-labels {
