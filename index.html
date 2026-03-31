@@ -96,6 +96,11 @@
       font-style: italic;
     }
 
+    .frase-underline {
+      text-decoration: underline;
+      text-underline-offset: 0.08em;
+    }
+
     /* Quando há diálogo, o texto vai para alinhamento à esquerda */
     .frase.dialogo {
       text-align: left !important;
@@ -372,6 +377,19 @@ carregando espasmo • carregando espasmo • carregando espasmo • carregando 
 <script>
 const API_URL = "https://script.google.com/macros/s/AKfycbwBDi5_TcZxil7dD0IEstmFwvFj4LnzB9AjMiG-SLHx3i4PvAN8EhpHyNsGLBTgreNp/exec";
 
+/*
+  Cor = tempo de revelação.
+  Tempo 1 = texto padrão (ou cor não mapeada).
+  Ajuste as cores abaixo para definir quantos tempos quiser.
+*/
+const STAGE_BY_COLOR = {
+  "#4a90e2": 2,
+  "#e74c3c": 3,
+  "#27ae60": 4,
+  "#9b59b6": 5,
+  "#f39c12": 6
+};
+
 let frases = [];
 let frasesFiltradas = [];
 let fila = [];
@@ -380,7 +398,7 @@ let clicado = false;
 let hoverTimer = null;
 let mostrarObcenas = true;
 let fraseAtual = null;
-let fraseAtualRevelada = false;
+let etapaAtual = 1;
 
 function embaralhar(array) {
   return array
@@ -389,8 +407,18 @@ function embaralhar(array) {
     .map(a => a[1]);
 }
 
-function temTrechoOculto(partes) {
-  return Array.isArray(partes) && partes.some(parte => parte.hidden);
+function normalizarCor(valor) {
+  return String(valor || "").trim().toLowerCase();
+}
+
+function etapaDaParte(parte) {
+  const cor = normalizarCor(parte?.color);
+  return STAGE_BY_COLOR[cor] || 1;
+}
+
+function maiorEtapa(partes) {
+  if (!Array.isArray(partes) || partes.length === 0) return 1;
+  return partes.reduce((maximo, parte) => Math.max(maximo, etapaDaParte(parte)), 1);
 }
 
 function escaparHtml(texto) {
@@ -402,21 +430,32 @@ function escaparHtml(texto) {
     .replace(/'/g, "&#39;");
 }
 
-function montarHtmlPartes(partes, revelarOcultos = false) {
+function aplicarFormatacao(parte) {
+  let texto = escaparHtml(parte.texto || "");
+
+  if (parte.underline) {
+    texto = `<span class="frase-underline">${texto}</span>`;
+  }
+  if (parte.italic) {
+    texto = `<em>${texto}</em>`;
+  }
+  if (parte.bold) {
+    texto = `<strong>${texto}</strong>`;
+  }
+
+  return texto;
+}
+
+function montarHtmlPartes(partes, etapaMaxima = 1) {
   return (partes || [])
-    .filter(parte => revelarOcultos || !parte.hidden)
-    .map(parte => {
-      let texto = escaparHtml(parte.texto || "");
-      if (parte.italic) texto = `<em>${texto}</em>`;
-      if (parte.bold) texto = `<strong>${texto}</strong>`;
-      return texto;
-    })
+    .filter(parte => etapaDaParte(parte) <= etapaMaxima)
+    .map(aplicarFormatacao)
     .join("");
 }
 
-function obterTextoVisivel(partes, revelarOcultos = false) {
+function obterTextoVisivel(partes, etapaMaxima = 1) {
   return (partes || [])
-    .filter(parte => revelarOcultos || !parte.hidden)
+    .filter(parte => etapaDaParte(parte) <= etapaMaxima)
     .map(parte => parte.texto || "")
     .join("")
     .trim();
@@ -434,19 +473,19 @@ function aplicarClasseDialogo(texto) {
   el.classList.toggle("dialogo", ehDialogo);
 }
 
-function mostrarFraseObjeto(fraseObj, revelarOcultos = false) {
+function mostrarFraseObjeto(fraseObj, etapa = 1) {
   const el = document.getElementById("frase");
   el.style.opacity = 0;
 
   setTimeout(() => {
-    const html = montarHtmlPartes(fraseObj?.partes || [], revelarOcultos);
-    const textoVisivel = obterTextoVisivel(fraseObj?.partes || [], revelarOcultos);
+    const html = montarHtmlPartes(fraseObj?.partes || [], etapa);
+    const textoVisivel = obterTextoVisivel(fraseObj?.partes || [], etapa);
 
     el.innerHTML = html || "Nenhuma frase ativa disponível.";
     aplicarClasseDialogo(textoVisivel);
 
     fraseAtual = fraseObj;
-    fraseAtualRevelada = revelarOcultos;
+    etapaAtual = etapa;
 
     el.style.opacity = 1;
   }, 200);
@@ -463,7 +502,7 @@ function mostrarMensagem(texto) {
   }, 200);
 
   fraseAtual = null;
-  fraseAtualRevelada = false;
+  etapaAtual = 1;
 }
 
 function atualizarFrasesFiltradas() {
@@ -477,7 +516,7 @@ function iniciar() {
 
   if (fila.length > 0) {
     const primeira = fila.shift();
-    mostrarFraseObjeto(primeira, false);
+    mostrarFraseObjeto(primeira, 1);
   } else {
     mostrarMensagem("Nenhuma frase ativa disponível.");
   }
@@ -565,18 +604,22 @@ function irParaProximaFrase() {
   }
 
   const proxima = fila.shift();
-  mostrarFraseObjeto(proxima, false);
+  mostrarFraseObjeto(proxima, 1);
 
-  const textoVisivel = obterTextoVisivel(proxima.partes || [], false);
+  const textoVisivel = obterTextoVisivel(proxima.partes || [], 1);
   travarHoverConformeTexto(textoVisivel);
 }
 
 function proximaFrase() {
-  if (fraseAtual && temTrechoOculto(fraseAtual.partes) && !fraseAtualRevelada) {
-    mostrarFraseObjeto(fraseAtual, true);
-    const textoRevelado = obterTextoVisivel(fraseAtual.partes || [], true);
-    travarHoverConformeTexto(textoRevelado);
-    return;
+  if (fraseAtual) {
+    const etapaFinal = maiorEtapa(fraseAtual.partes);
+    if (etapaAtual < etapaFinal) {
+      const novaEtapa = etapaAtual + 1;
+      mostrarFraseObjeto(fraseAtual, novaEtapa);
+      const textoVisivel = obterTextoVisivel(fraseAtual.partes || [], novaEtapa);
+      travarHoverConformeTexto(textoVisivel);
+      return;
+    }
   }
 
   irParaProximaFrase();
@@ -633,7 +676,8 @@ function normalizarPartes(partes) {
       texto: String(parte?.texto || ""),
       bold: !!parte?.bold,
       italic: !!parte?.italic,
-      hidden: !!parte?.hidden
+      underline: !!parte?.underline,
+      color: normalizarCor(parte?.color)
     }))
     .filter(parte => parte.texto !== "");
 }
