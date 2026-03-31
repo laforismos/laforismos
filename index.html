@@ -182,7 +182,7 @@
       content: "";
       position: absolute;
       top: 4px;
-      left: 22px; /* estado inicial = NÃO (direita) */
+      left: 22px;
       width: 18px;
       height: 18px;
       border-radius: 50%;
@@ -192,7 +192,7 @@
     }
 
     .toggle-btn.on::after {
-      transform: translateX(-18px); /* quando SIM, vai para a esquerda */
+      transform: translateX(-18px);
     }
 
     .toggle-labels {
@@ -351,6 +351,49 @@ function iniciar() {
   }
 }
 
+function calcularTempoLeitura(texto) {
+  const textoLimpo = String(texto || "").trim();
+
+  if (!textoLimpo) return 5000;
+
+  const linhas = textoLimpo
+    .split("\n")
+    .map(l => l.trim())
+    .filter(Boolean);
+
+  const palavras = textoLimpo.split(/\s+/).filter(Boolean).length;
+  const qtdLinhas = linhas.length;
+
+  const pontuacaoForte = (textoLimpo.match(/[.!?…:;]/g) || []).length;
+  const virgulas = (textoLimpo.match(/,/g) || []).length;
+  const travessoesDeDialogo = (textoLimpo.match(/(^|\n)\s*[-–—]\s+/g) || []).length;
+
+  const ehDialogo = travessoesDeDialogo > 0;
+
+  const tempoBase = 2200;
+  const msPorPalavra = 340;
+  const msPorLinhaExtra = 850;
+  const msPontuacaoForte = 180;
+  const msVirgula = 90;
+  const bonusDialogo = 1200;
+
+  let tempo =
+    tempoBase +
+    (palavras * msPorPalavra) +
+    (Math.max(0, qtdLinhas - 1) * msPorLinhaExtra) +
+    (pontuacaoForte * msPontuacaoForte) +
+    (virgulas * msVirgula);
+
+  if (ehDialogo) {
+    tempo += bonusDialogo;
+  }
+
+  const tempoMin = 4500;
+  const tempoMax = 18000;
+
+  return Math.max(tempoMin, Math.min(tempo, tempoMax));
+}
+
 function proximaFrase() {
   const box = document.getElementById("box");
 
@@ -374,12 +417,14 @@ function proximaFrase() {
 
   mostrarFrase(texto);
 
+  const tempoLeitura = calcularTempoLeitura(texto);
+
   hoverTimer = setTimeout(() => {
     if (clicado) {
       box.classList.remove("disable-hover");
       clicado = false;
     }
-  }, 5000);
+  }, tempoLeitura);
 }
 
 document.getElementById("box").addEventListener("mouseleave", () => {
