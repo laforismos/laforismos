@@ -177,7 +177,7 @@
       width: 58px;
       height: 19px;
       border-radius: 999px;
-      border: 1px solid rgba(0,0,0,0.8);
+      border: 1px solid rgba(255,255,255,0.92);
       background: rgba(255,255,255,0.2);
       padding: 0;
       cursor: pointer;
@@ -188,7 +188,7 @@
       align-items: center;
       justify-content: center;
       box-shadow: none;
-      transition: background 0.18s ease, border-color 0.18s ease;
+      transition: background 0.18s ease, border-color 0.18s ease, color 0.18s ease;
     }
 
     /* Estado ON: botão inteiro preenchido */
@@ -208,10 +208,27 @@
       line-height: 1;
       letter-spacing: 0.7px;
       text-transform: uppercase;
-      color: rgba(0,0,0,0.88);
-      font-weight: 500;
       pointer-events: none;
       user-select: none;
+      transition: color 0.18s ease, opacity 0.18s ease, font-weight 0.18s ease, -webkit-text-stroke 0.18s ease;
+    }
+
+    /* ON: negrito e vazado */
+    .toggle-btn.on .toggle-word {
+      color: transparent;
+      font-weight: 700;
+      -webkit-text-stroke: 0.7px rgba(0,0,0,0.9);
+      text-stroke: 0.7px rgba(0,0,0,0.9);
+      opacity: 1;
+    }
+
+    /* OFF: regular e translúcido para leitura */
+    .toggle-btn:not(.on) .toggle-word {
+      color: rgba(255,255,255,0.72);
+      font-weight: 400;
+      -webkit-text-stroke: 0;
+      text-stroke: 0;
+      opacity: 0.9;
     }
 
     /* Rodapé com links de compartilhamento */
