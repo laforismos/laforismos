@@ -1,13 +1,22 @@
 <!DOCTYPE html>
 <html lang="pt-BR">
 <head>
+  <!--
+    LAFORISMOS — versão comentada
+    Esta edição inclui:
+    1) tempo de leitura refinado por texto
+    2) melhoria de viewport no mobile
+    3) toggle "Obscenidades" redesenhado
+  -->
   <meta charset="UTF-8">
   <meta name="viewport" content="width=device-width, initial-scale=1.0">
   <title>LAFORISMOS</title>
 
+  <!-- Pré-carrega o vídeo de fundo para reduzir atraso na primeira exibição -->
   <link rel="preload" href="./VIDEOBALAO.mp4" as="video" type="video/mp4">
 
   <style>
+    /* Base geral da página */
     body {
       margin: 0;
       font-family: Helvetica, Arial, sans-serif;
@@ -20,6 +29,7 @@
       overflow-y: auto;
     }
 
+    /* Vídeo de fundo em tela cheia (desktop) */
     #bg-video {
       position: fixed;
       top: 0;
@@ -31,6 +41,7 @@
       filter: contrast(1.4) brightness(1.2);
     }
 
+    /* Área principal: título, box de frases e toggle */
     main {
       flex: 1;
       display: flex;
@@ -44,11 +55,13 @@
       z-index: 1;
     }
 
+    /* Título principal */
     h1 {
       letter-spacing: 4px;
       margin-bottom: 20px;
     }
 
+    /* Box clicável onde as frases aparecem */
     .box {
       position: relative;
       z-index: 1;
@@ -63,6 +76,7 @@
       box-shadow: inset 0 0 12px rgba(255,255,255,0.08);
     }
 
+    /* Texto da frase/aforismo */
     .frase {
       transition: opacity 0.3s ease;
       white-space: pre-line;
@@ -74,6 +88,7 @@
       text-align: center;
     }
 
+    /* Quando há diálogo, o texto vai para alinhamento à esquerda */
     .frase.dialogo {
       text-align: left !important;
       max-width: 620px;
@@ -83,6 +98,7 @@
       margin-right: auto;
     }
 
+    /* Camada que aparece no hover do box */
     .overlay {
       position: absolute;
       inset: 0;
@@ -95,6 +111,7 @@
       pointer-events: none;
     }
 
+    /* Faixa animada dentro do overlay */
     .track {
       display: flex;
       white-space: nowrap;
@@ -104,6 +121,7 @@
       text-transform: lowercase;
     }
 
+    /* Movimento contínuo do texto do overlay */
     @keyframes scroll {
       from { transform: translateX(0); }
       to { transform: translateX(-50%); }
@@ -129,85 +147,108 @@
       animation-duration: 6.4s;
     }
 
+    /* Bloco do filtro de obscenidades */
     .filtro-obceno {
       display: flex;
       flex-direction: column;
       align-items: center;
-      gap: 6px;
+      gap: 12px;
     }
 
+    /* Título do toggle */
     .filtro-obceno-titulo {
-      font-size: 0.68rem;
-      letter-spacing: 0.7px;
-      opacity: 0.9;
+      font-size: 0.78rem;
+      letter-spacing: 1.4px;
+      opacity: 0.92;
       text-transform: uppercase;
     }
 
+    /* Área de contenção do toggle */
     .toggle-area {
       display: flex;
       flex-direction: column;
       align-items: center;
-      gap: 4px;
+      gap: 0;
     }
 
+    /* Toggle principal, redesenhado a partir da referência visual enviada */
     .toggle-btn {
       position: relative;
-      width: 46px;
-      height: 32px;
+      width: 138px;
+      height: 50px;
       border-radius: 999px;
-      border: 1px solid rgba(255,255,255,0.6);
-      background: rgba(255,255,255,0.18);
+      border: 1.5px solid rgba(255,255,255,0.28);
+      background:
+        linear-gradient(180deg, rgba(18,32,44,0.74), rgba(17,28,39,0.88));
       padding: 0;
       cursor: pointer;
       appearance: none;
       -webkit-appearance: none;
-      backdrop-filter: blur(2px);
-      box-shadow: inset 0 0 6px rgba(255,255,255,0.08);
       overflow: hidden;
       display: block;
+      box-shadow:
+        inset 0 0 0 1px rgba(255,255,255,0.03),
+        0 8px 18px rgba(0,0,0,0.18);
+      transition: border-color 0.22s ease, box-shadow 0.22s ease, background 0.22s ease;
     }
 
+    /* "Pílula" interna que se desloca entre ON e OFF */
     .toggle-btn::before {
       content: "";
       position: absolute;
-      inset: 0;
-      border-radius: 999px;
-      background: rgba(255,255,255,0.08);
-      opacity: 0.45;
-      transition: opacity 0.22s ease;
+      top: 7px;
+      left: 7px;
+      width: 62px;
+      height: 34px;
+      border-radius: 16px 0 0 16px;
+      border: 1.5px solid rgba(117, 223, 117, 0.82);
+      background: rgba(92, 185, 96, 0.09);
+      box-shadow:
+        0 0 0 1px rgba(92, 185, 96, 0.12),
+        0 0 10px rgba(92, 185, 96, 0.18);
+      transition: transform 0.22s ease, opacity 0.22s ease, border-radius 0.22s ease;
+    }
+
+    /* Rótulo interno do toggle: ON ou OFF */
+    .toggle-btn::after {
+      content: "ON";
+      position: absolute;
+      top: 50%;
+      left: 38px;
+      transform: translate(-50%, -50%);
+      font-size: 0.92rem;
+      letter-spacing: 1.1px;
+      line-height: 1;
+      color: rgba(117, 223, 117, 0.92);
+      transition: transform 0.22s ease, left 0.22s ease, color 0.22s ease, opacity 0.22s ease, content 0.22s ease;
     }
 
     .toggle-btn.on::before {
-      opacity: 0.8;
-    }
-
-    .toggle-btn::after {
-      content: "";
-      position: absolute;
-      top: 50%;
-      left: 22px;
-      width: 18px;
-      height: 18px;
-      border-radius: 50%;
-      background: rgba(255,255,255,0.95);
-      box-shadow: 0 1px 3px rgba(0,0,0,0.3);
-      transform: translateY(-50%);
-      transition: transform 0.22s ease;
+      transform: translateX(0);
+      border-radius: 16px 0 0 16px;
+      opacity: 1;
     }
 
     .toggle-btn.on::after {
-      transform: translateY(-50%) translateX(-18px);
+      content: "ON";
+      left: 38px;
+      color: rgba(117, 223, 117, 0.92);
     }
 
-    .toggle-labels {
-      width: 46px;
-      display: flex;
-      justify-content: space-between;
-      font-size: 0.54rem;
-      letter-spacing: 0.8px;
-      opacity: 0.85;
+    .toggle-btn:not(.on)::before {
+      transform: translateX(62px);
+      border-radius: 0 16px 16px 0;
+      opacity: 0.92;
     }
 
+    .toggle-btn:not(.on)::after {
+      content: "OFF";
+      left: 98px;
+      color: rgba(255,255,255,0.72);
+    }
+
+
+    /* Rodapé com links de compartilhamento */
     footer {
       text-align: center;
       padding: 20px;
@@ -222,6 +263,7 @@
       text-decoration: underline;
     }
 
+    /* Ajustes específicos para mobile */
     @media (max-width: 768px) {
       body {
         background: url("./balaocolor.png") no-repeat center center;
@@ -229,7 +271,8 @@
         min-height: 100dvh;
       }
 
-      #bg-video {
+      /* Vídeo de fundo em tela cheia (desktop) */
+    #bg-video {
         display: none;
       }
 
@@ -241,8 +284,38 @@
         z-index: -1;
       }
 
-      .box {
+      /* Box clicável onde as frases aparecem */
+    .box {
         padding: 18px 20px;
+      }
+
+      /* Toggle principal, redesenhado a partir da referência visual enviada */
+    .toggle-btn {
+        width: 128px;
+        height: 48px;
+      }
+
+      /* "Pílula" interna que se desloca entre ON e OFF */
+    .toggle-btn::before {
+        width: 58px;
+        height: 32px;
+      }
+
+      .toggle-btn:not(.on)::before {
+        transform: translateX(56px);
+      }
+
+      /* Rótulo interno do toggle: ON ou OFF */
+    .toggle-btn::after {
+        font-size: 0.86rem;
+      }
+
+      .toggle-btn.on::after {
+        left: 36px;
+      }
+
+      .toggle-btn:not(.on)::after {
+        left: 92px;
       }
     }
   </style>
@@ -250,16 +323,21 @@
 
 <body>
 
+<!-- Vídeo de fundo. No mobile ele é ocultado e entra a imagem estática -->
 <video autoplay muted loop playsinline id="bg-video">
   <source src="./VIDEOBALAO.mp4" type="video/mp4">
 </video>
 
 <main>
+  <!-- Título do site -->
   <h1>LAFORISMOS</h1>
 
+  <!-- Box principal: ao clicar, carrega a próxima frase -->
   <div class="box" id="box" onclick="proximaFrase()">
+    <!-- Texto exibido no box -->
     <div class="frase" id="frase">Carregando frases...</div>
 
+    <!-- Overlay mostrado no hover -->
     <div class="overlay">
       <div class="track">
         <span>
@@ -272,20 +350,18 @@ carregando espasmo • carregando espasmo • carregando espasmo • carregando 
     </div>
   </div>
 
+  <!-- Controle para incluir ou excluir frases obscenas -->
   <div class="filtro-obceno">
-    <div class="filtro-obceno-titulo">Com obscenidades?</div>
+    <div class="filtro-obceno-titulo">Obscenidades</div>
     <div class="toggle-area">
       <button
         id="toggleObceno"
         class="toggle-btn"
         type="button"
         aria-pressed="false"
+        aria-label="Alternar obscenidades"
         onclick="alternarObceno(event)"
       ></button>
-      <div class="toggle-labels">
-        <span>SIM</span>
-        <span>NÃO</span>
-      </div>
     </div>
   </div>
 </main>
@@ -300,10 +376,12 @@ carregando espasmo • carregando espasmo • carregando espasmo • carregando 
 </footer>
 
 <script>
+// ID da planilha Google Sheets que alimenta o site
 const SHEET_ID = "1HvRlbHQQWguVkOIWp4gTBoIBFtJ7yCjHrvaC92neYmw";
 const GID = "0";
 const SHEET_URL = `https://docs.google.com/spreadsheets/d/${SHEET_ID}/gviz/tq?gid=${GID}&tqx=out:json`;
 
+// Lista completa vinda da planilha
 let frases = [];
 let frasesFiltradas = [];
 let fila = [];
@@ -312,6 +390,7 @@ let clicado = false;
 let hoverTimer = null;
 let mostrarObcenas = false;
 
+// Embaralha a lista para evitar ordem fixa de exibição
 function embaralhar(array) {
   return array
     .map(a => [Math.random(), a])
@@ -319,6 +398,7 @@ function embaralhar(array) {
     .map(a => a[1]);
 }
 
+// Exibe uma frase no box com fade e detecta se o texto é diálogo
 function mostrarFrase(texto) {
   const el = document.getElementById("frase");
   el.style.opacity = 0;
@@ -338,12 +418,14 @@ function mostrarFrase(texto) {
   }, 200);
 }
 
+// Aplica o filtro de obscenidades sobre a lista completa
 function atualizarFrasesFiltradas() {
   frasesFiltradas = frases
     .filter(item => mostrarObcenas || !item.obceno)
     .map(item => item.frase);
 }
 
+// Reinicia a fila de frases a partir do filtro atual
 function iniciar() {
   acabou = false;
   atualizarFrasesFiltradas();
@@ -356,6 +438,11 @@ function iniciar() {
   }
 }
 
+// Calcula um tempo de leitura mais generoso com base em:
+  // - número de palavras
+  // - número de linhas
+  // - pontuação
+  // - presença de diálogo
 function calcularTempoLeitura(texto) {
   const textoLimpo = String(texto || "").trim();
 
@@ -399,6 +486,7 @@ function calcularTempoLeitura(texto) {
   return Math.max(tempoMin, Math.min(tempo, tempoMax));
 }
 
+// Mostra a próxima frase e segura o hover por um tempo calculado
 function proximaFrase() {
   const box = document.getElementById("box");
 
@@ -432,6 +520,7 @@ function proximaFrase() {
   }, tempoLeitura);
 }
 
+// Se o mouse sair antes do tempo, libera o hover manualmente
 document.getElementById("box").addEventListener("mouseleave", () => {
   if (clicado) {
     document.getElementById("box").classList.remove("disable-hover");
@@ -440,12 +529,14 @@ document.getElementById("box").addEventListener("mouseleave", () => {
   }
 });
 
+// Atualiza o estado visual e acessível do toggle
 function sincronizarToggle() {
   const botao = document.getElementById("toggleObceno");
   botao.classList.toggle("on", mostrarObcenas);
   botao.setAttribute("aria-pressed", String(mostrarObcenas));
 }
 
+// Alterna entre mostrar e ocultar frases obscenas
 function alternarObceno(event) {
   event.stopPropagation();
   mostrarObcenas = !mostrarObcenas;
@@ -453,23 +544,28 @@ function alternarObceno(event) {
   iniciar();
 }
 
+// Compartilhamento por WhatsApp
 function wa() {
   window.open("https://wa.me/?text=" + encodeURIComponent(window.location.href));
 }
 
+// Compartilhamento por LinkedIn
 function lk() {
   window.open("https://www.linkedin.com/sharing/share-offsite/?url=" + encodeURIComponent(window.location.href));
 }
 
+// Atalho para Instagram
 function ig() {
   window.open("https://www.instagram.com/");
 }
 
+// Normaliza quebras de linha e remove espaços desnecessários
 function normalizarTexto(valor) {
   if (valor === null || valor === undefined) return "";
   return String(valor).replace(/\r\n/g, "\n").trim();
 }
 
+// Interpreta diferentes formatos de valor para o campo "ativo"
 function ehAtivo(valor) {
   if (typeof valor === "boolean") return valor;
   if (typeof valor === "number") return valor === 1;
@@ -478,6 +574,7 @@ function ehAtivo(valor) {
   return v === "true" || v === "verdadeiro" || v === "1" || v === "sim";
 }
 
+// Interpreta diferentes formatos de valor para o campo "obceno"
 function ehObceno(valor) {
   if (typeof valor === "boolean") return valor;
   if (typeof valor === "number") return valor === 1;
@@ -486,6 +583,7 @@ function ehObceno(valor) {
   return v === "sim" || v === "true" || v === "verdadeiro" || v === "1";
 }
 
+// Busca a planilha, lê as colunas esperadas e monta a lista de frases
 async function carregarFrasesDaPlanilha() {
   try {
     const response = await fetch(SHEET_URL, { cache: "no-store" });
@@ -510,6 +608,7 @@ async function carregarFrasesDaPlanilha() {
     const iAtivo = headers.indexOf("ativo");
     const iObceno = headers.indexOf("obceno");
 
+    // Segurança: exige os nomes exatos das colunas na planilha
     if (iFrase === -1 || iAtivo === -1 || iObceno === -1) {
       throw new Error('As colunas da planilha precisam se chamar exatamente "frase", "ativo" e "obceno".');
     }
@@ -538,6 +637,7 @@ async function carregarFrasesDaPlanilha() {
   }
 }
 
+// Estado inicial da interface
 sincronizarToggle();
 carregarFrasesDaPlanilha();
 </script>
