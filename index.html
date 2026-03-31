@@ -88,6 +88,14 @@
       text-align: center;
     }
 
+    .frase strong {
+      font-weight: 700;
+    }
+
+    .frase em {
+      font-style: italic;
+    }
+
     /* Quando há diálogo, o texto vai para alinhamento à esquerda */
     .frase.dialogo {
       text-align: left !important;
@@ -362,12 +370,8 @@ carregando espasmo • carregando espasmo • carregando espasmo • carregando 
 </footer>
 
 <script>
-// ID da planilha Google Sheets que alimenta o site
-const SHEET_ID = "1HvRlbHQQWguVkOIWp4gTBoIBFtJ7yCjHrvaC92neYmw";
-const GID = "0";
-const SHEET_URL = `https://docs.google.com/spreadsheets/d/${SHEET_ID}/gviz/tq?gid=${GID}&tqx=out:json`;
+const API_URL = "https://script.google.com/macros/s/AKfycbwBDi5_TcZxil7dD0IEstmFwvFj4LnzB9AjMiG-SLHx3i4PvAN8EhpHyNsGLBTgreNp/exec";
 
-// Lista completa vinda da planilha
 let frases = [];
 let frasesFiltradas = [];
 let fila = [];
@@ -375,8 +379,9 @@ let acabou = false;
 let clicado = false;
 let hoverTimer = null;
 let mostrarObcenas = true;
+let fraseAtual = null;
+let fraseAtualRevelada = false;
 
-// Embaralha a lista para evitar ordem fixa de exibição
 function embaralhar(array) {
   return array
     .map(a => [Math.random(), a])
@@ -384,51 +389,100 @@ function embaralhar(array) {
     .map(a => a[1]);
 }
 
-// Exibe uma frase no box com fade e detecta se o texto é diálogo
-function mostrarFrase(texto) {
+function temTrechoOculto(partes) {
+  return Array.isArray(partes) && partes.some(parte => parte.hidden);
+}
+
+function escaparHtml(texto) {
+  return String(texto ?? "")
+    .replace(/&/g, "&amp;")
+    .replace(/</g, "&lt;")
+    .replace(/>/g, "&gt;")
+    .replace(/"/g, "&quot;")
+    .replace(/'/g, "&#39;");
+}
+
+function montarHtmlPartes(partes, revelarOcultos = false) {
+  return (partes || [])
+    .filter(parte => revelarOcultos || !parte.hidden)
+    .map(parte => {
+      let texto = escaparHtml(parte.texto || "");
+      if (parte.italic) texto = `<em>${texto}</em>`;
+      if (parte.bold) texto = `<strong>${texto}</strong>`;
+      return texto;
+    })
+    .join("");
+}
+
+function obterTextoVisivel(partes, revelarOcultos = false) {
+  return (partes || [])
+    .filter(parte => revelarOcultos || !parte.hidden)
+    .map(parte => parte.texto || "")
+    .join("")
+    .trim();
+}
+
+function aplicarClasseDialogo(texto) {
+  const el = document.getElementById("frase");
+
+  const paragrafos = String(texto)
+    .split(/\n+/)
+    .map(p => p.trim())
+    .filter(Boolean);
+
+  const ehDialogo = paragrafos.some(p => /^[-–—]\s+/.test(p));
+  el.classList.toggle("dialogo", ehDialogo);
+}
+
+function mostrarFraseObjeto(fraseObj, revelarOcultos = false) {
   const el = document.getElementById("frase");
   el.style.opacity = 0;
 
   setTimeout(() => {
-    el.innerText = texto;
+    const html = montarHtmlPartes(fraseObj?.partes || [], revelarOcultos);
+    const textoVisivel = obterTextoVisivel(fraseObj?.partes || [], revelarOcultos);
 
-    const paragrafos = String(texto)
-      .split(/\n+/)
-      .map(p => p.trim())
-      .filter(Boolean);
+    el.innerHTML = html || "Nenhuma frase ativa disponível.";
+    aplicarClasseDialogo(textoVisivel);
 
-    const ehDialogo = paragrafos.some(p => /^[-–—]\s+/.test(p));
-    el.classList.toggle("dialogo", ehDialogo);
+    fraseAtual = fraseObj;
+    fraseAtualRevelada = revelarOcultos;
 
     el.style.opacity = 1;
   }, 200);
 }
 
-// Aplica o filtro de obscenidades sobre a lista completa
-function atualizarFrasesFiltradas() {
-  frasesFiltradas = frases
-    .filter(item => mostrarObcenas || !item.obceno)
-    .map(item => item.frase);
+function mostrarMensagem(texto) {
+  const el = document.getElementById("frase");
+  el.style.opacity = 0;
+
+  setTimeout(() => {
+    el.textContent = texto;
+    aplicarClasseDialogo(texto);
+    el.style.opacity = 1;
+  }, 200);
+
+  fraseAtual = null;
+  fraseAtualRevelada = false;
 }
 
-// Reinicia a fila de frases a partir do filtro atual
+function atualizarFrasesFiltradas() {
+  frasesFiltradas = frases.filter(item => mostrarObcenas || !item.obceno);
+}
+
 function iniciar() {
   acabou = false;
   atualizarFrasesFiltradas();
   fila = embaralhar([...frasesFiltradas]);
 
   if (fila.length > 0) {
-    mostrarFrase(fila.shift());
+    const primeira = fila.shift();
+    mostrarFraseObjeto(primeira, false);
   } else {
-    mostrarFrase("Nenhuma frase ativa disponível.");
+    mostrarMensagem("Nenhuma frase ativa disponível.");
   }
 }
 
-// Calcula um tempo de leitura mais generoso com base em:
-  // - número de palavras
-  // - número de linhas
-  // - pontuação
-  // - presença de diálogo
 function calcularTempoLeitura(texto) {
   const textoLimpo = String(texto || "").trim();
 
@@ -472,29 +526,13 @@ function calcularTempoLeitura(texto) {
   return Math.max(tempoMin, Math.min(tempo, tempoMax));
 }
 
-// Mostra a próxima frase e segura o hover por um tempo calculado
-function proximaFrase() {
+function travarHoverConformeTexto(texto) {
   const box = document.getElementById("box");
 
   clicado = true;
   box.classList.add("disable-hover");
 
   if (hoverTimer) clearTimeout(hoverTimer);
-
-  let texto;
-
-  if (frasesFiltradas.length === 0) {
-    texto = "Nenhuma frase ativa disponível.";
-  } else if (acabou) {
-    texto = "Por enquanto é isso aí.";
-  } else if (fila.length === 0) {
-    acabou = true;
-    texto = "Por enquanto é isso aí.";
-  } else {
-    texto = fila.shift();
-  }
-
-  mostrarFrase(texto);
 
   const tempoLeitura = calcularTempoLeitura(texto);
 
@@ -506,7 +544,44 @@ function proximaFrase() {
   }, tempoLeitura);
 }
 
-// Se o mouse sair antes do tempo, libera o hover manualmente
+function irParaProximaFrase() {
+  if (frasesFiltradas.length === 0) {
+    mostrarMensagem("Nenhuma frase ativa disponível.");
+    travarHoverConformeTexto("Nenhuma frase ativa disponível.");
+    return;
+  }
+
+  if (acabou) {
+    mostrarMensagem("Por enquanto é isso aí.");
+    travarHoverConformeTexto("Por enquanto é isso aí.");
+    return;
+  }
+
+  if (fila.length === 0) {
+    acabou = true;
+    mostrarMensagem("Por enquanto é isso aí.");
+    travarHoverConformeTexto("Por enquanto é isso aí.");
+    return;
+  }
+
+  const proxima = fila.shift();
+  mostrarFraseObjeto(proxima, false);
+
+  const textoVisivel = obterTextoVisivel(proxima.partes || [], false);
+  travarHoverConformeTexto(textoVisivel);
+}
+
+function proximaFrase() {
+  if (fraseAtual && temTrechoOculto(fraseAtual.partes) && !fraseAtualRevelada) {
+    mostrarFraseObjeto(fraseAtual, true);
+    const textoRevelado = obterTextoVisivel(fraseAtual.partes || [], true);
+    travarHoverConformeTexto(textoRevelado);
+    return;
+  }
+
+  irParaProximaFrase();
+}
+
 document.getElementById("box").addEventListener("mouseleave", () => {
   if (clicado) {
     document.getElementById("box").classList.remove("disable-hover");
@@ -515,7 +590,6 @@ document.getElementById("box").addEventListener("mouseleave", () => {
   }
 });
 
-// Atualiza o estado visual e acessível do toggle
 function sincronizarToggle() {
   const botao = document.getElementById("toggleObceno");
   const texto = botao.querySelector(".toggle-word");
@@ -526,7 +600,6 @@ function sincronizarToggle() {
   }
 }
 
-// Alterna entre mostrar e ocultar frases obscenas
 function alternarObceno(event) {
   event.stopPropagation();
   mostrarObcenas = !mostrarObcenas;
@@ -534,29 +607,19 @@ function alternarObceno(event) {
   iniciar();
 }
 
-// Compartilhamento por WhatsApp
 function wa() {
   window.open("https://wa.me/?text=" + encodeURIComponent(window.location.href));
 }
 
-// Compartilhamento por LinkedIn
 function lk() {
   window.open("https://www.linkedin.com/sharing/share-offsite/?url=" + encodeURIComponent(window.location.href));
 }
 
-// Atalho para Instagram
 function ig() {
   window.open("https://www.instagram.com/");
 }
 
-// Normaliza quebras de linha e remove espaços desnecessários
-function normalizarTexto(valor) {
-  if (valor === null || valor === undefined) return "";
-  return String(valor).replace(/\r\n/g, "\n").trim();
-}
-
-// Interpreta diferentes formatos de valor para o campo "ativo"
-function ehAtivo(valor) {
+function normalizarBoolean(valor) {
   if (typeof valor === "boolean") return valor;
   if (typeof valor === "number") return valor === 1;
 
@@ -564,72 +627,48 @@ function ehAtivo(valor) {
   return v === "true" || v === "verdadeiro" || v === "1" || v === "sim";
 }
 
-// Interpreta diferentes formatos de valor para o campo "obceno"
-function ehObceno(valor) {
-  if (typeof valor === "boolean") return valor;
-  if (typeof valor === "number") return valor === 1;
-
-  const v = String(valor ?? "").trim().toLowerCase();
-  return v === "sim" || v === "true" || v === "verdadeiro" || v === "1";
+function normalizarPartes(partes) {
+  return (partes || [])
+    .map(parte => ({
+      texto: String(parte?.texto || ""),
+      bold: !!parte?.bold,
+      italic: !!parte?.italic,
+      hidden: !!parte?.hidden
+    }))
+    .filter(parte => parte.texto !== "");
 }
 
-// Busca a planilha, lê as colunas esperadas e monta a lista de frases
-async function carregarFrasesDaPlanilha() {
+async function carregarFrasesDaApi() {
   try {
-    const response = await fetch(SHEET_URL, { cache: "no-store" });
+    const response = await fetch(API_URL, { cache: "no-store" });
 
     if (!response.ok) {
-      throw new Error("Falha ao acessar a planilha: " + response.status);
+      throw new Error("Falha ao acessar a API: " + response.status);
     }
 
-    const text = await response.text();
-    const match = text.match(/google\.visualization\.Query\.setResponse\(([\s\S]+)\);/);
+    const data = await response.json();
 
-    if (!match || !match[1]) {
-      throw new Error("Resposta inválida da planilha.");
+    if (!data?.ok || !Array.isArray(data.frases)) {
+      throw new Error("Resposta inválida da API.");
     }
 
-    const data = JSON.parse(match[1]);
-    const cols = data.table?.cols || [];
-    const rows = data.table?.rows || [];
-
-    const headers = cols.map(col => String(col.label || "").trim().toLowerCase());
-    const iFrase = headers.indexOf("frase");
-    const iAtivo = headers.indexOf("ativo");
-    const iObceno = headers.indexOf("obceno");
-
-    // Segurança: exige os nomes exatos das colunas na planilha
-    if (iFrase === -1 || iAtivo === -1 || iObceno === -1) {
-      throw new Error('As colunas da planilha precisam se chamar exatamente "frase", "ativo" e "obceno".');
-    }
-
-    frases = rows
-      .map(row => {
-        const cells = row.c || [];
-        return {
-          frase: normalizarTexto(cells[iFrase]?.v),
-          ativo: cells[iAtivo]?.v,
-          obceno: cells[iObceno]?.v
-        };
-      })
-      .filter(item => item.frase !== "")
-      .filter(item => ehAtivo(item.ativo))
+    frases = data.frases
       .map(item => ({
-        frase: item.frase,
-        obceno: ehObceno(item.obceno)
-      }));
+        partes: normalizarPartes(item.partes),
+        obceno: normalizarBoolean(item.obceno)
+      }))
+      .filter(item => item.partes.length > 0);
 
     iniciar();
 
   } catch (e) {
     console.error(e);
-    mostrarFrase("Erro ao carregar frases da planilha.");
+    mostrarMensagem("Erro ao carregar frases da planilha.");
   }
 }
 
-// Estado inicial da interface
 sincronizarToggle();
-carregarFrasesDaPlanilha();
+carregarFrasesDaApi();
 </script>
 
 </body>
