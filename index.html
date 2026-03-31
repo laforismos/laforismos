@@ -377,19 +377,6 @@ carregando espasmo • carregando espasmo • carregando espasmo • carregando 
 <script>
 const API_URL = "https://script.google.com/macros/s/AKfycbwBDi5_TcZxil7dD0IEstmFwvFj4LnzB9AjMiG-SLHx3i4PvAN8EhpHyNsGLBTgreNp/exec";
 
-/*
-  Cor = tempo de revelação.
-  Tempo 1 = texto padrão (ou cor não mapeada).
-  Ajuste as cores abaixo para definir quantos tempos quiser.
-*/
-const STAGE_BY_COLOR = {
-  "#4a90e2": 2,
-  "#e74c3c": 3,
-  "#27ae60": 4,
-  "#9b59b6": 5,
-  "#f39c12": 6
-};
-
 let frases = [];
 let frasesFiltradas = [];
 let fila = [];
@@ -407,20 +394,6 @@ function embaralhar(array) {
     .map(a => a[1]);
 }
 
-function normalizarCor(valor) {
-  return String(valor || "").trim().toLowerCase();
-}
-
-function etapaDaParte(parte) {
-  const cor = normalizarCor(parte?.color);
-  return STAGE_BY_COLOR[cor] || 1;
-}
-
-function maiorEtapa(partes) {
-  if (!Array.isArray(partes) || partes.length === 0) return 1;
-  return partes.reduce((maximo, parte) => Math.max(maximo, etapaDaParte(parte)), 1);
-}
-
 function escaparHtml(texto) {
   return String(texto ?? "")
     .replace(/&/g, "&amp;")
@@ -428,6 +401,85 @@ function escaparHtml(texto) {
     .replace(/>/g, "&gt;")
     .replace(/"/g, "&quot;")
     .replace(/'/g, "&#39;");
+}
+
+function parsePartesComTempos(partesOriginais) {
+  const caracteres = [];
+  let etapaCorrente = 1;
+  let emAsterisco = false;
+  let emBarra = false;
+
+  for (const parte of (partesOriginais || [])) {
+    const texto = String(parte?.texto || "");
+
+    for (const ch of texto) {
+      if (ch === "[") {
+        etapaCorrente = 2;
+        continue;
+      }
+      if (ch === "]") {
+        etapaCorrente = 1;
+        continue;
+      }
+      if (ch === "{") {
+        etapaCorrente = 3;
+        continue;
+      }
+      if (ch === "}") {
+        etapaCorrente = 1;
+        continue;
+      }
+      if (ch === "*") {
+        emAsterisco = !emAsterisco;
+        etapaCorrente = emAsterisco ? 4 : 1;
+        continue;
+      }
+      if (ch === "\\") {
+        emBarra = !emBarra;
+        etapaCorrente = emBarra ? 5 : 1;
+        continue;
+      }
+
+      caracteres.push({
+        texto: ch,
+        etapa: etapaCorrente,
+        bold: !!parte?.bold,
+        italic: !!parte?.italic,
+        underline: !!parte?.underline
+      });
+    }
+  }
+
+  const resultado = [];
+
+  for (const caractere of caracteres) {
+    const ultima = resultado[resultado.length - 1];
+
+    if (
+      ultima &&
+      ultima.etapa === caractere.etapa &&
+      ultima.bold === caractere.bold &&
+      ultima.italic === caractere.italic &&
+      ultima.underline === caractere.underline
+    ) {
+      ultima.texto += caractere.texto;
+    } else {
+      resultado.push({
+        texto: caractere.texto,
+        etapa: caractere.etapa,
+        bold: caractere.bold,
+        italic: caractere.italic,
+        underline: caractere.underline
+      });
+    }
+  }
+
+  return resultado;
+}
+
+function maiorEtapa(partes) {
+  if (!Array.isArray(partes) || partes.length === 0) return 1;
+  return partes.reduce((maximo, parte) => Math.max(maximo, parte.etapa || 1), 1);
 }
 
 function aplicarFormatacao(parte) {
@@ -448,14 +500,14 @@ function aplicarFormatacao(parte) {
 
 function montarHtmlPartes(partes, etapaMaxima = 1) {
   return (partes || [])
-    .filter(parte => etapaDaParte(parte) <= etapaMaxima)
+    .filter(parte => (parte.etapa || 1) <= etapaMaxima)
     .map(aplicarFormatacao)
     .join("");
 }
 
 function obterTextoVisivel(partes, etapaMaxima = 1) {
   return (partes || [])
-    .filter(parte => etapaDaParte(parte) <= etapaMaxima)
+    .filter(parte => (parte.etapa || 1) <= etapaMaxima)
     .map(parte => parte.texto || "")
     .join("")
     .trim();
@@ -671,15 +723,16 @@ function normalizarBoolean(valor) {
 }
 
 function normalizarPartes(partes) {
-  return (partes || [])
-    .map(parte => ({
-      texto: String(parte?.texto || ""),
-      bold: !!parte?.bold,
-      italic: !!parte?.italic,
-      underline: !!parte?.underline,
-      color: normalizarCor(parte?.color)
-    }))
-    .filter(parte => parte.texto !== "");
+  return parsePartesComTempos(
+    (partes || [])
+      .map(parte => ({
+        texto: String(parte?.texto || ""),
+        bold: !!parte?.bold,
+        italic: !!parte?.italic,
+        underline: !!parte?.underline
+      }))
+      .filter(parte => parte.texto !== "")
+  );
 }
 
 async function carregarFrasesDaApi() {
