@@ -14,8 +14,10 @@
       color: white;
       display: flex;
       flex-direction: column;
-      height: 100vh;
-      overflow: hidden;
+      min-height: 100vh;
+      min-height: 100dvh;
+      overflow-x: hidden;
+      overflow-y: auto;
     }
 
     #bg-video {
@@ -162,6 +164,7 @@
       backdrop-filter: blur(2px);
       box-shadow: inset 0 0 6px rgba(255,255,255,0.08);
       overflow: hidden;
+      display: block;
     }
 
     .toggle-btn::before {
@@ -181,18 +184,19 @@
     .toggle-btn::after {
       content: "";
       position: absolute;
-      top: 4px;
+      top: 50%;
       left: 22px;
       width: 18px;
       height: 18px;
       border-radius: 50%;
       background: rgba(255,255,255,0.95);
       box-shadow: 0 1px 3px rgba(0,0,0,0.3);
+      transform: translateY(-50%);
       transition: transform 0.22s ease;
     }
 
     .toggle-btn.on::after {
-      transform: translateX(-18px);
+      transform: translateY(-50%) translateX(-18px);
     }
 
     .toggle-labels {
@@ -222,6 +226,7 @@
       body {
         background: url("./balaocolor.png") no-repeat center center;
         background-size: cover;
+        min-height: 100dvh;
       }
 
       #bg-video {
