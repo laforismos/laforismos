@@ -200,6 +200,11 @@
       margin-top: 24px;
     }
 
+    .filtro-apenas-novas {
+      margin-top: 2px;
+      align-self: center;
+    }
+
     .filtro-obceno-titulo {
       font-size: 0.64rem;
       letter-spacing: 1.2px;
@@ -491,6 +496,22 @@ carregando espasmo • carregando espasmo • carregando espasmo • carregando 
       </button>
     </div>
   </div>
+
+  <div class="filtro-obceno filtro-apenas-novas">
+    <div class="filtro-obceno-titulo">APENAS NOVAS</div>
+    <div class="toggle-area">
+      <button
+        id="toggleNovas"
+        class="toggle-btn"
+        type="button"
+        aria-pressed="false"
+        aria-label="Alternar somente novas"
+      >
+        <span class="toggle-bg-word toggle-bg-on">ON</span>
+        <span class="toggle-bg-word toggle-bg-off">OFF</span>
+      </button>
+    </div>
+  </div>
 </main>
 
 <footer>
@@ -539,6 +560,7 @@ let acabou = false;
 let clicado = false;
 let hoverTimer = null;
 let mostrarObcenas = true;
+let mostrarSoNovas = false;
 let fraseAtual = null;
 let etapaAtual = 1;
 let hoverTravadoAteUltimoTempo = false;
@@ -645,6 +667,37 @@ function ativarEstadoLoadingBox() {
 function desativarEstadoLoadingBox() {
   const box = document.getElementById("box");
   box.classList.remove("is-loading");
+}
+
+function obterFrasesVistas() {
+  try {
+    const bruto = localStorage.getItem(STORAGE_FRASES_VISTAS);
+    if (!bruto) return new Set();
+    const lista = JSON.parse(bruto);
+    if (!Array.isArray(lista)) return new Set();
+    return new Set(lista.map(item => String(item)));
+  } catch (e) {
+    return new Set();
+  }
+}
+
+function salvarFrasesVistas(setDeIds) {
+  try {
+    localStorage.setItem(STORAGE_FRASES_VISTAS, JSON.stringify([...setDeIds]));
+  } catch (e) {}
+}
+
+function marcarFraseComoVista(fraseObj) {
+  if (!fraseObj || fraseObj.id == null) return;
+  const vistas = obterFrasesVistas();
+  vistas.add(String(fraseObj.id));
+  salvarFrasesVistas(vistas);
+}
+
+function fraseJaFoiVista(fraseObj) {
+  if (!fraseObj || fraseObj.id == null) return false;
+  const vistas = obterFrasesVistas();
+  return vistas.has(String(fraseObj.id));
 }
 
 function escaparHtml(texto) {
@@ -805,6 +858,8 @@ function mostrarFraseObjeto(fraseObj, etapa = 1) {
       idsExibidos.add(fraseObj.id);
     }
 
+    marcarFraseComoVista(fraseObj);
+
     el.style.opacity = 1;
   }, 200);
 }
@@ -825,7 +880,11 @@ function mostrarMensagem(texto) {
 }
 
 function atualizarFrasesFiltradas() {
-  frasesFiltradas = frases.filter(item => mostrarObcenas || !item.obceno);
+  frasesFiltradas = frases.filter(item => {
+    const passaObscenidade = mostrarObcenas || !item.obceno;
+    const passaNovidade = !mostrarSoNovas || !fraseJaFoiVista(item);
+    return passaObscenidade && passaNovidade;
+  });
 }
 
 function iniciar() {
@@ -839,8 +898,11 @@ function iniciar() {
     mostrarFraseObjeto(primeira, 1);
     aplicarTravaHoverParaEstadoAtual(primeira, 1, true);
   } else {
-    mostrarMensagem("Nenhuma frase ativa disponível.");
-    travarHoverConformeTexto("Nenhuma frase ativa disponível.");
+    const mensagemVazia = mostrarSoNovas
+      ? "Você já viu todas as novas."
+      : "Nenhuma frase ativa disponível.";
+    mostrarMensagem(mensagemVazia);
+    travarHoverConformeTexto(mensagemVazia);
   }
 }
 
@@ -964,8 +1026,11 @@ function aplicarTravaHoverParaEstadoAtual(fraseObj, etapa, aoEntrarNovaFrase = f
 
 function irParaProximaFrase() {
   if (frasesFiltradas.length === 0) {
-    mostrarMensagem("Nenhuma frase ativa disponível.");
-    travarHoverConformeTexto("Nenhuma frase ativa disponível.");
+    const mensagemVazia = mostrarSoNovas
+      ? "Você já viu todas as novas."
+      : "Nenhuma frase ativa disponível.";
+    mostrarMensagem(mensagemVazia);
+    travarHoverConformeTexto(mensagemVazia);
     return;
   }
 
@@ -1007,14 +1072,16 @@ document.getElementById("box").addEventListener("mouseleave", () => {
   }
 });
 
+function sincronizarToggleIndividual(idBotao, valor) {
+  const botao = document.getElementById(idBotao);
+  if (!botao) return;
+  botao.classList.toggle("on", !!valor);
+  botao.setAttribute("aria-pressed", String(!!valor));
+}
+
 function sincronizarToggle() {
-  const botao = document.getElementById("toggleObceno");
-  const texto = botao.querySelector(".toggle-word");
-  botao.classList.toggle("on", mostrarObcenas);
-  botao.setAttribute("aria-pressed", String(mostrarObcenas));
-  if (texto) {
-    texto.textContent = mostrarObcenas ? "ON" : "OFF";
-  }
+  sincronizarToggleIndividual("toggleObceno", mostrarObcenas);
+  sincronizarToggleIndividual("toggleNovas", mostrarSoNovas);
 }
 
 function definirObceno(novoValor) {
@@ -1042,8 +1109,25 @@ function alternarObceno() {
   definirObceno(!mostrarObcenas);
 }
 
-function inicializarInteracaoToggle() {
-  const botao = document.getElementById("toggleObceno");
+function definirSoNovas(novoValor) {
+  const valorNormalizado = !!novoValor;
+
+  if (mostrarSoNovas === valorNormalizado) {
+    sincronizarToggle();
+    return;
+  }
+
+  mostrarSoNovas = valorNormalizado;
+  sincronizarToggle();
+  iniciar();
+}
+
+function alternarSoNovas() {
+  definirSoNovas(!mostrarSoNovas);
+}
+
+function inicializarInteracaoToggleIndividual(idBotao, obterValorAtual, definirValor, alternarValor) {
+  const botao = document.getElementById(idBotao);
   if (!botao) return;
 
   let pointerIdAtivo = null;
@@ -1081,9 +1165,11 @@ function inicializarInteracaoToggle() {
     }
 
     if (deltaX > limiar) {
-      definirObceno(true);
+      definirValor(true);
     } else if (deltaX < -limiar) {
-      definirObceno(false);
+      definirValor(false);
+    } else {
+      sincronizarToggleIndividual(idBotao, obterValorAtual());
     }
   });
 
@@ -1091,7 +1177,7 @@ function inicializarInteracaoToggle() {
     if (event.pointerId !== pointerIdAtivo) return;
 
     if (!houveMovimento) {
-      alternarObceno();
+      alternarValor();
     }
 
     encerrarArraste();
@@ -1104,6 +1190,22 @@ function inicializarInteracaoToggle() {
   botao.addEventListener("lostpointercapture", () => {
     encerrarArraste();
   });
+}
+
+function inicializarInteracaoToggle() {
+  inicializarInteracaoToggleIndividual(
+    "toggleObceno",
+    () => mostrarObcenas,
+    definirObceno,
+    alternarObceno
+  );
+
+  inicializarInteracaoToggleIndividual(
+    "toggleNovas",
+    () => mostrarSoNovas,
+    definirSoNovas,
+    alternarSoNovas
+  );
 }
 
 function wa() {
