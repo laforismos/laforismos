@@ -20,9 +20,10 @@
   <style>
     body {
       --mobile-bg-image: url("./balaocolor.png");
+      --site-text-color: white;
       margin: 0;
       font-family: Helvetica, Arial, sans-serif;
-      color: white;
+      color: var(--site-text-color);
       display: flex;
       flex-direction: column;
       min-height: 100vh;
@@ -281,6 +282,31 @@
       text-decoration: underline;
     }
 
+    body.bg-verde {
+      --site-text-color: rgba(64, 64, 64, 1);
+    }
+
+    body.bg-verde .toggle-btn {
+      border-color: rgba(64, 64, 64, 0.92);
+      background: rgba(64, 64, 64, 0.12);
+    }
+
+    body.bg-verde .toggle-btn.on {
+      background: rgba(64, 64, 64, 0.22);
+    }
+
+    body.bg-verde .toggle-btn .toggle-word {
+      color: rgba(64, 64, 64, 0.72);
+    }
+
+    body.bg-verde .toggle-btn.on .toggle-word {
+      color: rgba(64, 64, 64, 0.88);
+    }
+
+    body.bg-verde .box {
+      border-color: rgba(64, 64, 64, 0.55);
+    }
+
     @media (max-width: 768px) {
       body {
         background: var(--mobile-bg-image) no-repeat center center;
@@ -395,7 +421,8 @@ const BACKGROUNDS = [
     videoType: "video/quicktime",
     mobile: "./BG_VERDE.png",
     startTime: 15,
-    endTime: 50
+    endTime: 45,
+    isGreen: true
   }
 ];
 
@@ -481,6 +508,8 @@ function aplicarBackgroundAleatorio() {
   const body = document.body;
   const video = document.getElementById("bg-video");
   const source = document.getElementById("bg-video-source");
+
+  body.classList.toggle("bg-verde", !!bg.isGreen);
 
   if (bg.mobile) {
     body.style.setProperty("--mobile-bg-image", `url("${bg.mobile}")`);
