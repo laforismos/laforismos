@@ -17,6 +17,16 @@
   <meta name="viewport" content="width=device-width, initial-scale=1.0">
   <title>LAFORISMOS</title>
 
+  <!-- Google tag (gtag.js) -->
+  <script async src="https://www.googletagmanager.com/gtag/js?id=G-02B0NJF559"></script>
+  <script>
+    window.dataLayer = window.dataLayer || [];
+    function gtag(){dataLayer.push(arguments);}
+    gtag('js', new Date());
+
+    gtag('config', 'G-02B0NJF559');
+  </script>
+
   <style>
     body {
       --mobile-bg-image: url("./balaocolor.png");
@@ -559,7 +569,7 @@ let idsExibidos = new Set();
 let acabou = false;
 let clicado = false;
 let hoverTimer = null;
-let mostrarObcenas = false;
+let mostrarObcenas = true;
 let mostrarSoNovas = false;
 let fraseAtual = null;
 let etapaAtual = 1;
