@@ -248,6 +248,7 @@
         transform 0.24s ease,
         background 0.24s ease,
         opacity 0.24s ease;
+      z-index: 2;
     }
 
     .toggle-btn.on {
@@ -266,7 +267,7 @@
       opacity: 0.9;
     }
 
-    .toggle-btn .toggle-word {
+    .toggle-btn .toggle-bg-word {
       position: absolute;
       top: 50%;
       transform: translateY(-50%);
@@ -276,22 +277,51 @@
       text-transform: uppercase;
       pointer-events: none;
       user-select: none;
+      z-index: 1;
       transition:
         color 0.24s ease,
         opacity 0.24s ease,
-        transform 0.24s ease;
+        font-weight 0.24s ease,
+        letter-spacing 0.24s ease;
     }
 
-    .toggle-btn.on .toggle-word {
-      right: 9px;
-      color: rgba(255,255,255,0.94);
+    .toggle-btn .toggle-bg-on {
+      left: 9px;
+      color: rgba(255,255,255,0.72);
+      font-weight: 200;
+      opacity: 0.9;
+    }
+
+    .toggle-btn .toggle-bg-off {
+      right: 8px;
+      color: rgba(255,255,255,0.8);
+      font-weight: 400;
+      opacity: 0.96;
+    }
+
+    .toggle-btn.on .toggle-bg-on {
+      color: rgba(255,255,255,0.96);
+      font-weight: 600;
+      letter-spacing: 1px;
       opacity: 1;
     }
 
-    .toggle-btn:not(.on) .toggle-word {
-      left: 9px;
-      color: rgba(255,255,255,0.72);
-      opacity: 0.92;
+    .toggle-btn.on .toggle-bg-off {
+      color: rgba(255,255,255,0.58);
+      font-weight: 400;
+      opacity: 0.7;
+    }
+
+    .toggle-btn:not(.on) .toggle-bg-on {
+      color: rgba(255,255,255,0.52);
+      font-weight: 200;
+      opacity: 0.65;
+    }
+
+    .toggle-btn:not(.on) .toggle-bg-off {
+      color: rgba(255,255,255,0.8);
+      font-weight: 400;
+      opacity: 0.96;
     }
 
     footer {
@@ -332,12 +362,25 @@
       background: rgba(64, 64, 64, 0.88);
     }
 
-    body.bg-verde .toggle-btn .toggle-word {
-      color: rgba(64, 64, 64, 0.62);
+    body.bg-verde .toggle-btn .toggle-bg-on,
+    body.bg-verde .toggle-btn .toggle-bg-off {
+      color: rgba(64, 64, 64, 0.7);
     }
 
-    body.bg-verde .toggle-btn.on .toggle-word {
-      color: rgba(64, 64, 64, 0.9);
+    body.bg-verde .toggle-btn.on .toggle-bg-on {
+      color: rgba(64, 64, 64, 0.96);
+    }
+
+    body.bg-verde .toggle-btn.on .toggle-bg-off {
+      color: rgba(64, 64, 64, 0.55);
+    }
+
+    body.bg-verde .toggle-btn:not(.on) .toggle-bg-on {
+      color: rgba(64, 64, 64, 0.46);
+    }
+
+    body.bg-verde .toggle-btn:not(.on) .toggle-bg-off {
+      color: rgba(64, 64, 64, 0.82);
     }
 
     body.bg-verde .box {
@@ -384,16 +427,16 @@
         transform: translateX(46px);
       }
 
-      .toggle-btn .toggle-word {
+      .toggle-btn .toggle-bg-word {
         font-size: 0.72rem;
       }
 
-      .toggle-btn.on .toggle-word {
-        right: 11px;
+      .toggle-btn .toggle-bg-on {
+        left: 11px;
       }
 
-      .toggle-btn:not(.on) .toggle-word {
-        left: 11px;
+      .toggle-btn .toggle-bg-off {
+        right: 10px;
       }
 
       .loading-sizer {
@@ -439,7 +482,8 @@ carregando espasmo • carregando espasmo • carregando espasmo • carregando 
         aria-label="Alternar obscenidades"
         onclick="alternarObceno(event)"
       >
-        <span class="toggle-word">ON</span>
+        <span class="toggle-bg-word toggle-bg-on">ON</span>
+        <span class="toggle-bg-word toggle-bg-off">OFF</span>
       </button>
     </div>
   </div>
