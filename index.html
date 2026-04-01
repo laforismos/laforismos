@@ -8,16 +8,15 @@
     2) melhoria de viewport no mobile
     3) toggle "Obscenidades" redesenhado
     4) toggle não interfere na frase atual, exceto ao desligar durante frase obscena
+    5) hover "carregando espasmo" só volta após o último tempo da frase
   -->
   <meta charset="UTF-8">
   <meta name="viewport" content="width=device-width, initial-scale=1.0">
   <title>LAFORISMOS</title>
 
-  <!-- Pré-carrega o vídeo de fundo para reduzir atraso na primeira exibição -->
   <link rel="preload" href="./VIDEOBALAO.mp4" as="video" type="video/mp4">
 
   <style>
-    /* Base geral da página */
     body {
       margin: 0;
       font-family: Helvetica, Arial, sans-serif;
@@ -30,7 +29,6 @@
       overflow-y: auto;
     }
 
-    /* Vídeo de fundo em tela cheia (desktop) */
     #bg-video {
       position: fixed;
       top: 0;
@@ -42,7 +40,6 @@
       filter: contrast(1.4) brightness(1.2);
     }
 
-    /* Área principal: título, box de frases e toggle */
     main {
       flex: 1;
       display: flex;
@@ -56,13 +53,11 @@
       z-index: 1;
     }
 
-    /* Título principal */
     h1 {
       letter-spacing: 4px;
       margin-bottom: 20px;
     }
 
-    /* Box clicável onde as frases aparecem */
     .box {
       position: relative;
       z-index: 1;
@@ -77,7 +72,6 @@
       box-shadow: inset 0 0 12px rgba(255,255,255,0.08);
     }
 
-    /* Texto da frase/aforismo */
     .frase {
       transition: opacity 0.3s ease;
       white-space: pre-line;
@@ -102,7 +96,6 @@
       text-underline-offset: 0.08em;
     }
 
-    /* Quando há diálogo, o texto vai para alinhamento à esquerda */
     .frase.dialogo {
       text-align: left !important;
       max-width: 620px;
@@ -112,7 +105,6 @@
       margin-right: auto;
     }
 
-    /* Camada que aparece no hover do box */
     .overlay {
       position: absolute;
       inset: 0;
@@ -125,7 +117,6 @@
       pointer-events: none;
     }
 
-    /* Faixa animada dentro do overlay */
     .track {
       display: flex;
       white-space: nowrap;
@@ -135,7 +126,6 @@
       text-transform: lowercase;
     }
 
-    /* Movimento contínuo do texto do overlay */
     @keyframes scroll {
       from { transform: translateX(0); }
       to { transform: translateX(-50%); }
@@ -161,7 +151,6 @@
       animation-duration: 6.4s;
     }
 
-    /* Bloco do filtro de obscenidades */
     .filtro-obceno {
       display: flex;
       flex-direction: column;
@@ -170,7 +159,6 @@
       margin-top: 24px;
     }
 
-    /* Título do toggle */
     .filtro-obceno-titulo {
       font-size: 0.64rem;
       letter-spacing: 1.2px;
@@ -178,7 +166,6 @@
       text-transform: uppercase;
     }
 
-    /* Área de contenção do toggle */
     .toggle-area {
       display: flex;
       flex-direction: column;
@@ -186,7 +173,6 @@
       gap: 0;
     }
 
-    /* Toggle principal: peça única */
     .toggle-btn {
       position: relative;
       width: 58px;
@@ -206,17 +192,14 @@
       transition: background 0.18s ease, border-color 0.18s ease, color 0.18s ease;
     }
 
-    /* Estado ON: botão inteiro semitransparente */
     .toggle-btn.on {
       background: rgba(255,255,255,0.45);
     }
 
-    /* Estado OFF: botão inteiro quase transparente */
     .toggle-btn:not(.on) {
       background: rgba(255,255,255,0.2);
     }
 
-    /* Texto interno do botão */
     .toggle-btn .toggle-word {
       display: inline-block;
       font-size: 0.38rem;
@@ -228,7 +211,6 @@
       transition: color 0.18s ease, opacity 0.18s ease, font-weight 0.18s ease, -webkit-text-stroke 0.18s ease;
     }
 
-    /* ON: semibold e sutil */
     .toggle-btn.on .toggle-word {
       color: rgba(255,255,255,0.88);
       font-weight: 600;
@@ -237,7 +219,6 @@
       opacity: 1;
     }
 
-    /* OFF: regular e translúcido para leitura */
     .toggle-btn:not(.on) .toggle-word {
       color: rgba(255,255,255,0.72);
       font-weight: 400;
@@ -246,7 +227,6 @@
       opacity: 0.9;
     }
 
-    /* Rodapé com links de compartilhamento */
     footer {
       text-align: center;
       padding: 20px;
@@ -261,7 +241,6 @@
       text-decoration: underline;
     }
 
-    /* Ajustes específicos para mobile */
     @media (max-width: 768px) {
       body {
         background: url("./balaocolor.png") no-repeat center center;
@@ -487,6 +466,14 @@ function obterTextoVisivel(partes, etapaMaxima = 1) {
     .trim();
 }
 
+function obterTextoDaEtapa(partes, etapaDesejada = 1) {
+  return (partes || [])
+    .filter(parte => (parte.etapa || 1) === etapaDesejada)
+    .map(parte => parte.texto || "")
+    .join("")
+    .trim();
+}
+
 function aplicarClasseDialogo(texto) {
   const el = document.getElementById("frase");
 
@@ -548,8 +535,10 @@ function iniciar() {
   if (fila.length > 0) {
     const primeira = fila.shift();
     mostrarFraseObjeto(primeira, 1);
+    aplicarTravaHoverParaEstadoAtual(primeira, 1, true);
   } else {
     mostrarMensagem("Nenhuma frase ativa disponível.");
+    travarHoverConformeTexto("Nenhuma frase ativa disponível.");
   }
 }
 
@@ -641,6 +630,31 @@ function travarHoverConformeTexto(texto) {
   }, tempoLeitura);
 }
 
+function travarHoverSemTempo() {
+  const box = document.getElementById("box");
+  clicado = true;
+  box.classList.add("disable-hover");
+  if (hoverTimer) clearTimeout(hoverTimer);
+}
+
+function aplicarTravaHoverParaEstadoAtual(fraseObj, etapa, aoEntrarNovaFrase = false) {
+  const etapaFinal = maiorEtapa(fraseObj?.partes || []);
+
+  if (etapa < etapaFinal) {
+    travarHoverSemTempo();
+    return;
+  }
+
+  if (etapaFinal > 1 && !aoEntrarNovaFrase) {
+    const textoReveladoPorUltimo = obterTextoDaEtapa(fraseObj?.partes || [], etapaFinal);
+    travarHoverConformeTexto(textoReveladoPorUltimo || obterTextoVisivel(fraseObj?.partes || [], etapaFinal));
+    return;
+  }
+
+  const textoVisivel = obterTextoVisivel(fraseObj?.partes || [], etapa);
+  travarHoverConformeTexto(textoVisivel);
+}
+
 function irParaProximaFrase() {
   if (frasesFiltradas.length === 0) {
     mostrarMensagem("Nenhuma frase ativa disponível.");
@@ -663,9 +677,7 @@ function irParaProximaFrase() {
 
   const proxima = fila.shift();
   mostrarFraseObjeto(proxima, 1);
-
-  const textoVisivel = obterTextoVisivel(proxima.partes || [], 1);
-  travarHoverConformeTexto(textoVisivel);
+  aplicarTravaHoverParaEstadoAtual(proxima, 1, true);
 }
 
 function proximaFrase() {
@@ -674,8 +686,7 @@ function proximaFrase() {
     if (etapaAtual < etapaFinal) {
       const novaEtapa = etapaAtual + 1;
       mostrarFraseObjeto(fraseAtual, novaEtapa);
-      const textoVisivel = obterTextoVisivel(fraseAtual.partes || [], novaEtapa);
-      travarHoverConformeTexto(textoVisivel);
+      aplicarTravaHoverParaEstadoAtual(fraseAtual, novaEtapa, false);
       return;
     }
   }
