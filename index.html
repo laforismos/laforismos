@@ -218,6 +218,7 @@
       position: relative;
       width: 66px;
       height: 24px;
+      touch-action: pan-y;
       border-radius: 999px;
       border: 1px solid rgba(255,255,255,0.78);
       background: transparent;
@@ -388,6 +389,10 @@
       box-shadow: none;
     }
 
+    .toggle-btn.dragging {
+      cursor: grabbing;
+    }
+
     @media (max-width: 768px) {
       body {
         background: var(--mobile-bg-image) no-repeat center center;
@@ -480,7 +485,6 @@ carregando espasmo • carregando espasmo • carregando espasmo • carregando 
         type="button"
         aria-pressed="false"
         aria-label="Alternar obscenidades"
-        onclick="alternarObceno(event)"
       >
         <span class="toggle-bg-word toggle-bg-on">ON</span>
         <span class="toggle-bg-word toggle-bg-off">OFF</span>
@@ -1013,11 +1017,16 @@ function sincronizarToggle() {
   }
 }
 
-function alternarObceno(event) {
-  event.stopPropagation();
+function definirObceno(novoValor) {
+  const valorNormalizado = !!novoValor;
+
+  if (mostrarObcenas === valorNormalizado) {
+    sincronizarToggle();
+    return;
+  }
 
   const estavaLigado = mostrarObcenas;
-  mostrarObcenas = !mostrarObcenas;
+  mostrarObcenas = valorNormalizado;
   sincronizarToggle();
   recomporFilaPreservandoAtual();
 
@@ -1027,6 +1036,74 @@ function alternarObceno(event) {
   if (desligouFiltro && fraseAtualEhObscena) {
     irParaProximaFrase();
   }
+}
+
+function alternarObceno() {
+  definirObceno(!mostrarObcenas);
+}
+
+function inicializarInteracaoToggle() {
+  const botao = document.getElementById("toggleObceno");
+  if (!botao) return;
+
+  let pointerIdAtivo = null;
+  let arrastando = false;
+  let houveMovimento = false;
+  let inicioX = 0;
+
+  const limiar = 12;
+
+  function encerrarArraste() {
+    arrastando = false;
+    pointerIdAtivo = null;
+    botao.classList.remove("dragging");
+  }
+
+  botao.addEventListener("pointerdown", (event) => {
+    pointerIdAtivo = event.pointerId;
+    arrastando = true;
+    houveMovimento = false;
+    inicioX = event.clientX;
+    botao.classList.add("dragging");
+
+    if (botao.setPointerCapture) {
+      try { botao.setPointerCapture(event.pointerId); } catch (e) {}
+    }
+  });
+
+  botao.addEventListener("pointermove", (event) => {
+    if (!arrastando || event.pointerId !== pointerIdAtivo) return;
+
+    const deltaX = event.clientX - inicioX;
+
+    if (Math.abs(deltaX) >= limiar) {
+      houveMovimento = true;
+    }
+
+    if (deltaX > limiar) {
+      definirObceno(true);
+    } else if (deltaX < -limiar) {
+      definirObceno(false);
+    }
+  });
+
+  botao.addEventListener("pointerup", (event) => {
+    if (event.pointerId !== pointerIdAtivo) return;
+
+    if (!houveMovimento) {
+      alternarObceno();
+    }
+
+    encerrarArraste();
+  });
+
+  botao.addEventListener("pointercancel", () => {
+    encerrarArraste();
+  });
+
+  botao.addEventListener("lostpointercapture", () => {
+    encerrarArraste();
+  });
 }
 
 function wa() {
@@ -1096,6 +1173,7 @@ async function carregarFrasesDaApi() {
 
 aplicarBackgroundAleatorio();
 sincronizarToggle();
+inicializarInteracaoToggle();
 carregarFrasesDaApi();
 </script>
 
