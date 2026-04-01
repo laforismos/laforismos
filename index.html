@@ -7,6 +7,7 @@
     1) tempo de leitura refinado por texto
     2) melhoria de viewport no mobile
     3) toggle "Obscenidades" redesenhado
+    4) toggle não interfere na frase atual, exceto ao desligar durante frase obscena
   -->
   <meta charset="UTF-8">
   <meta name="viewport" content="width=device-width, initial-scale=1.0">
@@ -268,7 +269,6 @@
         min-height: 100dvh;
       }
 
-      /* Vídeo de fundo em tela cheia (desktop) */
       #bg-video {
         display: none;
       }
@@ -281,43 +281,17 @@
         z-index: -1;
       }
 
-      /* Box clicável onde as frases aparecem */
       .box {
         padding: 18px 20px;
       }
 
-      /* Toggle principal reduzido no mobile */
       .toggle-btn {
         width: 92px;
         height: 34px;
       }
 
-      /* Texto ON/OFF maior no mobile */
       .toggle-btn .toggle-word {
         font-size: 0.76rem;
-      }
-
-      /* "Pílula" interna que se desloca entre ON e OFF */
-      .toggle-btn::before {
-        width: 42px;
-        height: 24px;
-      }
-
-      .toggle-btn:not(.on)::before {
-        transform: translateX(40px);
-      }
-
-      /* Rótulo interno do toggle: ON ou OFF */
-      .toggle-btn::after {
-        font-size: 0.66rem;
-      }
-
-      .toggle-btn.on::after {
-        left: 26px;
-      }
-
-      .toggle-btn:not(.on)::after {
-        left: 66px;
       }
     }
   </style>
@@ -325,21 +299,16 @@
 
 <body>
 
-<!-- Vídeo de fundo. No mobile ele é ocultado e entra a imagem estática -->
 <video autoplay muted loop playsinline id="bg-video">
   <source src="./VIDEOBALAO.mp4" type="video/mp4">
 </video>
 
 <main>
-  <!-- Título do site -->
   <h1>LAFORISMOS</h1>
 
-  <!-- Box principal: ao clicar, carrega a próxima frase -->
   <div class="box" id="box" onclick="proximaFrase()">
-    <!-- Texto exibido no box -->
     <div class="frase" id="frase">Carregando frases...</div>
 
-    <!-- Overlay mostrado no hover -->
     <div class="overlay">
       <div class="track">
         <span>
@@ -352,7 +321,6 @@ carregando espasmo • carregando espasmo • carregando espasmo • carregando 
     </div>
   </div>
 
-  <!-- Controle para incluir ou excluir frases obscenas -->
   <div class="filtro-obceno">
     <div class="filtro-obceno-titulo">Obscenidades</div>
     <div class="toggle-area">
@@ -385,6 +353,7 @@ const API_URL = "https://script.google.com/macros/s/AKfycbwBDi5_TcZxil7dD0IEstmF
 let frases = [];
 let frasesFiltradas = [];
 let fila = [];
+let idsExibidos = new Set();
 let acabou = false;
 let clicado = false;
 let hoverTimer = null;
@@ -544,6 +513,10 @@ function mostrarFraseObjeto(fraseObj, etapa = 1) {
     fraseAtual = fraseObj;
     etapaAtual = etapa;
 
+    if (fraseObj?.id != null) {
+      idsExibidos.add(fraseObj.id);
+    }
+
     el.style.opacity = 1;
   }, 200);
 }
@@ -568,6 +541,7 @@ function atualizarFrasesFiltradas() {
 
 function iniciar() {
   acabou = false;
+  idsExibidos = new Set();
   atualizarFrasesFiltradas();
   fila = embaralhar([...frasesFiltradas]);
 
@@ -577,6 +551,33 @@ function iniciar() {
   } else {
     mostrarMensagem("Nenhuma frase ativa disponível.");
   }
+}
+
+function recomporFilaPreservandoAtual() {
+  atualizarFrasesFiltradas();
+
+  const atualId = fraseAtual?.id ?? null;
+
+  const filaPermitida = fila.filter(item => {
+    if (item?.id == null) return false;
+    if (item.id === atualId) return false;
+    return mostrarObcenas || !item.obceno;
+  });
+
+  const idsNaFila = new Set(filaPermitida.map(item => item.id));
+
+  const faltantes = embaralhar(
+    frasesFiltradas.filter(item => {
+      if (item?.id == null) return false;
+      if (item.id === atualId) return false;
+      if (idsNaFila.has(item.id)) return false;
+      if (idsExibidos.has(item.id)) return false;
+      return true;
+    })
+  );
+
+  fila = [...filaPermitida, ...faltantes];
+  acabou = false;
 }
 
 function calcularTempoLeitura(texto) {
@@ -702,9 +703,18 @@ function sincronizarToggle() {
 
 function alternarObceno(event) {
   event.stopPropagation();
+
+  const estavaLigado = mostrarObcenas;
   mostrarObcenas = !mostrarObcenas;
   sincronizarToggle();
-  iniciar();
+  recomporFilaPreservandoAtual();
+
+  const desligouFiltro = estavaLigado && !mostrarObcenas;
+  const fraseAtualEhObscena = !!fraseAtual?.obceno;
+
+  if (desligouFiltro && fraseAtualEhObscena) {
+    irParaProximaFrase();
+  }
 }
 
 function wa() {
@@ -755,7 +765,8 @@ async function carregarFrasesDaApi() {
     }
 
     frases = data.frases
-      .map(item => ({
+      .map((item, index) => ({
+        id: index + 1,
         partes: normalizarPartes(item.partes),
         obceno: normalizarBoolean(item.obceno)
       }))
