@@ -10,15 +10,15 @@
     4) toggle não interfere na frase atual, exceto ao desligar durante frase obscena
     5) hover "carregando espasmo" só volta após o último tempo da frase
     6) bloqueio de hover preservado corretamente até o momento de liberação
+    7) fundos aleatórios na entrada (desktop em vídeo / mobile em imagem estática)
   -->
   <meta charset="UTF-8">
   <meta name="viewport" content="width=device-width, initial-scale=1.0">
   <title>LAFORISMOS</title>
 
-  <link rel="preload" href="./VIDEOBALAO.mp4" as="video" type="video/mp4">
-
   <style>
     body {
+      --mobile-bg-image: url("./balaocolor.png");
       margin: 0;
       font-family: Helvetica, Arial, sans-serif;
       color: white;
@@ -244,7 +244,7 @@
 
     @media (max-width: 768px) {
       body {
-        background: url("./balaocolor.png") no-repeat center center;
+        background: var(--mobile-bg-image) no-repeat center center;
         background-size: cover;
         min-height: 100dvh;
       }
@@ -280,7 +280,7 @@
 <body>
 
 <video autoplay muted loop playsinline id="bg-video">
-  <source src="./VIDEOBALAO.mp4" type="video/mp4">
+  <source id="bg-video-source" src="./VIDEOBALAO.mp4" type="video/mp4">
 </video>
 
 <main>
@@ -330,6 +330,24 @@ carregando espasmo • carregando espasmo • carregando espasmo • carregando 
 <script>
 const API_URL = "https://script.google.com/macros/s/AKfycbwBDi5_TcZxil7dD0IEstmFwvFj4LnzB9AjMiG-SLHx3i4PvAN8EhpHyNsGLBTgreNp/exec";
 
+/*
+  Par 1 = fundo atual
+  Par 2 = nova variação enviada
+  Aceita formatos mistos, como .mp4, .mov, .png etc.
+*/
+const BACKGROUNDS = [
+  {
+    video: "./VIDEOBALAO.mp4",
+    videoType: "video/mp4",
+    mobile: "./balaocolor.png"
+  },
+  {
+    video: "./BG_ROSA.mov",
+    videoType: "video/quicktime",
+    mobile: "./BG_ROSA_MOBILE.png"
+  }
+];
+
 let frases = [];
 let frasesFiltradas = [];
 let fila = [];
@@ -347,6 +365,36 @@ function embaralhar(array) {
     .map(a => [Math.random(), a])
     .sort((a, b) => a[0] - b[0])
     .map(a => a[1]);
+}
+
+function escolherBackgroundAleatorio() {
+  if (!Array.isArray(BACKGROUNDS) || BACKGROUNDS.length === 0) return null;
+  const indice = Math.floor(Math.random() * BACKGROUNDS.length);
+  return BACKGROUNDS[indice];
+}
+
+function aplicarBackgroundAleatorio() {
+  const bg = escolherBackgroundAleatorio();
+  if (!bg) return;
+
+  const body = document.body;
+  const video = document.getElementById("bg-video");
+  const source = document.getElementById("bg-video-source");
+
+  if (bg.mobile) {
+    body.style.setProperty("--mobile-bg-image", `url("${bg.mobile}")`);
+  }
+
+  if (bg.video && video && source) {
+    source.src = bg.video;
+    source.type = bg.videoType || "";
+    video.load();
+
+    const tentativa = video.play();
+    if (tentativa && typeof tentativa.catch === "function") {
+      tentativa.catch(() => {});
+    }
+  }
 }
 
 function escaparHtml(texto) {
@@ -796,6 +844,7 @@ async function carregarFrasesDaApi() {
   }
 }
 
+aplicarBackgroundAleatorio();
 sincronizarToggle();
 carregarFrasesDaApi();
 </script>
