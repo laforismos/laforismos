@@ -9,6 +9,7 @@
     3) toggle "Obscenidades" redesenhado
     4) toggle não interfere na frase atual, exceto ao desligar durante frase obscena
     5) hover "carregando espasmo" só volta após o último tempo da frase
+    6) bloqueio de hover preservado corretamente até o momento de liberação
   -->
   <meta charset="UTF-8">
   <meta name="viewport" content="width=device-width, initial-scale=1.0">
@@ -339,6 +340,7 @@ let hoverTimer = null;
 let mostrarObcenas = true;
 let fraseAtual = null;
 let etapaAtual = 1;
+let hoverTravadoAteUltimoTempo = false;
 
 function embaralhar(array) {
   return array
@@ -616,6 +618,7 @@ function travarHoverConformeTexto(texto) {
   const box = document.getElementById("box");
 
   clicado = true;
+  hoverTravadoAteUltimoTempo = false;
   box.classList.add("disable-hover");
 
   if (hoverTimer) clearTimeout(hoverTimer);
@@ -623,18 +626,22 @@ function travarHoverConformeTexto(texto) {
   const tempoLeitura = calcularTempoLeitura(texto);
 
   hoverTimer = setTimeout(() => {
-    if (clicado) {
-      box.classList.remove("disable-hover");
-      clicado = false;
-    }
+    box.classList.remove("disable-hover");
+    clicado = false;
+    hoverTravadoAteUltimoTempo = false;
+    hoverTimer = null;
   }, tempoLeitura);
 }
 
 function travarHoverSemTempo() {
   const box = document.getElementById("box");
   clicado = true;
+  hoverTravadoAteUltimoTempo = true;
   box.classList.add("disable-hover");
-  if (hoverTimer) clearTimeout(hoverTimer);
+  if (hoverTimer) {
+    clearTimeout(hoverTimer);
+    hoverTimer = null;
+  }
 }
 
 function aplicarTravaHoverParaEstadoAtual(fraseObj, etapa, aoEntrarNovaFrase = false) {
@@ -695,10 +702,8 @@ function proximaFrase() {
 }
 
 document.getElementById("box").addEventListener("mouseleave", () => {
-  if (clicado) {
-    document.getElementById("box").classList.remove("disable-hover");
-    clicado = false;
-    if (hoverTimer) clearTimeout(hoverTimer);
+  if (hoverTravadoAteUltimoTempo) {
+    return;
   }
 });
 
