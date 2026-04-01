@@ -393,7 +393,9 @@ const BACKGROUNDS = [
   {
     video: "./BG_verde.mov",
     videoType: "video/quicktime",
-    mobile: "./BG_VERDE.png"
+    mobile: "./BG_VERDE.png",
+    startTime: 15,
+    endTime: 50
   }
 ];
 
@@ -408,6 +410,56 @@ let mostrarObcenas = true;
 let fraseAtual = null;
 let etapaAtual = 1;
 let hoverTravadoAteUltimoTempo = false;
+let videoTimeUpdateHandler = null;
+let videoLoadedMetadataHandler = null;
+
+function configurarTrechoDoVideo(bg) {
+  const video = document.getElementById("bg-video");
+  if (!video) return;
+
+  if (videoTimeUpdateHandler) {
+    video.removeEventListener("timeupdate", videoTimeUpdateHandler);
+    videoTimeUpdateHandler = null;
+  }
+
+  if (videoLoadedMetadataHandler) {
+    video.removeEventListener("loadedmetadata", videoLoadedMetadataHandler);
+    videoLoadedMetadataHandler = null;
+  }
+
+  const temTrechoCustomizado =
+    Number.isFinite(bg?.startTime) &&
+    Number.isFinite(bg?.endTime) &&
+    bg.endTime > bg.startTime;
+
+  if (!temTrechoCustomizado) {
+    video.loop = true;
+    return;
+  }
+
+  video.loop = false;
+
+  videoLoadedMetadataHandler = () => {
+    try {
+      if (video.currentTime < bg.startTime || video.currentTime >= bg.endTime) {
+        video.currentTime = bg.startTime;
+      }
+    } catch (e) {}
+  };
+
+  videoTimeUpdateHandler = () => {
+    if (video.currentTime >= bg.endTime) {
+      video.currentTime = bg.startTime;
+      const tentativa = video.play();
+      if (tentativa && typeof tentativa.catch === "function") {
+        tentativa.catch(() => {});
+      }
+    }
+  };
+
+  video.addEventListener("loadedmetadata", videoLoadedMetadataHandler);
+  video.addEventListener("timeupdate", videoTimeUpdateHandler);
+}
 
 function embaralhar(array) {
   return array
@@ -435,6 +487,8 @@ function aplicarBackgroundAleatorio() {
   }
 
   if (bg.video && video && source) {
+    configurarTrechoDoVideo(bg);
+
     source.src = bg.video;
     source.type = bg.videoType || "";
     video.load();
