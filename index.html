@@ -133,6 +133,19 @@
       to { transform: translateX(-50%); }
     }
 
+    .loading-sizer {
+      display: none;
+      white-space: nowrap;
+      font-size: 0.9rem;
+      letter-spacing: 1px;
+      text-transform: lowercase;
+      visibility: hidden;
+      pointer-events: none;
+      user-select: none;
+      height: 0;
+      overflow: hidden;
+    }
+
     .box.is-loading {
       background: white;
       backdrop-filter: none;
@@ -152,6 +165,10 @@
 
     .box.is-loading .track {
       animation-duration: 6.4s;
+    }
+
+    .box.is-loading .loading-sizer {
+      display: block;
     }
 
     .box:hover .overlay {
@@ -295,6 +312,10 @@
       .toggle-btn .toggle-word {
         font-size: 0.76rem;
       }
+
+      .loading-sizer {
+        font-size: 0.82rem;
+      }
     }
   </style>
 </head>
@@ -309,6 +330,7 @@
   <h1>LAFORISMOS</h1>
 
   <div class="box is-loading" id="box" onclick="proximaFrase()">
+    <div class="loading-sizer" aria-hidden="true">carregando espasmo • carregando espasmo • carregando</div>
     <div class="frase" id="frase"></div>
 
     <div class="overlay">
@@ -367,11 +389,6 @@ const BACKGROUNDS = [
     video: "./BG_ROSA.mov",
     videoType: "video/quicktime",
     mobile: "./BG_ROSA_MOBILE.png"
-  },
-  {
-    video: "./BG_ROSQUINHA.mov",
-    videoType: "video/quicktime",
-    mobile: "./BG_ROSQUINHA_OK.png"
   }
 ];
 
