@@ -11,7 +11,7 @@
     5) hover "carregando espasmo" só volta após o último tempo da frase
     6) bloqueio de hover preservado corretamente até o momento de liberação
     7) fundos aleatórios na entrada (desktop em vídeo / mobile em imagem estática)
-    8) placeholder inicial do box ajustado
+    8) estado inicial do box igual ao mouse over
   -->
   <meta charset="UTF-8">
   <meta name="viewport" content="width=device-width, initial-scale=1.0">
@@ -131,6 +131,27 @@
     @keyframes scroll {
       from { transform: translateX(0); }
       to { transform: translateX(-50%); }
+    }
+
+    .box.is-loading {
+      background: white;
+      backdrop-filter: none;
+      box-shadow: none;
+      border-color: rgba(255,255,255,0.95);
+    }
+
+    .box.is-loading .frase {
+      opacity: 0;
+      pointer-events: none;
+    }
+
+    .box.is-loading .overlay {
+      opacity: 1;
+      pointer-events: none;
+    }
+
+    .box.is-loading .track {
+      animation-duration: 6.4s;
     }
 
     .box:hover .overlay {
@@ -287,8 +308,8 @@
 <main>
   <h1>LAFORISMOS</h1>
 
-  <div class="box" id="box" onclick="proximaFrase()">
-    <div class="frase" id="frase">carregando espasmo • carregando espasmo • carregando espasmo •</div>
+  <div class="box is-loading" id="box" onclick="proximaFrase()">
+    <div class="frase" id="frase"></div>
 
     <div class="overlay">
       <div class="track">
@@ -396,6 +417,19 @@ function aplicarBackgroundAleatorio() {
       tentativa.catch(() => {});
     }
   }
+}
+
+function ativarEstadoLoadingBox() {
+  const box = document.getElementById("box");
+  const frase = document.getElementById("frase");
+  box.classList.add("is-loading");
+  frase.classList.remove("dialogo");
+  frase.innerHTML = "";
+}
+
+function desativarEstadoLoadingBox() {
+  const box = document.getElementById("box");
+  box.classList.remove("is-loading");
 }
 
 function escaparHtml(texto) {
@@ -545,6 +579,7 @@ function mostrarFraseObjeto(fraseObj, etapa = 1) {
     const html = montarHtmlPartes(fraseObj?.partes || [], etapa);
     const textoVisivel = obterTextoVisivel(fraseObj?.partes || [], etapa);
 
+    desativarEstadoLoadingBox();
     el.innerHTML = html || "Nenhuma frase ativa disponível.";
     aplicarClasseDialogo(textoVisivel);
 
@@ -564,6 +599,7 @@ function mostrarMensagem(texto) {
   el.style.opacity = 0;
 
   setTimeout(() => {
+    desativarEstadoLoadingBox();
     el.textContent = texto;
     aplicarClasseDialogo(texto);
     el.style.opacity = 1;
@@ -817,6 +853,8 @@ function normalizarPartes(partes) {
 
 async function carregarFrasesDaApi() {
   try {
+    ativarEstadoLoadingBox();
+
     const response = await fetch(API_URL, { cache: "no-store" });
 
     if (!response.ok) {
@@ -841,7 +879,7 @@ async function carregarFrasesDaApi() {
 
   } catch (e) {
     console.error(e);
-    mostrarMensagem("Erro ao carregar frases da planilha.");
+    ativarEstadoLoadingBox();
   }
 }
 
