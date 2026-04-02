@@ -231,7 +231,7 @@
     }
 
     .filtro-apenas-novas {
-      margin-top: 2px;
+      margin-top: 10px;
       align-self: center;
     }
 
@@ -275,11 +275,16 @@
       box-shadow: inset 0 0 12px rgba(255,255,255,0.12);
       box-sizing: border-box;
       text-align: center;
+      max-height: min(68dvh, 640px);
+      overflow-y: auto;
+      overscroll-behavior: contain;
     }
 
     .sobre-texto {
       font-family: Helvetica, Arial, sans-serif;
       font-size: 0.95rem;
+      font-style: italic;
+      font-weight: 400;
       line-height: 1.55;
       letter-spacing: 0.01em;
       white-space: pre-line;
@@ -287,7 +292,8 @@
     }
 
     .sobre-texto strong {
-      font-weight: 600;
+      font-weight: 700;
+      font-style: italic;
     }
 
     .sobre-texto em {
@@ -388,6 +394,7 @@
 
       .sobre-painel-inner {
         padding: 24px 20px 16px;
+        max-height: min(62dvh, 560px);
       }
 
       .sobre-texto {
@@ -1551,8 +1558,8 @@ function normalizarPartes(partes) {
 
 function obterPartesSobreEstatico() {
   return [
-    { texto: "O FUTURO DA GRAPEFRUIT", bold: true, italic: false, underline: false },
-    { texto: "\n\nApesar de redator, sou analfabeto. Nunca escrevi uma linha de código.\n\nNa verdade, escrevia win+enter pra entrar no Windows em 1992. Nada além.\n\nPula pra 2026. Matrix – a IA pluga o html no meu dedo.\n\nComeço esse experimento, algo que sempre quis: um livro vivo de nanocontos.\n\nQue vai em breve conversar com você, ser baixado num chip e virar minha consciência, podendo ser instalada numa grapefruit ou algo que o valha.\n\nLaforismos é meu site beta de estimação.\n\nBeta forever, estilo Dolly, nadando disléxica entre botões CSS e figuras de linguagem de português brasileiro.\n\nMeu saite de interê, Podia chamar: “Desabafos polissêmicos Felipe Sauma. – A fuga da egotrip.”\n\nOu: Eu podia tá bebendo, podia tá comendo açúcar, mas tô só fazendo um trocadilho.\n\nMas, ó: se pegar no que tá escrito mesmo, linha após linha – nas mais de 2000 desse código:\n\nIsso aqui é apenas um sisteminha, que fiz pra jogar umas frases que ficam querendo sair.\n\nObrigado por ler.\n\nPrazer!\n\nFelipe Koraicho Sauma.\n\nRedator do Box de Frases\nCCO • CTO\nLaforismos.com.br", bold: false, italic: false, underline: false }
+    { texto: "O FUTURO DA GRAPEFRUIT", bold: true, italic: true, underline: false },
+    { texto: "\n\nApesar de redator, sou analfabeto. Nunca escrevi uma linha de código. Na verdade, escrevia win+enter pra entrar no Windows em 1992. Nada além. Pula pra 2026. Matrix – a IA pluga o html no meu dedo.\n\nComeço esse experimento, algo que sempre quis: um livro vivo de nanocontos.  Que vai em breve conversar com você, ser baixado num chip e virar minha consciência, podendo ser instalada numa grapefruit ou algo que o valha.\n\nLaforismos é meu site beta de estimação. Beta forever, estilo Dolly, nadando disléxica entre botões CSS e figuras de linguagem de português brasileiro.\n\nMeu sáite de interê, que poderia se chamar: “Desabafos polissêmicos Felipe Sauma. – A fuga da egotrip.”Ou: “Eu podia tá bebendo, podia tá comendo açúcar, mas tô só fazendo um trocadilho.”\n\nMas, se pegar o que tá escrito mesmo, linha após linha – nas mais de 2000 desse código, Laforismos é apenas um sisteminha, que fiz pra jogar umas frases que ficam querendo sair.\n\nObrigado por ler.\n\nPrazer!\n\nFelipe Koraicho Sauma.\nEscritor do Box de Frases  \nLaforismos.com.br", bold: false, italic: true, underline: false }
   ];
 }
 
