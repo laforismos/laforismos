@@ -74,23 +74,27 @@
     .box {
       position: relative;
       z-index: 1;
+      display: inline-block;
+      width: fit-content;
+      max-width: min(90vw, 760px);
       border: 1px solid rgba(255,255,255,0.6);
       padding: 20px 30px;
-      max-width: 90%;
       line-height: 1.4;
       cursor: pointer;
       overflow: hidden;
       background: rgba(255,255,255,0.28);
       backdrop-filter: blur(3px);
       box-shadow: inset 0 0 12px rgba(255,255,255,0.08);
+      box-sizing: border-box;
+      transition: width 0.22s ease, max-width 0.22s ease, padding 0.22s ease;
     }
 
     .frase {
       transition: opacity 0.3s ease;
       white-space: pre-line;
       display: block;
-      width: 100%;
-      max-width: 700px;
+      width: fit-content;
+      max-width: min(700px, calc(90vw - 60px));
       margin: 0 auto;
       box-sizing: border-box;
       text-align: center;
@@ -111,7 +115,8 @@
 
     .frase.dialogo {
       text-align: left !important;
-      max-width: 620px;
+      width: auto;
+      max-width: min(620px, calc(90vw - 108px));
       padding-left: 24px;
       padding-right: 24px;
       margin-left: auto;
@@ -428,6 +433,7 @@
       }
 
       .box {
+        max-width: min(92vw, 760px);
         padding: 18px 20px;
       }
 
