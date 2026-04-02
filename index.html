@@ -750,7 +750,7 @@ carregando espasmo • carregando espasmo • carregando espasmo • carregando 
 </footer>
 
 <script>
-const API_URL = "https://script.google.com/macros/s/AKfycbydIvhyy2WRj7ln7YEjPfL3R7yzEDpBgQ7qAkfs8n2m0LrVT3oJT_Iv9n8ggD2g9TJU/exec";
+const API_URL = "https://script.google.com/macros/s/AKfycbwBDi5_TcZxil7dD0IEstmFwvFj4LnzB9AjMiG-SLHx3i4PvAN8EhpHyNsGLBTgreNp/exec";
 
 /*
   Par 1 = fundo atual
@@ -788,7 +788,6 @@ let hoverTimer = null;
 let mostrarObcenas = false;
 let mostrarSoNovas = false;
 let sobreAberto = false;
-let sobreSite = { partes: [] };
 let fraseAtual = null;
 let etapaAtual = 1;
 let hoverTravadoAteUltimoTempo = false;
@@ -1492,29 +1491,17 @@ function normalizarPartes(partes) {
   );
 }
 
-function extrairPartesSobre(data) {
-  const candidatas = [
-    data?.sobre?.partes,
-    data?.sobrePartes,
-    data?.sobreSite?.partes,
-    data?.sobre_site?.partes
+function obterPartesSobreEstatico() {
+  return [
+    { texto: "O FUTURO DA GRAPEFRUIT", bold: true, italic: false, underline: false },
+    { texto: "\n\nApesar de redator, sou analfabeto. Nunca escrevi uma linha de código.\n\nNa verdade, escrevia win+enter pra entrar no Windows em 1992. Nada além.\n\nPula pra 2026. Matrix – a IA pluga o html no meu dedo.\n\nComeço esse experimento, algo que sempre quis: um livro vivo de nanocontos.\n\nQue vai em breve conversar com você, ser baixado num chip e virar minha consciência, podendo ser instalada numa grapefruit ou algo que o valha.\n\nLaforismos é meu site beta de estimação.\n\nBeta forever, estilo Dolly, nadando disléxica entre botões CSS e figuras de linguagem de português brasileiro.\n\nMeu saite de interê, Podia chamar: “Desabafos polissêmicos Felipe Sauma. – A fuga da egotrip.”\n\nOu: Eu podia tá bebendo, podia tá comendo açúcar, mas tô só fazendo um trocadilho.\n\nMas, ó: se pegar no que tá escrito mesmo, linha após linha – nas mais de 2000 desse código:\n\nIsso aqui é apenas um sisteminha, que fiz pra jogar umas frases que ficam querendo sair.\n\nObrigado por ler.\n\nPrazer!\n\nFelipe Koraicho Sauma.\n\nRedator do Box de Frases\nCCO • CTO\nLaforismos.com.br", bold: false, italic: false, underline: false }
   ];
-
-  for (const partes of candidatas) {
-    if (Array.isArray(partes) && partes.length > 0) {
-      return normalizarPartes(partes);
-    }
-  }
-
-  return normalizarPartes([
-    { texto: "Texto sobre o site não encontrado na planilha." }
-  ]);
 }
 
 function renderizarSobre() {
   const el = document.getElementById("sobreTexto");
   if (!el) return;
-  el.innerHTML = montarHtmlPartes(sobreSite.partes || [], 99);
+  el.innerHTML = montarHtmlPartes(obterPartesSobreEstatico(), 99);
 }
 
 function abrirSobre() {
@@ -1672,7 +1659,6 @@ async function carregarFrasesDaApi() {
       }))
       .filter(item => item.partes.length > 0);
 
-    sobreSite.partes = extrairPartesSobre(data);
     renderizarSobre();
 
     iniciar();
@@ -1693,6 +1679,7 @@ aplicarBackgroundAleatorio();
 sincronizarToggle();
 inicializarInteracaoToggle();
 inicializarInteracaoBox();
+renderizarSobre();
 carregarFrasesDaApi();
 </script>
 
