@@ -72,7 +72,7 @@
 
     h1 {
       letter-spacing: 4px;
-      margin-bottom: 2px;
+      margin-bottom: 6px;
     }
 
     .subtitulo {
@@ -82,7 +82,7 @@
       font-style: italic;
       letter-spacing: 0.4px;
       text-align: center;
-      margin-bottom: 12px;
+      margin-bottom: 14px;
       opacity: 0.92;
     }
 
@@ -233,6 +233,121 @@
     .filtro-apenas-novas {
       margin-top: 2px;
       align-self: center;
+    }
+
+    .interacao-area {
+      display: flex;
+      flex-direction: column;
+      align-items: center;
+      gap: 0;
+      position: relative;
+      z-index: 1;
+      width: 100%;
+    }
+
+    .sobre-painel {
+      width: min(90vw, 760px);
+      max-width: 760px;
+      opacity: 0;
+      transform: translateY(56px);
+      pointer-events: none;
+      transition: transform 0.42s ease, opacity 0.42s ease;
+      margin-top: -14px;
+    }
+
+    .sobre-painel-inner {
+      border: 1px solid rgba(255,255,255,0.6);
+      padding: 22px 28px 18px;
+      background: rgba(255,255,255,0.28);
+      backdrop-filter: blur(3px);
+      box-shadow: inset 0 0 12px rgba(255,255,255,0.08);
+      box-sizing: border-box;
+      text-align: center;
+    }
+
+    .sobre-texto {
+      font-family: Helvetica, Arial, sans-serif;
+      font-size: 0.95rem;
+      line-height: 1.55;
+      letter-spacing: 0.01em;
+      white-space: pre-line;
+    }
+
+    .sobre-texto strong {
+      font-weight: 600;
+    }
+
+    .sobre-texto em {
+      font-style: italic;
+    }
+
+    .sobre-foto {
+      display: block;
+      width: 86px;
+      height: 86px;
+      object-fit: cover;
+      margin: 18px auto 0;
+      border-radius: 999px;
+      border: 1px solid rgba(255,255,255,0.45);
+    }
+
+    .sobre-trigger {
+      cursor: pointer;
+      text-decoration: underline;
+    }
+
+    body.sobre-aberto .interacao-area .box {
+      opacity: 0;
+      transform: translateX(-110vw);
+      pointer-events: none;
+      transition: transform 0.42s ease, opacity 0.42s ease;
+    }
+
+    body.sobre-aberto .interacao-area .filtro-obceno:first-of-type {
+      opacity: 0;
+      transform: translateX(-110vw);
+      pointer-events: none;
+      transition: transform 0.42s ease, opacity 0.42s ease;
+    }
+
+    body.sobre-aberto .interacao-area .filtro-obceno:last-of-type {
+      opacity: 0;
+      transform: translateX(110vw);
+      pointer-events: none;
+      transition: transform 0.42s ease, opacity 0.42s ease;
+    }
+
+    body.sobre-aberto .sobre-painel {
+      opacity: 1;
+      transform: translateY(0);
+      pointer-events: auto;
+    }
+
+    body.bg-verde .sobre-painel-inner {
+      border-color: transparent;
+      box-shadow: none;
+    }
+
+    @media (max-width: 768px) {
+      .sobre-painel {
+        width: min(92vw, 760px);
+        margin-top: -10px;
+      }
+
+      .sobre-painel-inner {
+        padding: 18px 20px 16px;
+      }
+
+      .sobre-texto {
+        font-size: 0.88rem;
+        line-height: 1.5;
+      }
+
+      .sobre-foto {
+        width: 74px;
+        height: 74px;
+        margin-top: 16px;
+      }
     }
 
     .filtro-obceno-titulo {
@@ -499,7 +614,7 @@
 
       .subtitulo {
         font-size: 0.58rem;
-        margin-bottom: 10px;
+        margin-bottom: 12px;
       }
 
       .toggle-btn {
@@ -547,57 +662,66 @@
   <h1>LAFORISMOS</h1>
   <div class="subtitulo">de Felipe Koraicho Sauma</div>
 
-  <div class="box is-loading" id="box">
-    <div class="loading-sizer" aria-hidden="true">carregando espasmo • carregando espasmo • carregando</div>
-    <div class="frase" id="frase"></div>
+  <div class="interacao-area">
+    <div class="box is-loading" id="box">
+      <div class="loading-sizer" aria-hidden="true">carregando espasmo • carregando espasmo • carregando</div>
+      <div class="frase" id="frase"></div>
 
-    <div class="overlay">
-      <div class="track">
-        <span>
+      <div class="overlay">
+        <div class="track">
+          <span>
 carregando espasmo • carregando espasmo • carregando espasmo • carregando espasmo • clica • carregando espasmo • carregando espasmo • carregando espasmo • carregando espasmo • carregando espasmo •
-        </span>
-        <span>
+          </span>
+          <span>
 carregando espasmo • carregando espasmo • carregando espasmo • carregando espasmo • clica aqui • carregando espasmo • carregando espasmo • carregando espasmo • não vai clicar? • carregando espasmo •
-        </span>
+          </span>
+        </div>
       </div>
     </div>
-  </div>
 
-  <div class="filtro-obceno">
-    <div class="filtro-obceno-titulo">Obscenidades</div>
-    <div class="toggle-area">
-      <button
-        id="toggleObceno"
-        class="toggle-btn"
-        type="button"
-        aria-pressed="false"
-        aria-label="Alternar obscenidades"
-      >
-        <span class="toggle-bg-word toggle-bg-on">ON</span>
-        <span class="toggle-bg-word toggle-bg-off">OFF</span>
-      </button>
+    <div class="filtro-obceno">
+      <div class="filtro-obceno-titulo">Obscenidades</div>
+      <div class="toggle-area">
+        <button
+          id="toggleObceno"
+          class="toggle-btn"
+          type="button"
+          aria-pressed="false"
+          aria-label="Alternar obscenidades"
+        >
+          <span class="toggle-bg-word toggle-bg-on">ON</span>
+          <span class="toggle-bg-word toggle-bg-off">OFF</span>
+        </button>
+      </div>
     </div>
-  </div>
 
-  <div class="filtro-obceno filtro-apenas-novas">
-    <div class="filtro-obceno-titulo">APENAS NOVAS</div>
-    <div class="toggle-area">
-      <button
-        id="toggleNovas"
-        class="toggle-btn"
-        type="button"
-        aria-pressed="false"
-        aria-label="Alternar somente novas"
-      >
-        <span class="toggle-bg-word toggle-bg-on">ON</span>
-        <span class="toggle-bg-word toggle-bg-off">OFF</span>
-      </button>
+    <div class="filtro-obceno filtro-apenas-novas">
+      <div class="filtro-obceno-titulo">APENAS NOVAS</div>
+      <div class="toggle-area">
+        <button
+          id="toggleNovas"
+          class="toggle-btn"
+          type="button"
+          aria-pressed="false"
+          aria-label="Alternar somente novas"
+        >
+          <span class="toggle-bg-word toggle-bg-on">ON</span>
+          <span class="toggle-bg-word toggle-bg-off">OFF</span>
+        </button>
+      </div>
+    </div>
+
+    <div class="sobre-painel" id="sobrePainel" aria-hidden="true">
+      <div class="sobre-painel-inner">
+        <div class="sobre-texto" id="sobreTexto"></div>
+        <img class="sobre-foto" src="./Fe_FOTO_0651.png" alt="Felipe Koraicho Sauma">
+      </div>
     </div>
   </div>
 </main>
 
 <footer>
-  <div>Pensei, falei ou postei?</div>
+  <div class="sobre-trigger" onclick="toggleSobre()">Sobre o site (e sob também.)</div>
   <div>
     <span onclick="feMail()">EML</span> |
     <span onclick="lk()">LKN</span> |
@@ -643,6 +767,8 @@ let clicado = false;
 let hoverTimer = null;
 let mostrarObcenas = false;
 let mostrarSoNovas = false;
+let sobreAberto = false;
+let sobreSite = { partes: [] };
 let fraseAtual = null;
 let etapaAtual = 1;
 let hoverTravadoAteUltimoTempo = false;
@@ -1346,6 +1472,59 @@ function normalizarPartes(partes) {
   );
 }
 
+function extrairPartesSobre(data) {
+  const candidatas = [
+    data?.sobre?.partes,
+    data?.sobrePartes,
+    data?.sobre_site?.partes,
+    data?.sobreSite?.partes,
+    data?.meta?.sobre?.partes,
+    data?.meta?.sobreSite?.partes
+  ];
+
+  for (const partes of candidatas) {
+    if (Array.isArray(partes) && partes.length > 0) {
+      return normalizarPartes(partes);
+    }
+  }
+
+  return normalizarPartes([
+    { texto: "Texto sobre o site não encontrado na planilha." }
+  ]);
+}
+
+function renderizarSobre() {
+  const el = document.getElementById("sobreTexto");
+  if (!el) return;
+  el.innerHTML = montarHtmlPartes(sobreSite.partes || [], 99);
+}
+
+function abrirSobre() {
+  sobreAberto = true;
+  document.body.classList.add("sobre-aberto");
+  const painel = document.getElementById("sobrePainel");
+  if (painel) {
+    painel.setAttribute("aria-hidden", "false");
+  }
+}
+
+function fecharSobre() {
+  sobreAberto = false;
+  document.body.classList.remove("sobre-aberto");
+  const painel = document.getElementById("sobrePainel");
+  if (painel) {
+    painel.setAttribute("aria-hidden", "true");
+  }
+}
+
+function toggleSobre() {
+  if (sobreAberto) {
+    fecharSobre();
+  } else {
+    abrirSobre();
+  }
+}
+
 function inicializarInteracaoBox() {
   const box = document.getElementById("box");
   if (!box) return;
@@ -1376,6 +1555,7 @@ function inicializarInteracaoBox() {
   }
 
   box.addEventListener("click", (event) => {
+    if (sobreAberto) return;
     if (event.target.closest(".toggle-btn")) return;
 
     if (ignorarProximoClick) {
@@ -1388,6 +1568,7 @@ function inicializarInteracaoBox() {
   });
 
   box.addEventListener("pointerdown", (event) => {
+    if (sobreAberto) return;
     if (event.target.closest(".toggle-btn")) return;
     pointerIdAtivo = event.pointerId;
     inicioX = event.clientX;
@@ -1416,6 +1597,7 @@ function inicializarInteracaoBox() {
   });
 
   box.addEventListener("touchstart", (event) => {
+    if (sobreAberto) return;
     if (!ehMobile()) return;
     if (event.target.closest(".toggle-btn")) return;
     const toque = event.changedTouches[0];
@@ -1425,6 +1607,7 @@ function inicializarInteracaoBox() {
   }, { passive: true });
 
   box.addEventListener("touchend", (event) => {
+    if (sobreAberto) return;
     if (!ehMobile()) return;
     if (event.target.closest(".toggle-btn")) return;
     const toque = event.changedTouches[0];
@@ -1463,6 +1646,9 @@ async function carregarFrasesDaApi() {
       }))
       .filter(item => item.partes.length > 0);
 
+    sobreSite.partes = extrairPartesSobre(data);
+    renderizarSobre();
+
     iniciar();
 
   } catch (e) {
@@ -1470,6 +1656,12 @@ async function carregarFrasesDaApi() {
     ativarEstadoLoadingBox();
   }
 }
+
+document.addEventListener("keydown", (event) => {
+  if (event.key === "Escape" && sobreAberto) {
+    fecharSobre();
+  }
+});
 
 aplicarBackgroundAleatorio();
 sincronizarToggle();
