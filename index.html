@@ -116,6 +116,27 @@
       line-height: 1.5;
     }
 
+    .sobre-box-texto {
+      font-family: "Bodoni Moda", "Times New Roman", serif;
+      font-optical-sizing: auto;
+      font-weight: 400;
+      font-size: 1rem;
+      line-height: 1.62;
+      letter-spacing: 0.01em;
+      white-space: pre-line;
+      text-align: center;
+      max-width: 700px;
+      margin: 0 auto;
+    }
+
+    .sobre-box-texto strong {
+      font-weight: 700;
+    }
+
+    .sobre-box-texto em {
+      font-style: italic;
+    }
+
     .frase strong {
       font-weight: 600;
     }
@@ -244,89 +265,6 @@
       z-index: 1;
     }
 
-    .sobre-overlay {
-      position: fixed;
-      inset: 0;
-      background: rgba(0,0,0,0);
-      pointer-events: none;
-      transition: background 0.42s ease;
-      z-index: 3;
-    }
-
-    .sobre-painel {
-      position: absolute;
-      top: 0;
-      left: 50%;
-      width: min(90vw, 760px);
-      max-width: 760px;
-      opacity: 0;
-      transform: translate(-50%, 56px);
-      pointer-events: none;
-      transition: opacity 0.42s ease, transform 0.42s ease;
-      z-index: 4;
-    }
-
-    .sobre-painel-inner {
-      position: relative;
-      border: 1px solid rgba(255,255,255,0.72);
-      padding: 28px 28px 18px;
-      background: rgba(255,255,255,0.42);
-      backdrop-filter: blur(4px);
-      box-shadow: inset 0 0 12px rgba(255,255,255,0.12);
-      box-sizing: border-box;
-      text-align: center;
-      max-height: min(68dvh, 640px);
-      overflow-y: auto;
-      overscroll-behavior: contain;
-    }
-
-    .sobre-texto {
-      font-family: Helvetica, Arial, sans-serif;
-      font-size: 0.95rem;
-      font-style: italic;
-      font-weight: 400;
-      line-height: 1.55;
-      letter-spacing: 0.01em;
-      white-space: pre-line;
-      text-align: center;
-    }
-
-    .sobre-texto strong {
-      font-weight: 700;
-      font-style: italic;
-    }
-
-    .sobre-texto em {
-      font-style: italic;
-    }
-
-    .sobre-foto-topo {
-      width: 92px;
-      height: 92px;
-      object-fit: cover;
-      border-radius: 999px;
-      border: 1px solid rgba(255,255,255,0.45);
-      opacity: 0;
-      transform: translateY(-32px);
-      pointer-events: none;
-      transition: opacity 0.42s ease, transform 0.42s ease;
-      margin-bottom: -4px;
-    }
-
-    .sobre-fechar {
-      position: absolute;
-      top: 8px;
-      right: 10px;
-      border: 0;
-      background: transparent;
-      color: inherit;
-      font: inherit;
-      font-size: 1.2rem;
-      line-height: 1;
-      cursor: pointer;
-      opacity: 0.72;
-    }
-
     .sobre-trigger {
       cursor: pointer;
       text-decoration: underline;
@@ -353,9 +291,9 @@
     }
 
     body.sobre-aberto .interacao-area .box {
-      opacity: 0;
-      transform: translateX(-120vw);
-      pointer-events: none;
+      max-width: min(90vw, 760px);
+      min-height: min(72dvh, 720px);
+      cursor: default;
     }
 
     body.sobre-aberto .interacao-area .filtro-obceno-principal {
@@ -370,36 +308,16 @@
       pointer-events: none;
     }
 
-    body.sobre-aberto .sobre-overlay {
-      background: rgba(0,0,0,0.24);
-      pointer-events: auto;
-    }
-
-    body.sobre-aberto .sobre-painel {
-      opacity: 1;
-      transform: translate(-50%, 0);
-      pointer-events: auto;
-    }
-
-    body.bg-verde .sobre-painel-inner {
+    body.bg-verde.sobre-aberto .interacao-area .box {
       border-color: rgba(255,255,255,0.14);
       background: rgba(255,255,255,0.5);
       box-shadow: none;
     }
 
     @media (max-width: 768px) {
-      .sobre-painel {
-        width: min(92vw, 760px);
-      }
-
-      .sobre-painel-inner {
-        padding: 24px 20px 16px;
-        max-height: min(62dvh, 560px);
-      }
-
-      .sobre-texto {
-        font-size: 0.88rem;
-        line-height: 1.5;
+      body.sobre-aberto .interacao-area .box {
+        max-width: min(92vw, 760px);
+        min-height: min(68dvh, 620px);
       }
 
       .sobre-foto-topo {
@@ -409,6 +327,11 @@
 
       .sobre-trigger {
         margin-bottom: 12px;
+      }
+
+      .sobre-box-texto {
+        font-size: 0.9rem;
+        line-height: 1.56;
       }
     }
 
@@ -745,6 +668,7 @@
     <div class="box is-loading" id="box">
       <div class="loading-sizer" aria-hidden="true">carregando espasmo • carregando espasmo • carregando</div>
       <div class="frase" id="frase"></div>
+      <div class="sobre-box-texto" id="sobreBoxTexto" style="display:none;"></div>
 
       <div class="overlay">
         <div class="track">
@@ -790,13 +714,6 @@ carregando espasmo • carregando espasmo • carregando espasmo • carregando 
       </div>
     </div>
 
-    <div class="sobre-overlay" id="sobreOverlay" onclick="fecharSobre(event)"></div>
-    <div class="sobre-painel" id="sobrePainel" aria-hidden="true">
-      <div class="sobre-painel-inner">
-        <button class="sobre-fechar" type="button" aria-label="Fechar sobre o site" onclick="fecharSobre(event)">×</button>
-        <div class="sobre-texto" id="sobreTexto"></div>
-      </div>
-    </div>
   </div>
 </main>
 
@@ -1341,6 +1258,7 @@ function irParaProximaFrase() {
 }
 
 function proximaFrase() {
+  if (sobreAberto) return;
   if (fraseAtual) {
     const etapaFinal = maiorEtapa(fraseAtual.partes);
     if (etapaAtual < etapaFinal) {
@@ -1564,7 +1482,7 @@ function obterPartesSobreEstatico() {
 }
 
 function renderizarSobre() {
-  const el = document.getElementById("sobreTexto");
+  const el = document.getElementById("sobreBoxTexto");
   if (!el) return;
   el.innerHTML = montarHtmlPartes(obterPartesSobreEstatico(), 99);
 }
@@ -1572,9 +1490,13 @@ function renderizarSobre() {
 function abrirSobre() {
   sobreAberto = true;
   document.body.classList.add("sobre-aberto");
-  const painel = document.getElementById("sobrePainel");
-  if (painel) {
-    painel.setAttribute("aria-hidden", "false");
+  const fraseEl = document.getElementById("frase");
+  const sobreEl = document.getElementById("sobreBoxTexto");
+  const overlayEl = document.querySelector(".overlay");
+  if (fraseEl) fraseEl.style.display = "none";
+  if (overlayEl) overlayEl.style.display = "none";
+  if (sobreEl) {
+    sobreEl.style.display = "block";
   }
 }
 
@@ -1585,10 +1507,14 @@ function fecharSobre(event) {
   }
   sobreAberto = false;
   document.body.classList.remove("sobre-aberto");
-  const painel = document.getElementById("sobrePainel");
-  if (painel) {
-    painel.setAttribute("aria-hidden", "true");
+  const fraseEl = document.getElementById("frase");
+  const sobreEl = document.getElementById("sobreBoxTexto");
+  const overlayEl = document.querySelector(".overlay");
+  if (sobreEl) {
+    sobreEl.style.display = "none";
   }
+  if (fraseEl) fraseEl.style.display = "block";
+  if (overlayEl) overlayEl.style.display = "";
 }
 
 function toggleSobre(event) {
