@@ -17,6 +17,10 @@
   <meta name="viewport" content="width=device-width, initial-scale=1.0">
   <title>LAFORISMOS</title>
 
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+  <link href="https://fonts.googleapis.com/css2?family=Bodoni+Moda:opsz,wght@6..96,400;500;600&display=swap" rel="stylesheet">
+
   <!-- Google tag (gtag.js) -->
   <script async src="https://www.googletagmanager.com/gtag/js?id=G-02B0NJF559"></script>
   <script>
@@ -74,34 +78,35 @@
     .box {
       position: relative;
       z-index: 1;
-      display: inline-block;
-      width: fit-content;
-      max-width: min(90vw, 760px);
       border: 1px solid rgba(255,255,255,0.6);
       padding: 20px 30px;
+      max-width: 90%;
       line-height: 1.4;
       cursor: pointer;
       overflow: hidden;
       background: rgba(255,255,255,0.28);
       backdrop-filter: blur(3px);
       box-shadow: inset 0 0 12px rgba(255,255,255,0.08);
-      box-sizing: border-box;
-      transition: width 0.22s ease, max-width 0.22s ease, padding 0.22s ease;
     }
 
     .frase {
+      font-family: "Bodoni Moda", "Times New Roman", serif;
+      font-optical-sizing: auto;
+      font-weight: 400;
       transition: opacity 0.3s ease;
       white-space: pre-line;
       display: block;
-      width: fit-content;
-      max-width: min(700px, calc(90vw - 60px));
+      width: 100%;
+      max-width: 700px;
       margin: 0 auto;
       box-sizing: border-box;
       text-align: center;
+      letter-spacing: 0.01em;
+      line-height: 1.5;
     }
 
     .frase strong {
-      font-weight: 700;
+      font-weight: 600;
     }
 
     .frase em {
@@ -115,8 +120,7 @@
 
     .frase.dialogo {
       text-align: left !important;
-      width: auto;
-      max-width: min(620px, calc(90vw - 108px));
+      max-width: 620px;
       padding-left: 24px;
       padding-right: 24px;
       margin-left: auto;
@@ -433,7 +437,6 @@
       }
 
       .box {
-        max-width: min(92vw, 760px);
         padding: 18px 20px;
       }
 
@@ -559,9 +562,9 @@ const BACKGROUNDS = [
     mobile: "./BG_ROSA_MOBILE.png"
   },
   {
-    video: "./BG_verde.mov",
+    video: "./BG_ROSQUINHA.mov",
     videoType: "video/quicktime",
-    mobile: "./BG_VERDE.png",
+    mobile: "./BG_ROSQUINHA_OK.png",
     startTime: 15,
     endTime: 45,
     isGreen: true
