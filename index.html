@@ -285,14 +285,17 @@
       font-style: italic;
     }
 
-    .sobre-foto {
-      display: block;
-      width: 86px;
-      height: 86px;
+    .sobre-foto-topo {
+      width: 92px;
+      height: 92px;
       object-fit: cover;
-      margin: 18px auto 0;
       border-radius: 999px;
       border: 1px solid rgba(255,255,255,0.45);
+      opacity: 0;
+      transform: translateY(-32px);
+      pointer-events: none;
+      transition: opacity 0.42s ease, transform 0.42s ease;
+      margin-bottom: -4px;
     }
 
     .sobre-fechar {
@@ -312,11 +315,26 @@
     .sobre-trigger {
       cursor: pointer;
       text-decoration: underline;
+      margin-bottom: 10px;
+      display: inline-block;
     }
 
     .interacao-area .box,
     .interacao-area .filtro-obceno {
       transition: transform 0.42s ease, opacity 0.42s ease;
+    }
+
+    body.sobre-aberto h1,
+    body.sobre-aberto .subtitulo {
+      opacity: 0;
+      transform: translateY(-90px);
+      pointer-events: none;
+    }
+
+    body.sobre-aberto .sobre-foto-topo {
+      opacity: 1;
+      transform: translateY(0);
+      pointer-events: auto;
     }
 
     body.sobre-aberto .interacao-area .box {
@@ -362,10 +380,13 @@
         line-height: 1.5;
       }
 
-      .sobre-foto {
-        width: 74px;
-        height: 74px;
-        margin-top: 16px;
+      .sobre-foto-topo {
+        width: 78px;
+        height: 78px;
+      }
+
+      .sobre-trigger {
+        margin-bottom: 12px;
       }
     }
 
@@ -680,6 +701,7 @@
 <main>
   <h1>LAFORISMOS</h1>
   <div class="subtitulo">de Felipe Koraicho Sauma</div>
+  <img class="sobre-foto-topo" src="./Fe_FOTO_0651.png" alt="Felipe Koraicho Sauma">
 
   <div class="interacao-area">
     <div class="box is-loading" id="box">
@@ -734,14 +756,13 @@ carregando espasmo • carregando espasmo • carregando espasmo • carregando 
       <div class="sobre-painel-inner">
         <button class="sobre-fechar" type="button" aria-label="Fechar sobre o site" onclick="fecharSobre(event)">×</button>
         <div class="sobre-texto" id="sobreTexto"></div>
-        <img class="sobre-foto" src="./Fe_FOTO_0651.png" alt="Felipe Koraicho Sauma">
       </div>
     </div>
   </div>
 </main>
 
 <footer>
-  <div class="sobre-trigger" onclick="toggleSobre(event)">Sobre o site (e sob também.)</div>
+  <div class="sobre-trigger" onclick="toggleSobre(event)">Sobre (e sob) o site</div>
   <div>
     <span onclick="feMail()">EML</span> |
     <span onclick="lk()">LKN</span> |
