@@ -484,7 +484,7 @@
 <main>
   <h1>LAFORISMOS</h1>
 
-  <div class="box is-loading" id="box" onclick="proximaFrase()">
+  <div class="box is-loading" id="box">"
     <div class="loading-sizer" aria-hidden="true">carregando espasmo • carregando espasmo • carregando</div>
     <div class="frase" id="frase"></div>
 
@@ -562,9 +562,9 @@ const BACKGROUNDS = [
     mobile: "./BG_ROSA_MOBILE.png"
   },
   {
-    video: "./BG_ROSQUINHA.mov",
+    video: "./BG_verde.mov",
     videoType: "video/quicktime",
-    mobile: "./BG_ROSQUINHA_OK.png",
+    mobile: "./BG_VERDELIMAO.png",
     startTime: 15,
     endTime: 45,
     isGreen: true
@@ -1283,6 +1283,65 @@ function normalizarPartes(partes) {
   );
 }
 
+function inicializarInteracaoBox() {
+  const box = document.getElementById("box");
+  if (!box) return;
+
+  let pointerIdAtivo = null;
+  let inicioX = 0;
+  let inicioY = 0;
+  let houveSwipe = false;
+
+  const limiarSwipe = 18;
+
+  box.addEventListener("click", (event) => {
+    if (event.target.closest(".toggle-btn")) return;
+    proximaFrase();
+  });
+
+  box.addEventListener("pointerdown", (event) => {
+    if (event.target.closest(".toggle-btn")) return;
+    pointerIdAtivo = event.pointerId;
+    inicioX = event.clientX;
+    inicioY = event.clientY;
+    houveSwipe = false;
+
+    if (box.setPointerCapture) {
+      try { box.setPointerCapture(event.pointerId); } catch (e) {}
+    }
+  });
+
+  box.addEventListener("pointermove", (event) => {
+    if (event.pointerId !== pointerIdAtivo) return;
+    const deltaX = event.clientX - inicioX;
+    const deltaY = event.clientY - inicioY;
+    const distancia = Math.hypot(deltaX, deltaY);
+
+    if (distancia >= limiarSwipe) {
+      houveSwipe = true;
+    }
+  });
+
+  box.addEventListener("pointerup", (event) => {
+    if (event.pointerId !== pointerIdAtivo) return;
+
+    const deltaX = event.clientX - inicioX;
+    const deltaY = event.clientY - inicioY;
+    const distancia = Math.hypot(deltaX, deltaY);
+
+    pointerIdAtivo = null;
+
+    if (window.matchMedia("(max-width: 768px)").matches && distancia >= limiarSwipe) {
+      event.preventDefault();
+      proximaFrase();
+    }
+  });
+
+  box.addEventListener("pointercancel", () => {
+    pointerIdAtivo = null;
+  });
+}
+
 async function carregarFrasesDaApi() {
   try {
     ativarEstadoLoadingBox();
@@ -1318,6 +1377,7 @@ async function carregarFrasesDaApi() {
 aplicarBackgroundAleatorio();
 sincronizarToggle();
 inicializarInteracaoToggle();
+inicializarInteracaoBox();
 carregarFrasesDaApi();
 </script>
 
