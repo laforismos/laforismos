@@ -1153,11 +1153,23 @@ function inicializarInteracaoToggleIndividual(idBotao, obterValorAtual, definirV
     botao.classList.remove("dragging");
   }
 
+  function bloquearEvento(event) {
+    event.stopPropagation();
+  }
+
   botao.addEventListener("click", (event) => {
+    event.preventDefault();
     event.stopPropagation();
   });
 
+  botao.addEventListener("mousedown", bloquearEvento);
+  botao.addEventListener("mouseup", bloquearEvento);
+  botao.addEventListener("touchstart", bloquearEvento, { passive: true });
+  botao.addEventListener("touchend", bloquearEvento);
+  botao.addEventListener("touchcancel", bloquearEvento);
+
   botao.addEventListener("pointerdown", (event) => {
+    event.preventDefault();
     event.stopPropagation();
     pointerIdAtivo = event.pointerId;
     arrastando = true;
@@ -1171,6 +1183,7 @@ function inicializarInteracaoToggleIndividual(idBotao, obterValorAtual, definirV
   });
 
   botao.addEventListener("pointermove", (event) => {
+    event.preventDefault();
     event.stopPropagation();
     if (!arrastando || event.pointerId !== pointerIdAtivo) return;
 
@@ -1190,6 +1203,7 @@ function inicializarInteracaoToggleIndividual(idBotao, obterValorAtual, definirV
   });
 
   botao.addEventListener("pointerup", (event) => {
+    event.preventDefault();
     event.stopPropagation();
     if (event.pointerId !== pointerIdAtivo) return;
 
@@ -1201,6 +1215,7 @@ function inicializarInteracaoToggleIndividual(idBotao, obterValorAtual, definirV
   });
 
   botao.addEventListener("pointercancel", (event) => {
+    event.preventDefault();
     event.stopPropagation();
     encerrarArraste();
   });
