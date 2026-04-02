@@ -244,6 +244,15 @@
       z-index: 1;
     }
 
+    .sobre-overlay {
+      position: fixed;
+      inset: 0;
+      background: rgba(0,0,0,0);
+      pointer-events: none;
+      transition: background 0.42s ease;
+      z-index: 3;
+    }
+
     .sobre-painel {
       position: absolute;
       top: 0;
@@ -259,11 +268,11 @@
 
     .sobre-painel-inner {
       position: relative;
-      border: 1px solid rgba(255,255,255,0.6);
+      border: 1px solid rgba(255,255,255,0.72);
       padding: 28px 28px 18px;
-      background: rgba(255,255,255,0.28);
-      backdrop-filter: blur(3px);
-      box-shadow: inset 0 0 12px rgba(255,255,255,0.08);
+      background: rgba(255,255,255,0.42);
+      backdrop-filter: blur(4px);
+      box-shadow: inset 0 0 12px rgba(255,255,255,0.12);
       box-sizing: border-box;
       text-align: center;
     }
@@ -355,6 +364,11 @@
       pointer-events: none;
     }
 
+    body.sobre-aberto .sobre-overlay {
+      background: rgba(0,0,0,0.24);
+      pointer-events: auto;
+    }
+
     body.sobre-aberto .sobre-painel {
       opacity: 1;
       transform: translate(-50%, 0);
@@ -362,7 +376,8 @@
     }
 
     body.bg-verde .sobre-painel-inner {
-      border-color: transparent;
+      border-color: rgba(255,255,255,0.14);
+      background: rgba(255,255,255,0.5);
       box-shadow: none;
     }
 
@@ -527,6 +542,22 @@
       cursor: pointer;
       margin: 0 6px;
       text-decoration: underline;
+    }
+
+    .footer-sobre-trigger,
+    .footer-links {
+      transition: transform 0.42s ease, opacity 0.42s ease;
+    }
+
+    .footer-links {
+      margin-top: 2px;
+    }
+
+    body.sobre-aberto .footer-sobre-trigger,
+    body.sobre-aberto .footer-links {
+      opacity: 0;
+      transform: translateY(120px);
+      pointer-events: none;
     }
 
     body.bg-verde {
@@ -752,6 +783,7 @@ carregando espasmo • carregando espasmo • carregando espasmo • carregando 
       </div>
     </div>
 
+    <div class="sobre-overlay" id="sobreOverlay" onclick="fecharSobre(event)"></div>
     <div class="sobre-painel" id="sobrePainel" aria-hidden="true">
       <div class="sobre-painel-inner">
         <button class="sobre-fechar" type="button" aria-label="Fechar sobre o site" onclick="fecharSobre(event)">×</button>
@@ -762,11 +794,12 @@ carregando espasmo • carregando espasmo • carregando espasmo • carregando 
 </main>
 
 <footer>
-  <div class="sobre-trigger" onclick="toggleSobre(event)">Sobre (e sob) o site</div>
-  <div>
+  <div class="sobre-trigger footer-sobre-trigger" onclick="toggleSobre(event)">Sobre (e sob) o site</div>
+  <div class="footer-links">
     <span onclick="feMail()">EML</span> |
     <span onclick="lk()">LKN</span> |
-    <span onclick="ig()">IG</span>
+    <span onclick="ig()">IG</span> |
+    <span onclick="wrk()">WRK</span>
   </div>
 </footer>
 
@@ -1480,7 +1513,7 @@ function inicializarInteracaoToggle() {
 }
 
 function feMail() {
-  window.location.href = "mailto:felipefks@yahoo.com";
+  window.location.href = "mailto:felipe.sauma@gmail.com";
 }
 
 function lk() {
@@ -1489,6 +1522,10 @@ function lk() {
 
 function ig() {
   window.open("https://www.instagram.com/felipesauma/", "_blank");
+}
+
+function wrk() {
+  window.open("https://felipesauma.com.br", "_blank");
 }
 
 function normalizarBoolean(valor) {
