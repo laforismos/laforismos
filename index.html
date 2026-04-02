@@ -236,23 +236,25 @@
     }
 
     .interacao-area {
+      position: relative;
+      width: 100%;
       display: flex;
       flex-direction: column;
       align-items: center;
-      gap: 0;
-      position: relative;
       z-index: 1;
-      width: 100%;
     }
 
     .sobre-painel {
+      position: absolute;
+      top: 0;
+      left: 50%;
       width: min(90vw, 760px);
       max-width: 760px;
       opacity: 0;
-      transform: translateY(56px);
+      transform: translate(-50%, 48px);
       pointer-events: none;
-      transition: transform 0.42s ease, opacity 0.42s ease;
-      margin-top: -14px;
+      transition: opacity 0.42s ease, transform 0.42s ease;
+      z-index: 4;
     }
 
     .sobre-painel-inner {
@@ -271,6 +273,7 @@
       line-height: 1.55;
       letter-spacing: 0.01em;
       white-space: pre-line;
+      text-align: center;
     }
 
     .sobre-texto strong {
@@ -296,30 +299,32 @@
       text-decoration: underline;
     }
 
+    .interacao-area .box,
+    .interacao-area .filtro-obceno {
+      transition: transform 0.42s ease, opacity 0.42s ease;
+    }
+
     body.sobre-aberto .interacao-area .box {
       opacity: 0;
-      transform: translateX(-110vw);
+      transform: translateX(-120vw);
       pointer-events: none;
-      transition: transform 0.42s ease, opacity 0.42s ease;
     }
 
     body.sobre-aberto .interacao-area .filtro-obceno:first-of-type {
       opacity: 0;
-      transform: translateX(-110vw);
+      transform: translateX(-120vw);
       pointer-events: none;
-      transition: transform 0.42s ease, opacity 0.42s ease;
     }
 
     body.sobre-aberto .interacao-area .filtro-obceno:last-of-type {
       opacity: 0;
-      transform: translateX(110vw);
+      transform: translateX(120vw);
       pointer-events: none;
-      transition: transform 0.42s ease, opacity 0.42s ease;
     }
 
     body.sobre-aberto .sobre-painel {
       opacity: 1;
-      transform: translateY(0);
+      transform: translate(-50%, 0);
       pointer-events: auto;
     }
 
@@ -331,7 +336,6 @@
     @media (max-width: 768px) {
       .sobre-painel {
         width: min(92vw, 760px);
-        margin-top: -10px;
       }
 
       .sobre-painel-inner {
@@ -1476,10 +1480,8 @@ function extrairPartesSobre(data) {
   const candidatas = [
     data?.sobre?.partes,
     data?.sobrePartes,
-    data?.sobre_site?.partes,
     data?.sobreSite?.partes,
-    data?.meta?.sobre?.partes,
-    data?.meta?.sobreSite?.partes
+    data?.sobre_site?.partes
   ];
 
   for (const partes of candidatas) {
