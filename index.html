@@ -72,7 +72,18 @@
 
     h1 {
       letter-spacing: 4px;
-      margin-bottom: 20px;
+      margin-bottom: 6px;
+    }
+
+    .subtitulo {
+      font-family: Helvetica, Arial, sans-serif;
+      font-size: 0.7rem;
+      font-weight: 300;
+      font-style: italic;
+      letter-spacing: 0.4px;
+      text-align: center;
+      margin-bottom: 14px;
+      opacity: 0.92;
     }
 
     .box {
@@ -424,6 +435,52 @@
         min-height: 100dvh;
       }
 
+      body.bg-verde {
+        --site-text-color: white;
+      }
+
+      body.bg-verde .toggle-btn {
+        border-color: rgba(255,255,255,0.78);
+      }
+
+      body.bg-verde .toggle-btn::before {
+        background: rgba(255,255,255,0.88);
+      }
+
+      body.bg-verde .toggle-btn.on {
+        background: rgba(255,255,255,0.18);
+        border-color: rgba(255,255,255,0.92);
+        box-shadow: inset 0 0 0 1px rgba(255,255,255,0.06);
+      }
+
+      body.bg-verde .toggle-btn.on::before {
+        background: rgba(255,255,255,0.96);
+      }
+
+      body.bg-verde .toggle-btn .toggle-bg-on {
+        color: rgba(255,255,255,0.72);
+      }
+
+      body.bg-verde .toggle-btn .toggle-bg-off {
+        color: rgba(255,255,255,0.8);
+      }
+
+      body.bg-verde .toggle-btn.on .toggle-bg-on {
+        color: rgba(255,255,255,0.96);
+      }
+
+      body.bg-verde .toggle-btn.on .toggle-bg-off {
+        color: rgba(255,255,255,0.58);
+      }
+
+      body.bg-verde .toggle-btn:not(.on) .toggle-bg-on {
+        color: rgba(255,255,255,0.52);
+      }
+
+      body.bg-verde .toggle-btn:not(.on) .toggle-bg-off {
+        color: rgba(255,255,255,0.8);
+      }
+
       #bg-video {
         display: none;
       }
@@ -438,6 +495,11 @@
 
       .box {
         padding: 18px 20px;
+      }
+
+      .subtitulo {
+        font-size: 0.58rem;
+        margin-bottom: 12px;
       }
 
       .toggle-btn {
@@ -483,6 +545,7 @@
 
 <main>
   <h1>LAFORISMOS</h1>
+  <div class="subtitulo">de Felipe Koraicho Sauma</div>
 
   <div class="box is-loading" id="box">
     <div class="loading-sizer" aria-hidden="true">carregando espasmo • carregando espasmo • carregando</div>
@@ -536,7 +599,7 @@ carregando espasmo • carregando espasmo • carregando espasmo • carregando 
 <footer>
   <div>Pensei, falei ou postei?</div>
   <div>
-    <span onclick="wa()">WZ</span> |
+    <span onclick="feMail()">EML</span> |
     <span onclick="lk()">LKN</span> |
     <span onclick="ig()">IG</span>
   </div>
@@ -1250,16 +1313,16 @@ function inicializarInteracaoToggle() {
   );
 }
 
-function wa() {
-  window.open("https://wa.me/?text=" + encodeURIComponent(window.location.href));
+function feMail() {
+  window.location.href = "mailto:felipefks@yahoo.com";
 }
 
 function lk() {
-  window.open("https://www.linkedin.com/sharing/share-offsite/?url=" + encodeURIComponent(window.location.href));
+  window.open("https://www.linkedin.com/in/felipesauma_creative/", "_blank");
 }
 
 function ig() {
-  window.open("https://www.instagram.com/");
+  window.open("https://www.instagram.com/felipesauma/", "_blank");
 }
 
 function normalizarBoolean(valor) {
