@@ -569,7 +569,7 @@ let idsExibidos = new Set();
 let acabou = false;
 let clicado = false;
 let hoverTimer = null;
-let mostrarObcenas = true;
+let mostrarObcenas = false;
 let mostrarSoNovas = false;
 let fraseAtual = null;
 let etapaAtual = 1;
@@ -1153,7 +1153,12 @@ function inicializarInteracaoToggleIndividual(idBotao, obterValorAtual, definirV
     botao.classList.remove("dragging");
   }
 
+  botao.addEventListener("click", (event) => {
+    event.stopPropagation();
+  });
+
   botao.addEventListener("pointerdown", (event) => {
+    event.stopPropagation();
     pointerIdAtivo = event.pointerId;
     arrastando = true;
     houveMovimento = false;
@@ -1166,6 +1171,7 @@ function inicializarInteracaoToggleIndividual(idBotao, obterValorAtual, definirV
   });
 
   botao.addEventListener("pointermove", (event) => {
+    event.stopPropagation();
     if (!arrastando || event.pointerId !== pointerIdAtivo) return;
 
     const deltaX = event.clientX - inicioX;
@@ -1184,6 +1190,7 @@ function inicializarInteracaoToggleIndividual(idBotao, obterValorAtual, definirV
   });
 
   botao.addEventListener("pointerup", (event) => {
+    event.stopPropagation();
     if (event.pointerId !== pointerIdAtivo) return;
 
     if (!houveMovimento) {
@@ -1193,7 +1200,8 @@ function inicializarInteracaoToggleIndividual(idBotao, obterValorAtual, definirV
     encerrarArraste();
   });
 
-  botao.addEventListener("pointercancel", () => {
+  botao.addEventListener("pointercancel", (event) => {
+    event.stopPropagation();
     encerrarArraste();
   });
 
