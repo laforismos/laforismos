@@ -242,7 +242,7 @@
       position: relative;
       width: 66px;
       height: 24px;
-      touch-action: pan-y;
+      touch-action: manipulation;
       border-radius: 999px;
       border: 1px solid rgba(255,255,255,0.78);
       background: transparent;
@@ -484,7 +484,7 @@
 <main>
   <h1>LAFORISMOS</h1>
 
-  <div class="box is-loading" id="box">"
+  <div class="box is-loading" id="box">
     <div class="loading-sizer" aria-hidden="true">carregando espasmo • carregando espasmo • carregando</div>
     <div class="frase" id="frase"></div>
 
@@ -1290,12 +1290,37 @@ function inicializarInteracaoBox() {
   let pointerIdAtivo = null;
   let inicioX = 0;
   let inicioY = 0;
-  let houveSwipe = false;
+  let ignorarProximoClick = false;
+  let toqueInicioX = 0;
+  let toqueInicioY = 0;
 
   const limiarSwipe = 18;
 
+  function ehMobile() {
+    return window.matchMedia("(max-width: 768px)").matches;
+  }
+
+  function processarDeslizamento(deltaX, deltaY) {
+    const distancia = Math.hypot(deltaX, deltaY);
+
+    if (ehMobile() && distancia >= limiarSwipe) {
+      ignorarProximoClick = true;
+      proximaFrase();
+      return true;
+    }
+
+    return false;
+  }
+
   box.addEventListener("click", (event) => {
     if (event.target.closest(".toggle-btn")) return;
+
+    if (ignorarProximoClick) {
+      event.preventDefault();
+      ignorarProximoClick = false;
+      return;
+    }
+
     proximaFrase();
   });
 
@@ -1304,21 +1329,9 @@ function inicializarInteracaoBox() {
     pointerIdAtivo = event.pointerId;
     inicioX = event.clientX;
     inicioY = event.clientY;
-    houveSwipe = false;
 
     if (box.setPointerCapture) {
       try { box.setPointerCapture(event.pointerId); } catch (e) {}
-    }
-  });
-
-  box.addEventListener("pointermove", (event) => {
-    if (event.pointerId !== pointerIdAtivo) return;
-    const deltaX = event.clientX - inicioX;
-    const deltaY = event.clientY - inicioY;
-    const distancia = Math.hypot(deltaX, deltaY);
-
-    if (distancia >= limiarSwipe) {
-      houveSwipe = true;
     }
   });
 
@@ -1327,18 +1340,39 @@ function inicializarInteracaoBox() {
 
     const deltaX = event.clientX - inicioX;
     const deltaY = event.clientY - inicioY;
-    const distancia = Math.hypot(deltaX, deltaY);
 
     pointerIdAtivo = null;
 
-    if (window.matchMedia("(max-width: 768px)").matches && distancia >= limiarSwipe) {
+    if (processarDeslizamento(deltaX, deltaY)) {
       event.preventDefault();
-      proximaFrase();
     }
   });
 
   box.addEventListener("pointercancel", () => {
     pointerIdAtivo = null;
+  });
+
+  box.addEventListener("touchstart", (event) => {
+    if (!ehMobile()) return;
+    if (event.target.closest(".toggle-btn")) return;
+    const toque = event.changedTouches[0];
+    if (!toque) return;
+    toqueInicioX = toque.clientX;
+    toqueInicioY = toque.clientY;
+  }, { passive: true });
+
+  box.addEventListener("touchend", (event) => {
+    if (!ehMobile()) return;
+    if (event.target.closest(".toggle-btn")) return;
+    const toque = event.changedTouches[0];
+    if (!toque) return;
+
+    const deltaX = toque.clientX - toqueInicioX;
+    const deltaY = toque.clientY - toqueInicioY;
+
+    if (processarDeslizamento(deltaX, deltaY)) {
+      event.preventDefault();
+    }
   });
 }
 
