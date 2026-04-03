@@ -33,7 +33,7 @@
 
   <style>
     body {
-      --mobile-bg-image: url("./balaocolor.png");
+      --mobile-bg-color: #ff00b4;
       --site-text-color: white;
       margin: 0;
       font-family: Helvetica, Arial, sans-serif;
@@ -615,8 +615,7 @@
 
     @media (max-width: 768px) {
       body {
-        background: var(--mobile-bg-image) no-repeat center center;
-        background-size: cover;
+        background: var(--mobile-bg-color);
         min-height: 100dvh;
       }
 
@@ -838,6 +837,16 @@ const BACKGROUNDS = [
   }
 ];
 
+const MOBILE_BG_COLORS = [
+  "#ff00b4",
+  "#00fffc",
+  "#ff5a00",
+  "#00ffde",
+  "#42ff00",
+  "#00ffc0",
+  "#7e00ff"
+];
+
 let frases = [];
 let frasesFiltradas = [];
 let fila = [];
@@ -918,6 +927,18 @@ function escolherBackgroundAleatorio() {
 let backgroundEmUso = null;
 let videoErrorHandler = null;
 
+function escolherCorMobileAleatoria() {
+  if (!Array.isArray(MOBILE_BG_COLORS) || MOBILE_BG_COLORS.length === 0) {
+    return "#ff00b4";
+  }
+  const indice = Math.floor(Math.random() * MOBILE_BG_COLORS.length);
+  return MOBILE_BG_COLORS[indice];
+}
+
+function aplicarCorMobileAleatoria() {
+  document.body.style.setProperty("--mobile-bg-color", escolherCorMobileAleatoria());
+}
+
 function videoPareceCompativel(bg) {
   const video = document.createElement("video");
   if (!bg?.videoType) return true;
@@ -926,13 +947,10 @@ function videoPareceCompativel(bg) {
 }
 
 function aplicarBackgroundVisualEstático(bg) {
-  const body = document.body;
   const video = document.getElementById("bg-video");
   const source = document.getElementById("bg-video-source");
 
-  if (bg?.mobile) {
-    body.style.setProperty("--mobile-bg-image", `url("${bg.mobile}")`);
-  }
+  aplicarCorMobileAleatoria();
 
   if (source) {
     source.removeAttribute("src");
@@ -958,10 +976,7 @@ function aplicarBackgroundAleatorio() {
 
   backgroundEmUso = bg;
   body.classList.toggle("bg-verde", !!bg.isGreen);
-
-  if (bg.mobile) {
-    body.style.setProperty("--mobile-bg-image", `url("${bg.mobile}")`);
-  }
+  aplicarCorMobileAleatoria();
 
   if (!desktop || !video || !source || !bg.video) {
     aplicarBackgroundVisualEstático(bg);
