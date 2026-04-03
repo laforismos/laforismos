@@ -34,6 +34,7 @@
   <style>
     body {
       --mobile-bg-color: #ff00b4;
+      --mobile-overlay-opacity: 0.18;
       --site-text-color: white;
       margin: 0;
       font-family: Helvetica, Arial, sans-serif;
@@ -673,7 +674,7 @@
         content: "";
         position: fixed;
         inset: 0;
-        background: rgba(0,0,0,0.3);
+        background: rgba(0,0,0,var(--mobile-overlay-opacity));
         z-index: -1;
       }
 
@@ -837,7 +838,18 @@ const BACKGROUNDS = [
   }
 ];
 
+
 const MOBILE_BG_COLORS = [
+  "#ff2ce9",
+  "#0fff7a",
+  "#90ff00",
+  "#78fffd",
+  "#ffa178",
+  "#18e7ff",
+  "#ff18c1",
+  "#ff185f",
+  "#cbff18",
+  "#33ff18",
   "#ff00b4",
   "#00fffc",
   "#ff5a00",
@@ -846,6 +858,17 @@ const MOBILE_BG_COLORS = [
   "#00ffc0",
   "#7e00ff"
 ];
+
+function escolherCorMobileAleatoria() {
+  if (!Array.isArray(MOBILE_BG_COLORS) || MOBILE_BG_COLORS.length === 0) return "#ff00b4";
+  const indice = Math.floor(Math.random() * MOBILE_BG_COLORS.length);
+  return MOBILE_BG_COLORS[indice];
+}
+
+function aplicarBackgroundMobileAleatorio() {
+  const cor = escolherCorMobileAleatoria();
+  document.body.style.setProperty("--mobile-bg-color", cor);
+}
 
 let frases = [];
 let frasesFiltradas = [];
@@ -927,18 +950,6 @@ function escolherBackgroundAleatorio() {
 let backgroundEmUso = null;
 let videoErrorHandler = null;
 
-function escolherCorMobileAleatoria() {
-  if (!Array.isArray(MOBILE_BG_COLORS) || MOBILE_BG_COLORS.length === 0) {
-    return "#ff00b4";
-  }
-  const indice = Math.floor(Math.random() * MOBILE_BG_COLORS.length);
-  return MOBILE_BG_COLORS[indice];
-}
-
-function aplicarCorMobileAleatoria() {
-  document.body.style.setProperty("--mobile-bg-color", escolherCorMobileAleatoria());
-}
-
 function videoPareceCompativel(bg) {
   const video = document.createElement("video");
   if (!bg?.videoType) return true;
@@ -947,10 +958,13 @@ function videoPareceCompativel(bg) {
 }
 
 function aplicarBackgroundVisualEstático(bg) {
+  const body = document.body;
   const video = document.getElementById("bg-video");
   const source = document.getElementById("bg-video-source");
 
-  aplicarCorMobileAleatoria();
+  if (bg?.mobile) {
+    body.style.setProperty("--mobile-bg-image", `url("${bg.mobile}")`);
+  }
 
   if (source) {
     source.removeAttribute("src");
@@ -976,7 +990,7 @@ function aplicarBackgroundAleatorio() {
 
   backgroundEmUso = bg;
   body.classList.toggle("bg-verde", !!bg.isGreen);
-  aplicarCorMobileAleatoria();
+  aplicarBackgroundMobileAleatorio();
 
   if (!desktop || !video || !source || !bg.video) {
     aplicarBackgroundVisualEstático(bg);
