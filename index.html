@@ -64,7 +64,7 @@
       justify-content: center;
       align-items: center;
       text-align: center;
-      padding: 20px;
+      padding: 96px 20px 20px;
       gap: 22px;
       position: relative;
       z-index: 1;
@@ -72,7 +72,22 @@
 
     h1 {
       letter-spacing: 4px;
-      margin-bottom: 6px;
+      margin: 0;
+    }
+
+    .site-title {
+      position: fixed;
+      top: 20px;
+      left: 50%;
+      transform: translateX(-50%);
+      z-index: 4;
+      text-align: center;
+    }
+
+    .site-title-link {
+      color: inherit;
+      text-decoration: none;
+      display: inline-block;
     }
 
     .subtitulo {
@@ -277,7 +292,6 @@
       transition: transform 0.42s ease, opacity 0.42s ease;
     }
 
-    body.sobre-aberto h1,
     body.sobre-aberto .subtitulo {
       opacity: 0;
       transform: translateY(-90px);
@@ -285,8 +299,8 @@
     }
 
     .sobre-foto-topo {
-      width: 88px;
-      height: 88px;
+      width: 106px;
+      height: 106px;
       object-fit: cover;
       border-radius: 999px;
       border: 1px solid rgba(255,255,255,0.45);
@@ -338,8 +352,8 @@
       }
 
       .sobre-foto-topo {
-        width: 78px;
-        height: 78px;
+        width: 94px;
+        height: 94px;
       }
 
       .sobre-trigger {
@@ -626,6 +640,10 @@
         z-index: -1;
       }
 
+      main {
+        padding-top: 104px;
+      }
+
       .box {
         padding: 18px 20px;
       }
@@ -677,7 +695,7 @@
 </video>
 
 <main>
-  <h1>LAFORISMOS</h1>
+  <h1 class="site-title"><a class="site-title-link" href="./">LAFORISMOS</a></h1>
   <div class="subtitulo">de Felipe Koraicho Sauma</div>
   <img class="sobre-foto-topo" src="./Fe_FOTO_AVATAR.png" alt="Felipe Koraicho Sauma">
 
@@ -1544,7 +1562,7 @@ function normalizarPartes(partes) {
 function obterPartesSobreEstatico() {
   return [
     { texto: "O FUTURO DA GRAPEFRUIT", bold: true, italic: true, underline: false },
-    { texto: "\n\nApesar de redator, sou analfabeto. Nunca escrevi uma linha de código. Na verdade, escrevia win+enter pra entrar no Windows em 1992. Nada além. Pula pra 2026. Matrix – a IA pluga o html no meu dedo.\n\nComeço esse experimento, algo que sempre quis: um livro vivo de nanocontos.  Que vai em breve conversar com você, ser baixado num chip e virar minha consciência, podendo ser instalada numa grapefruit ou algo que o valha.\n\nLaforismos é meu site beta de estimação. Beta forever, estilo Dolly, nadando disléxica entre botões CSS e figuras de linguagem de português brasileiro.\n\nMeu sáite de interê, que poderia se chamar: “Desabafos polissêmicos Felipe Sauma. – A fuga da egotrip.”Ou: “Eu podia tá bebendo, podia tá comendo açúcar, mas tô só fazendo um trocadilho.”\n\nMas, se pegar o que tá escrito mesmo, linha após linha – nas mais de 2000 desse código, Laforismos é apenas um sisteminha, que fiz pra jogar umas frases que ficam querendo sair.\n\nObrigado por ler.\n\nPrazer!\n\nFelipe Koraicho Sauma.\nEscritor do Box de Frases  \nLaforismos.com.br", bold: false, italic: true, underline: false }
+    { texto: "\n\nApesar de redator, sou analfabeto. Nunca escrevi uma linha de código. Na verdade, escrevia win+enter pra entrar no Windows em 1992. Nada além. Pula pra 2026. Matrix – a IA pluga o html no meu dedo.\n\nComeço esse experimento, algo que sempre quis: um livro vivo de nanocontos.  Que vai em breve conversar com você, ser baixado num chip e virar minha consciência, podendo ser instalada numa grapefruit ou algo que o valha.\n\nLaforismos é meu site beta de estimação. Beta forever, estilo Dolly, nadando disléxica entre botões CSS e figuras de linguagem de português brasileiro.\n\nMeu sáite de interê, que poderia se chamar: “Desabafos polissêmicos Felipe Sauma. – A fuga da egotrip.” Ou: “Eu podia tá bebendo, podia tá comendo açúcar, mas tô só fazendo um trocadilho.”\n\nMas, se pegar o que tá escrito mesmo, linha após linha – nas mais de 2000 desse código, Laforismos é apenas um sisteminha, que fiz pra jogar umas frases que ficam querendo sair.\n\nObrigado por ler.\n\nPrazer!\n\nFelipe Koraicho Sauma.\nEscritor do Box de Frases  \nLaforismos.com.br", bold: false, italic: true, underline: false }
   ];
 }
 
