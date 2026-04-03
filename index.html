@@ -706,7 +706,7 @@
 
 <body>
 
-<video autoplay muted loop playsinline id="bg-video">
+<video autoplay muted loop playsinline preload="auto" webkit-playsinline="true" id="bg-video">
   <source id="bg-video-source" src="./VIDEOBALAO.mp4" type="video/mp4">
 </video>
 
@@ -824,6 +824,32 @@ let etapaAtual = 1;
 let hoverTravadoAteUltimoTempo = false;
 let videoTimeUpdateHandler = null;
 let videoLoadedMetadataHandler = null;
+let videoCanPlayHandler = null;
+
+function obterTipoVideo(caminho) {
+  const valor = String(caminho || "").toLowerCase();
+  if (valor.endsWith(".mp4") || valor.endsWith(".m4v")) return "video/mp4";
+  if (valor.endsWith(".webm")) return "video/webm";
+  if (valor.endsWith(".mov")) return "video/quicktime";
+  return "";
+}
+
+function garantirPlaybackVideo() {
+  const video = document.getElementById("bg-video");
+  if (!video) return;
+
+  video.muted = true;
+  video.defaultMuted = true;
+  video.playsInline = true;
+  video.setAttribute("muted", "");
+  video.setAttribute("playsinline", "");
+  video.setAttribute("webkit-playsinline", "true");
+
+  const tentativa = video.play();
+  if (tentativa && typeof tentativa.catch === "function") {
+    tentativa.catch(() => {});
+  }
+}
 
 function configurarTrechoDoVideo(bg) {
   const video = document.getElementById("bg-video");
@@ -839,10 +865,20 @@ function configurarTrechoDoVideo(bg) {
     videoLoadedMetadataHandler = null;
   }
 
+  if (videoCanPlayHandler) {
+    video.removeEventListener("canplay", videoCanPlayHandler);
+    videoCanPlayHandler = null;
+  }
+
   const temTrechoCustomizado =
     Number.isFinite(bg?.startTime) &&
     Number.isFinite(bg?.endTime) &&
     bg.endTime > bg.startTime;
+
+  videoCanPlayHandler = () => {
+    garantirPlaybackVideo();
+  };
+  video.addEventListener("canplay", videoCanPlayHandler);
 
   if (!temTrechoCustomizado) {
     video.loop = true;
@@ -856,16 +892,14 @@ function configurarTrechoDoVideo(bg) {
       if (video.currentTime < bg.startTime || video.currentTime >= bg.endTime) {
         video.currentTime = bg.startTime;
       }
+      garantirPlaybackVideo();
     } catch (e) {}
   };
 
   videoTimeUpdateHandler = () => {
     if (video.currentTime >= bg.endTime) {
       video.currentTime = bg.startTime;
-      const tentativa = video.play();
-      if (tentativa && typeof tentativa.catch === "function") {
-        tentativa.catch(() => {});
-      }
+      garantirPlaybackVideo();
     }
   };
 
@@ -903,14 +937,18 @@ function aplicarBackgroundAleatorio() {
   if (bg.video && video && source) {
     configurarTrechoDoVideo(bg);
 
+    const tipoDetectado = bg.videoType || obterTipoVideo(bg.video);
     source.src = bg.video;
-    source.type = bg.videoType || "";
-    video.load();
 
-    const tentativa = video.play();
-    if (tentativa && typeof tentativa.catch === "function") {
-      tentativa.catch(() => {});
+    if (tipoDetectado) {
+      source.type = tipoDetectado;
+    } else {
+      source.removeAttribute("type");
     }
+
+    video.src = bg.video;
+    video.load();
+    garantirPlaybackVideo();
   }
 }
 
@@ -1778,6 +1816,16 @@ inicializarInteracaoBox();
 renderizarSobre();
 window.addEventListener("resize", ajustarAlturaBoxDinamicamente);
 carregarFrasesDaApi();
+
+document.addEventListener("visibilitychange", () => {
+  if (!document.hidden) {
+    garantirPlaybackVideo();
+  }
+});
+
+window.addEventListener("pageshow", () => {
+  garantirPlaybackVideo();
+});
 </script>
 
 </body>
