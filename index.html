@@ -1730,14 +1730,47 @@ function normalizarBoolean(valor) {
   return v === "true" || v === "verdadeiro" || v === "1" || v === "sim";
 }
 
+function normalizarMarcacaoUnderline(parte) {
+  return normalizarBoolean(
+    parte?.underline ??
+    parte?.underlined ??
+    parte?.sublinhado ??
+    parte?.sublinhada ??
+    parte?.textUnderline ??
+    parte?.isUnderline ??
+    parte?.format?.underline ??
+    parte?.format?.underlined ??
+    parte?.style?.underline ??
+    parte?.style?.underlined ??
+    parte?.textFormat?.underline ??
+    parte?.textStyle?.underline ??
+    false
+  );
+}
+
 function normalizarPartes(partes) {
   return parsePartesComTempos(
     (partes || [])
       .map(parte => ({
-        texto: String(parte?.texto || ""),
-        bold: !!parte?.bold,
-        italic: !!parte?.italic,
-        underline: !!parte?.underline
+        texto: String(parte?.texto ?? parte?.text ?? ""),
+        bold: normalizarBoolean(
+          parte?.bold ??
+          parte?.negrito ??
+          parte?.format?.bold ??
+          parte?.style?.bold ??
+          parte?.textFormat?.bold ??
+          false
+        ),
+        italic: normalizarBoolean(
+          parte?.italic ??
+          parte?.italico ??
+          parte?.itálico ??
+          parte?.format?.italic ??
+          parte?.style?.italic ??
+          parte?.textFormat?.italic ??
+          false
+        ),
+        underline: normalizarMarcacaoUnderline(parte)
       }))
       .filter(parte => parte.texto !== "")
   );
