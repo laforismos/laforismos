@@ -121,7 +121,6 @@
       background: rgba(255,255,255,0.28);
       backdrop-filter: blur(3px);
       box-shadow: inset 0 0 12px rgba(255,255,255,0.08);
-      box-sizing: border-box;
     }
 
     .frase {
@@ -847,8 +846,6 @@ let etapaAtual = 1;
 let hoverTravadoAteUltimoTempo = false;
 let videoTimeUpdateHandler = null;
 let videoLoadedMetadataHandler = null;
-let videoErrorHandler = null;
-let backgroundEmUso = null;
 
 function configurarTrechoDoVideo(bg) {
   const video = document.getElementById("bg-video");
@@ -911,27 +908,14 @@ function escolherBackgroundAleatorio() {
   return BACKGROUNDS[indice];
 }
 
+let backgroundEmUso = null;
+let videoErrorHandler = null;
+
 function videoPareceCompativel(bg) {
   const video = document.createElement("video");
-  if (!bg?.video) return false;
-
-  const tipo = String(bg.videoType || "").toLowerCase();
-
-  if (tipo.includes("quicktime")) {
-    return false;
-  }
-
-  if (!tipo) return true;
-
-  try {
-    return video.canPlayType(tipo) !== "";
-  } catch (e) {
-    return true;
-  }
-}
-
-function obterFallbackVisual(bg) {
-  return bg?.mobile || "./balaocolor.png";
+  if (!bg?.videoType) return true;
+  const suporte = video.canPlayType(bg.videoType);
+  return suporte === "probably" || suporte === "maybe";
 }
 
 function aplicarBackgroundVisualEstático(bg) {
@@ -939,22 +923,9 @@ function aplicarBackgroundVisualEstático(bg) {
   const video = document.getElementById("bg-video");
   const source = document.getElementById("bg-video-source");
 
-  if (videoErrorHandler && video) {
-    video.removeEventListener("error", videoErrorHandler);
-    videoErrorHandler = null;
+  if (bg?.mobile) {
+    body.style.setProperty("--mobile-bg-image", `url("${bg.mobile}")`);
   }
-
-  if (videoTimeUpdateHandler && video) {
-    video.removeEventListener("timeupdate", videoTimeUpdateHandler);
-    videoTimeUpdateHandler = null;
-  }
-
-  if (videoLoadedMetadataHandler && video) {
-    video.removeEventListener("loadedmetadata", videoLoadedMetadataHandler);
-    videoLoadedMetadataHandler = null;
-  }
-
-  body.style.setProperty("--mobile-bg-image", `url("${obterFallbackVisual(bg)}")`);
 
   if (source) {
     source.removeAttribute("src");
@@ -1073,19 +1044,12 @@ function ajustarAlturaBoxDinamicamente() {
 
   box.style.height = "auto";
 
-  const estilosBox = window.getComputedStyle(box);
-  const paddingVertical =
-    parseFloat(estilosBox.paddingTop || "0") +
-    parseFloat(estilosBox.paddingBottom || "0") +
-    parseFloat(estilosBox.borderTopWidth || "0") +
-    parseFloat(estilosBox.borderBottomWidth || "0");
-
   if (sobreAberto) {
-    box.style.height = (medirAlturaConteudo(sobreEl) + paddingVertical) + "px";
+    box.style.height = medirAlturaConteudo(sobreEl) + "px";
     return;
   }
 
-  box.style.height = (medirAlturaConteudo(fraseEl) + paddingVertical) + "px";
+  box.style.height = medirAlturaConteudo(fraseEl) + "px";
 }
 
 function obterFrasesVistas() {
@@ -1173,7 +1137,7 @@ function parsePartesComTempos(partesOriginais) {
         }
         continue;
       }
-      if (ch === "\") {
+      if (ch === "\\") {
         if (etapaAtualDaPilha() === 5) {
           removerUltimaOcorrenciaDaEtapa(5);
         } else {
@@ -1220,9 +1184,19 @@ function parsePartesComTempos(partesOriginais) {
 }
 
 function maiorEtapa(partes) {
-
   if (!Array.isArray(partes) || partes.length === 0) return 1;
   return partes.reduce((maximo, parte) => Math.max(maximo, parte.etapa || 1), 1);
+}
+
+function obterProximaEtapaDisponivel(partes, etapaAtualValor = 1) {
+  const etapas = [...new Set((partes || []).map(parte => parte.etapa || 1))]
+    .sort((a, b) => a - b);
+
+  for (const etapa of etapas) {
+    if (etapa > etapaAtualValor) return etapa;
+  }
+
+  return null;
 }
 
 function aplicarFormatacao(parte) {
@@ -1446,17 +1420,16 @@ function travarHoverSemTempo() {
 }
 
 function aplicarTravaHoverParaEstadoAtual(fraseObj, etapa, aoEntrarNovaFrase = false) {
-  const proximaEtapa = obterProximaEtapaDisponivel(fraseObj?.partes || [], etapa);
   const etapaFinal = maiorEtapa(fraseObj?.partes || []);
 
-  if (proximaEtapa != null) {
+  if (etapa < etapaFinal) {
     travarHoverSemTempo();
     return;
   }
 
   if (etapaFinal > 1 && !aoEntrarNovaFrase) {
-    const textoReveladoPorUltimo = obterTextoDaEtapa(fraseObj?.partes || [], etapa);
-    travarHoverConformeTexto(textoReveladoPorUltimo || obterTextoVisivel(fraseObj?.partes || [], etapa));
+    const textoReveladoPorUltimo = obterTextoDaEtapa(fraseObj?.partes || [], etapaFinal);
+    travarHoverConformeTexto(textoReveladoPorUltimo || obterTextoVisivel(fraseObj?.partes || [], etapaFinal));
     return;
   }
 
@@ -1907,10 +1880,7 @@ sincronizarToggle();
 inicializarInteracaoToggle();
 inicializarInteracaoBox();
 renderizarSobre();
-window.addEventListener("resize", () => {
-  ajustarAlturaBoxDinamicamente();
-  aplicarBackgroundAleatorio();
-});
+window.addEventListener("resize", ajustarAlturaBoxDinamicamente);
 carregarFrasesDaApi();
 </script>
 
