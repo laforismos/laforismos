@@ -64,7 +64,7 @@
       justify-content: flex-start;
       align-items: center;
       text-align: center;
-      padding: 88px 20px 20px;
+      padding: 126px 20px 20px;
       gap: 22px;
       position: relative;
       z-index: 1;
@@ -75,13 +75,21 @@
       margin: 0;
     }
 
-    .site-title {
+    .site-header {
       position: fixed;
       top: 30px;
       left: 50%;
       transform: translateX(-50%);
       z-index: 4;
       text-align: center;
+      display: flex;
+      flex-direction: column;
+      align-items: center;
+      gap: 4px;
+    }
+
+    .site-title {
+      margin: 0;
     }
 
     .site-title-link {
@@ -97,8 +105,7 @@
       font-style: italic;
       letter-spacing: 0.4px;
       text-align: center;
-      margin-top: 4px;
-      margin-bottom: 14px;
+      margin: 0;
       opacity: 0.92;
     }
 
@@ -506,6 +513,7 @@
       text-decoration: underline;
     }
 
+    .site-header,
     .footer-sobre-trigger,
     .footer-links {
       transition: transform 0.42s ease, opacity 0.42s ease;
@@ -649,9 +657,16 @@
         padding: 18px 20px;
       }
 
+      .site-header {
+        top: 24px;
+      }
+
       .subtitulo {
         font-size: 0.58rem;
-        margin-bottom: 12px;
+      }
+
+      main {
+        padding-top: 112px;
       }
 
       .toggle-btn {
@@ -696,8 +711,10 @@
 </video>
 
 <main>
-  <h1 class="site-title"><a class="site-title-link" href="./">LAFORISMOS</a></h1>
-  <div class="subtitulo">de Felipe Koraicho Sauma</div>
+  <div class="site-header">
+    <h1 class="site-title"><a class="site-title-link" href="./">LAFORISMOS</a></h1>
+    <div class="subtitulo">de Felipe Koraicho Sauma</div>
+  </div>
   <img class="sobre-foto-topo" src="./Fe_FOTO_AVATAR.png" alt="Felipe Koraicho Sauma">
 
   <div class="interacao-area">
