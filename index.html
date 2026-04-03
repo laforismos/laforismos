@@ -589,7 +589,7 @@
         width: min(90vw, 760px);
         max-width: min(90vw, 760px);
         box-sizing: border-box;
-        margin-bottom: 22px;
+        margin-bottom: 28px;
       }
 
       .interacao-area .filtro-obceno-principal {
@@ -1039,44 +1039,56 @@ function escaparHtml(texto) {
 
 function parsePartesComTempos(partesOriginais) {
   const caracteres = [];
-  let etapaCorrente = 1;
-  let emAsterisco = false;
-  let emBarra = false;
+  const pilhaEtapas = [1];
+
+  function etapaAtualDaPilha() {
+    return pilhaEtapas[pilhaEtapas.length - 1] || 1;
+  }
 
   for (const parte of (partesOriginais || [])) {
     const texto = String(parte?.texto || "");
 
     for (const ch of texto) {
       if (ch === "[") {
-        etapaCorrente = 2;
+        pilhaEtapas.push(2);
         continue;
       }
       if (ch === "]") {
-        etapaCorrente = 1;
+        if (pilhaEtapas[pilhaEtapas.length - 1] === 2) {
+          pilhaEtapas.pop();
+        }
         continue;
       }
       if (ch === "{") {
-        etapaCorrente = 3;
+        pilhaEtapas.push(3);
         continue;
       }
       if (ch === "}") {
-        etapaCorrente = 1;
+        if (pilhaEtapas[pilhaEtapas.length - 1] === 3) {
+          pilhaEtapas.pop();
+        }
         continue;
       }
       if (ch === "*") {
-        emAsterisco = !emAsterisco;
-        etapaCorrente = emAsterisco ? 4 : 1;
+        if (pilhaEtapas[pilhaEtapas.length - 1] === 4) {
+          pilhaEtapas.pop();
+        } else {
+          pilhaEtapas.push(4);
+        }
         continue;
       }
       if (ch === "\\") {
-        emBarra = !emBarra;
-        etapaCorrente = emBarra ? 5 : 1;
+        if (pilhaEtapas[pilhaEtapas.length - 1] === 5) {
+          pilhaEtapas.pop();
+        } else {
+          pilhaEtapas.push(5);
+        }
         continue;
       }
 
       caracteres.push({
         texto: ch,
-        etapa: etapaCorrente,
+        etapa: etapaAtualDaPilha(),
         bold: !!parte?.bold,
         italic: !!parte?.italic,
         underline: !!parte?.underline
