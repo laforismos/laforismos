@@ -366,22 +366,39 @@
     }
 
     @media (max-width: 768px) {
+      html.sobre-mobile-lock,
+      body.sobre-aberto.sobre-mobile-lock {
+        width: 100%;
+        max-width: 100vw;
+        overflow-x: hidden !important;
+      }
+
       body.sobre-aberto {
-        overflow-x: hidden;
+        overflow-x: hidden !important;
       }
 
       body.sobre-aberto main,
-      body.sobre-aberto .interacao-area,
-      body.sobre-aberto .interacao-area .box,
-      body.sobre-aberto .sobre-box-texto {
+      body.sobre-aberto .interacao-area {
         width: 100%;
-        max-width: 100%;
+        max-width: 100vw;
+        overflow-x: hidden;
         box-sizing: border-box;
       }
 
       body.sobre-aberto .interacao-area .box {
+        width: min(92vw, 760px);
         max-width: min(92vw, 760px);
         min-height: auto;
+        box-sizing: border-box;
+      }
+
+      body.sobre-aberto .sobre-box-texto {
+        display: block;
+        width: 100%;
+        max-width: 100%;
+        box-sizing: border-box;
+        overflow-wrap: break-word;
+        word-break: normal;
       }
 
       .sobre-foto-topo {
@@ -1954,14 +1971,40 @@ function renderizarSobre() {
 function abrirSobre() {
   sobreAberto = true;
   document.body.classList.add("sobre-aberto");
+
+  const ehMobile = window.matchMedia("(max-width: 768px)").matches;
+  const htmlEl = document.documentElement;
+  const boxEl = document.getElementById("box");
   const fraseEl = document.getElementById("frase");
   const sobreEl = document.getElementById("sobreBoxTexto");
   const overlayEl = document.querySelector(".overlay");
-  if (fraseEl) fraseEl.style.display = "none";
-  if (overlayEl) overlayEl.style.display = "none";
+
+  if (ehMobile) {
+    htmlEl.classList.add("sobre-mobile-lock");
+    document.body.classList.add("sobre-mobile-lock");
+    htmlEl.style.overflowX = "hidden";
+    document.body.style.overflowX = "hidden";
+  }
+
+  if (boxEl) {
+    boxEl.classList.remove("is-loading");
+  }
+
+  if (fraseEl) {
+    fraseEl.style.display = "none";
+  }
+
+  if (overlayEl) {
+    overlayEl.style.display = "none";
+  }
+
   if (sobreEl) {
     sobreEl.style.display = "block";
+    sobreEl.style.visibility = "visible";
+    sobreEl.style.opacity = "1";
+    sobreEl.style.position = "relative";
   }
+
   ajustarAlturaBoxDinamicamente();
 }
 
@@ -1970,14 +2013,30 @@ function fecharSobre(event) {
     event.preventDefault();
     event.stopPropagation();
   }
+
   sobreAberto = false;
   document.body.classList.remove("sobre-aberto");
+
+  const ehMobile = window.matchMedia("(max-width: 768px)").matches;
+  const htmlEl = document.documentElement;
   const fraseEl = document.getElementById("frase");
   const sobreEl = document.getElementById("sobreBoxTexto");
   const overlayEl = document.querySelector(".overlay");
+
+  if (ehMobile) {
+    htmlEl.classList.remove("sobre-mobile-lock");
+    document.body.classList.remove("sobre-mobile-lock");
+    htmlEl.style.overflowX = "";
+    document.body.style.overflowX = "";
+  }
+
   if (sobreEl) {
     sobreEl.style.display = "none";
+    sobreEl.style.visibility = "";
+    sobreEl.style.opacity = "";
+    sobreEl.style.position = "";
   }
+
   if (fraseEl) fraseEl.style.display = "block";
   if (overlayEl) overlayEl.style.display = "";
   ajustarAlturaBoxDinamicamente();
