@@ -285,9 +285,16 @@
     }
 
     body.sobre-aberto .sobre-foto-topo {
-      opacity: 1;
-      transform: translateY(0);
-      pointer-events: auto;
+      width: 88px;
+      height: 88px;
+      object-fit: cover;
+      border-radius: 999px;
+      border: 1px solid rgba(255,255,255,0.45);
+      opacity: 0;
+      transform: translateY(-32px);
+      pointer-events: none;
+      transition: opacity 0.42s ease, transform 0.42s ease;
+      margin-bottom: -4px;
     }
 
     body.sobre-aberto .interacao-area .box {
