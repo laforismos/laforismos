@@ -928,6 +928,8 @@ let etapaAtual = 1;
 let hoverTravadoAteUltimoTempo = false;
 let videoTimeUpdateHandler = null;
 let videoLoadedMetadataHandler = null;
+let aguardandoCliqueParaTroca = false;
+let ultimoBackgroundIndex = -1;
 
 function configurarTrechoDoVideo(bg) {
   const video = document.getElementById("bg-video");
@@ -984,9 +986,22 @@ function embaralhar(array) {
     .map(a => a[1]);
 }
 
-function escolherBackgroundAleatorio() {
+function escolherBackgroundAleatorio(semRepetirAtual = false) {
   if (!Array.isArray(BACKGROUNDS) || BACKGROUNDS.length === 0) return null;
-  const indice = Math.floor(Math.random() * BACKGROUNDS.length);
+
+  if (!semRepetirAtual || BACKGROUNDS.length === 1) {
+    const indice = Math.floor(Math.random() * BACKGROUNDS.length);
+    ultimoBackgroundIndex = indice;
+    return BACKGROUNDS[indice];
+  }
+
+  let indice = Math.floor(Math.random() * BACKGROUNDS.length);
+
+  while (indice === ultimoBackgroundIndex) {
+    indice = Math.floor(Math.random() * BACKGROUNDS.length);
+  }
+
+  ultimoBackgroundIndex = indice;
   return BACKGROUNDS[indice];
 }
 
@@ -1022,8 +1037,8 @@ function aplicarBackgroundVisualEstático(bg) {
   }
 }
 
-function aplicarBackgroundAleatorio() {
-  const bg = escolherBackgroundAleatorio();
+function aplicarBackgroundAleatorio(semRepetirAtual = false) {
+  const bg = escolherBackgroundAleatorio(semRepetirAtual);
   if (!bg) return;
 
   const body = document.body;
@@ -1083,6 +1098,49 @@ function desativarEstadoLoadingBox() {
   box.classList.remove("is-loading");
 }
 
+function congelarTamanhoAtualDoBox() {
+  const box = document.getElementById("box");
+  if (!box) return;
+
+  const larguraAtual = box.offsetWidth;
+  const alturaAtual = box.offsetHeight;
+
+  if (larguraAtual > 0) {
+    box.style.width = larguraAtual + "px";
+  }
+
+  if (alturaAtual > 0) {
+    box.style.height = alturaAtual + "px";
+  }
+}
+
+function entrarModoCarregandoTroca() {
+  const box = document.getElementById("box");
+  if (!box) return;
+
+  congelarTamanhoAtualDoBox();
+  aguardandoCliqueParaTroca = true;
+  hoverTravadoAteUltimoTempo = false;
+  clicado = true;
+
+  if (hoverTimer) {
+    clearTimeout(hoverTimer);
+    hoverTimer = null;
+  }
+
+  box.classList.add("disable-hover");
+  ativarEstadoLoadingBox();
+}
+
+function sairModoCarregandoTroca() {
+  const box = document.getElementById("box");
+  if (!box) return;
+
+  aguardandoCliqueParaTroca = false;
+  desativarEstadoLoadingBox();
+}
+
+
 function medirAlturaConteudo(el) {
   if (!el) return 0;
   const displayAnterior = el.style.display;
@@ -1127,6 +1185,7 @@ function ajustarAlturaBoxDinamicamente() {
 
   if (!estaNoDesktop) {
     box.style.width = "";
+    box.style.height = "";
     return;
   }
 
@@ -1392,7 +1451,7 @@ function mostrarFraseObjeto(fraseObj, etapa = 1) {
     const html = montarHtmlPartes(fraseObj?.partes || [], etapa);
     const textoVisivel = obterTextoVisivel(fraseObj?.partes || [], etapa);
 
-    desativarEstadoLoadingBox();
+    sairModoCarregandoTroca();
     el.innerHTML = html || "Nenhuma frase ativa disponível.";
     aplicarClasseDialogo(textoVisivel);
 
@@ -1415,7 +1474,7 @@ function mostrarMensagem(texto) {
   el.style.opacity = 0;
 
   setTimeout(() => {
-    desativarEstadoLoadingBox();
+    sairModoCarregandoTroca();
     el.textContent = texto;
     aplicarClasseDialogo(texto);
     el.style.opacity = 1;
@@ -1595,13 +1654,19 @@ function irParaProximaFrase() {
   }
 
   const proxima = fila.shift();
-  aplicarNovaCorMobile();
+  aplicarBackgroundAleatorio(true);
   mostrarFraseObjeto(proxima, 1);
   aplicarTravaHoverParaEstadoAtual(proxima, 1, true);
 }
 
 function proximaFrase() {
   if (sobreAberto) return;
+
+  if (aguardandoCliqueParaTroca) {
+    irParaProximaFrase();
+    return;
+  }
+
   if (fraseAtual) {
     const proximaEtapaDisponivel = obterProximaEtapaDisponivel(fraseAtual.partes, etapaAtual);
     if (proximaEtapaDisponivel != null) {
@@ -1611,7 +1676,7 @@ function proximaFrase() {
     }
   }
 
-  irParaProximaFrase();
+  entrarModoCarregandoTroca();
 }
 
 document.getElementById("box").addEventListener("mouseleave", () => {
