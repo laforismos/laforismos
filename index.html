@@ -586,7 +586,8 @@
 
     @media (min-width: 769px) {
       .interacao-area .box {
-        width: min(90vw, 760px);
+        display: inline-block;
+        width: auto;
         max-width: min(90vw, 760px);
         box-sizing: border-box;
         margin-bottom: 34px;
@@ -598,11 +599,17 @@
 
       .frase,
       .sobre-box-texto {
-        width: 100%;
-        max-width: 100%;
+        display: inline-block;
+        width: auto;
+        max-width: 700px;
         white-space: pre-line;
         overflow-wrap: break-word;
         word-break: normal;
+      }
+
+      .frase.dialogo {
+        width: auto;
+        max-width: 620px;
       }
     }
 
@@ -1042,14 +1049,62 @@ function ajustarAlturaBoxDinamicamente() {
   const sobreEl = document.getElementById("sobreBoxTexto");
   if (!box || !fraseEl || !sobreEl) return;
 
+  const estaNoDesktop = window.matchMedia("(min-width: 769px)").matches;
+
   box.style.height = "auto";
 
-  if (sobreAberto) {
-    box.style.height = medirAlturaConteudo(sobreEl) + "px";
+  if (!estaNoDesktop) {
+    box.style.width = "";
     return;
   }
 
-  box.style.height = medirAlturaConteudo(fraseEl) + "px";
+  const conteudoAtivo = sobreAberto ? sobreEl : fraseEl;
+  const conteudoInativo = sobreAberto ? fraseEl : sobreEl;
+  if (!conteudoAtivo) return;
+
+  const boxStyles = window.getComputedStyle(box);
+  const paddingX = parseFloat(boxStyles.paddingLeft) + parseFloat(boxStyles.paddingRight);
+  const borderX = parseFloat(boxStyles.borderLeftWidth) + parseFloat(boxStyles.borderRightWidth);
+  const larguraMaximaBox = Math.min(window.innerWidth * 0.9, 760);
+  const larguraMaximaConteudo = Math.max(0, larguraMaximaBox - paddingX - borderX);
+
+  const displayConteudoAtivoAnterior = conteudoAtivo.style.display;
+  const visibilityConteudoAtivoAnterior = conteudoAtivo.style.visibility;
+  const positionConteudoAtivoAnterior = conteudoAtivo.style.position;
+  const leftConteudoAtivoAnterior = conteudoAtivo.style.left;
+  const widthConteudoAtivoAnterior = conteudoAtivo.style.width;
+  const maxWidthConteudoAtivoAnterior = conteudoAtivo.style.maxWidth;
+
+  const displayConteudoInativoAnterior = conteudoInativo ? conteudoInativo.style.display : "";
+
+  if (conteudoInativo) {
+    conteudoInativo.style.display = "none";
+  }
+
+  conteudoAtivo.style.display = "inline-block";
+  conteudoAtivo.style.visibility = "hidden";
+  conteudoAtivo.style.position = "absolute";
+  conteudoAtivo.style.left = "-9999px";
+  conteudoAtivo.style.width = "auto";
+  conteudoAtivo.style.maxWidth = larguraMaximaConteudo + "px";
+
+  box.style.width = "auto";
+  const larguraConteudo = Math.min(conteudoAtivo.offsetWidth || conteudoAtivo.scrollWidth || 0, larguraMaximaConteudo);
+  const larguraFinalBox = Math.min(larguraMaximaBox, Math.ceil(larguraConteudo + paddingX + borderX));
+
+  conteudoAtivo.style.display = displayConteudoAtivoAnterior;
+  conteudoAtivo.style.visibility = visibilityConteudoAtivoAnterior;
+  conteudoAtivo.style.position = positionConteudoAtivoAnterior;
+  conteudoAtivo.style.left = leftConteudoAtivoAnterior;
+  conteudoAtivo.style.width = widthConteudoAtivoAnterior;
+  conteudoAtivo.style.maxWidth = maxWidthConteudoAtivoAnterior;
+
+  if (conteudoInativo) {
+    conteudoInativo.style.display = displayConteudoInativoAnterior;
+  }
+
+  box.style.width = Math.max(0, larguraFinalBox) + "px";
+  box.style.height = "auto";
 }
 
 function obterFrasesVistas() {
@@ -1192,8 +1247,15 @@ function obterProximaEtapaDisponivel(partes, etapaAtualValor = 1) {
   const etapas = [...new Set((partes || []).map(parte => parte.etapa || 1))]
     .sort((a, b) => a - b);
 
+  const htmlAtual = montarHtmlPartes(partes || [], etapaAtualValor);
+
   for (const etapa of etapas) {
-    if (etapa > etapaAtualValor) return etapa;
+    if (etapa <= etapaAtualValor) continue;
+
+    const htmlNovo = montarHtmlPartes(partes || [], etapa);
+    if (htmlNovo !== htmlAtual) {
+      return etapa;
+    }
   }
 
   return null;
