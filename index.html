@@ -284,22 +284,32 @@
       pointer-events: none;
     }
 
-    body.sobre-aberto .sobre-foto-topo {
+    .sobre-foto-topo {
       width: 88px;
       height: 88px;
       object-fit: cover;
       border-radius: 999px;
       border: 1px solid rgba(255,255,255,0.45);
       opacity: 0;
+      visibility: hidden;
       transform: translateY(-32px);
       pointer-events: none;
-      transition: opacity 0.42s ease, transform 0.42s ease;
+      transition: opacity 0.42s ease, transform 0.42s ease, visibility 0s linear 0.42s;
+      margin-bottom: 0;
+      display: block;
+    }
+
+    body.sobre-aberto .sobre-foto-topo {
+      opacity: 1;
+      visibility: visible;
+      transform: translateY(0);
+      transition: opacity 0.42s ease, transform 0.42s ease, visibility 0s linear 0s;
       margin-bottom: -4px;
     }
 
     body.sobre-aberto .interacao-area .box {
       max-width: min(90vw, 760px);
-      min-height: min(72dvh, 720px);
+      min-height: auto;
       cursor: default;
     }
 
@@ -324,7 +334,7 @@
     @media (max-width: 768px) {
       body.sobre-aberto .interacao-area .box {
         max-width: min(92vw, 760px);
-        min-height: min(68dvh, 620px);
+        min-height: auto;
       }
 
       .sobre-foto-topo {
@@ -881,6 +891,54 @@ function desativarEstadoLoadingBox() {
   box.classList.remove("is-loading");
 }
 
+function medirAlturaConteudo(el) {
+  if (!el) return 0;
+  const displayAnterior = el.style.display;
+  const visibilityAnterior = el.style.visibility;
+  const positionAnterior = el.style.position;
+  const leftAnterior = el.style.left;
+  const widthAnterior = el.style.width;
+
+  const estilos = window.getComputedStyle(el);
+  const precisaMostrar = estilos.display === "none";
+
+  if (precisaMostrar) {
+    el.style.display = "block";
+    el.style.visibility = "hidden";
+    el.style.position = "absolute";
+    el.style.left = "-9999px";
+    el.style.width = estilos.width;
+  }
+
+  const altura = el.scrollHeight;
+
+  if (precisaMostrar) {
+    el.style.display = displayAnterior;
+    el.style.visibility = visibilityAnterior;
+    el.style.position = positionAnterior;
+    el.style.left = leftAnterior;
+    el.style.width = widthAnterior;
+  }
+
+  return altura;
+}
+
+function ajustarAlturaBoxDinamicamente() {
+  const box = document.getElementById("box");
+  const fraseEl = document.getElementById("frase");
+  const sobreEl = document.getElementById("sobreBoxTexto");
+  if (!box || !fraseEl || !sobreEl) return;
+
+  box.style.height = "auto";
+
+  if (sobreAberto) {
+    box.style.height = medirAlturaConteudo(sobreEl) + "px";
+    return;
+  }
+
+  box.style.height = medirAlturaConteudo(fraseEl) + "px";
+}
+
 function obterFrasesVistas() {
   try {
     const bruto = localStorage.getItem(STORAGE_FRASES_VISTAS);
@@ -1073,6 +1131,7 @@ function mostrarFraseObjeto(fraseObj, etapa = 1) {
     marcarFraseComoVista(fraseObj);
 
     el.style.opacity = 1;
+    ajustarAlturaBoxDinamicamente();
   }, 200);
 }
 
@@ -1085,6 +1144,7 @@ function mostrarMensagem(texto) {
     el.textContent = texto;
     aplicarClasseDialogo(texto);
     el.style.opacity = 1;
+    ajustarAlturaBoxDinamicamente();
   }, 200);
 
   fraseAtual = null;
@@ -1505,6 +1565,7 @@ function abrirSobre() {
   if (sobreEl) {
     sobreEl.style.display = "block";
   }
+  ajustarAlturaBoxDinamicamente();
 }
 
 function fecharSobre(event) {
@@ -1522,6 +1583,7 @@ function fecharSobre(event) {
   }
   if (fraseEl) fraseEl.style.display = "block";
   if (overlayEl) overlayEl.style.display = "";
+  ajustarAlturaBoxDinamicamente();
 }
 
 function toggleSobre(event) {
@@ -1678,6 +1740,7 @@ sincronizarToggle();
 inicializarInteracaoToggle();
 inicializarInteracaoBox();
 renderizarSobre();
+window.addEventListener("resize", ajustarAlturaBoxDinamicamente);
 carregarFrasesDaApi();
 </script>
 
