@@ -64,7 +64,7 @@
       justify-content: flex-start;
       align-items: center;
       text-align: center;
-      padding: 118px 20px 20px;
+      padding: 126px 20px 20px;
       gap: 22px;
       position: relative;
       z-index: 1;
@@ -77,7 +77,7 @@
 
     .site-header {
       position: fixed;
-      top: 46px;
+      top: 30px;
       left: 50%;
       transform: translateX(-50%);
       z-index: 4;
@@ -584,6 +584,23 @@
       cursor: grabbing;
     }
 
+    @media (min-width: 769px) {
+      .interacao-area .box {
+        width: min(90vw, 760px);
+        max-width: min(90vw, 760px);
+        box-sizing: border-box;
+      }
+
+      .frase,
+      .sobre-box-texto {
+        width: 100%;
+        max-width: 100%;
+        white-space: pre-line;
+        overflow-wrap: break-word;
+        word-break: normal;
+      }
+    }
+
     @media (max-width: 768px) {
       body {
         background: var(--mobile-bg-image) no-repeat center center;
@@ -650,7 +667,7 @@
       }
 
       main {
-        padding-top: 96px;
+        padding-top: 88px;
       }
 
       .box {
@@ -658,7 +675,7 @@
       }
 
       .site-header {
-        top: 34px;
+        top: 24px;
       }
 
       .subtitulo {
@@ -666,7 +683,7 @@
       }
 
       main {
-        padding-top: 106px;
+        padding-top: 112px;
       }
 
       .toggle-btn {
@@ -706,7 +723,7 @@
 
 <body>
 
-<video autoplay muted loop playsinline preload="auto" webkit-playsinline="true" id="bg-video">
+<video autoplay muted loop playsinline id="bg-video">
   <source id="bg-video-source" src="./VIDEOBALAO.mp4" type="video/mp4">
 </video>
 
@@ -824,32 +841,6 @@ let etapaAtual = 1;
 let hoverTravadoAteUltimoTempo = false;
 let videoTimeUpdateHandler = null;
 let videoLoadedMetadataHandler = null;
-let videoCanPlayHandler = null;
-
-function obterTipoVideo(caminho) {
-  const valor = String(caminho || "").toLowerCase();
-  if (valor.endsWith(".mp4") || valor.endsWith(".m4v")) return "video/mp4";
-  if (valor.endsWith(".webm")) return "video/webm";
-  if (valor.endsWith(".mov")) return "video/quicktime";
-  return "";
-}
-
-function garantirPlaybackVideo() {
-  const video = document.getElementById("bg-video");
-  if (!video) return;
-
-  video.muted = true;
-  video.defaultMuted = true;
-  video.playsInline = true;
-  video.setAttribute("muted", "");
-  video.setAttribute("playsinline", "");
-  video.setAttribute("webkit-playsinline", "true");
-
-  const tentativa = video.play();
-  if (tentativa && typeof tentativa.catch === "function") {
-    tentativa.catch(() => {});
-  }
-}
 
 function configurarTrechoDoVideo(bg) {
   const video = document.getElementById("bg-video");
@@ -865,20 +856,10 @@ function configurarTrechoDoVideo(bg) {
     videoLoadedMetadataHandler = null;
   }
 
-  if (videoCanPlayHandler) {
-    video.removeEventListener("canplay", videoCanPlayHandler);
-    videoCanPlayHandler = null;
-  }
-
   const temTrechoCustomizado =
     Number.isFinite(bg?.startTime) &&
     Number.isFinite(bg?.endTime) &&
     bg.endTime > bg.startTime;
-
-  videoCanPlayHandler = () => {
-    garantirPlaybackVideo();
-  };
-  video.addEventListener("canplay", videoCanPlayHandler);
 
   if (!temTrechoCustomizado) {
     video.loop = true;
@@ -892,14 +873,16 @@ function configurarTrechoDoVideo(bg) {
       if (video.currentTime < bg.startTime || video.currentTime >= bg.endTime) {
         video.currentTime = bg.startTime;
       }
-      garantirPlaybackVideo();
     } catch (e) {}
   };
 
   videoTimeUpdateHandler = () => {
     if (video.currentTime >= bg.endTime) {
       video.currentTime = bg.startTime;
-      garantirPlaybackVideo();
+      const tentativa = video.play();
+      if (tentativa && typeof tentativa.catch === "function") {
+        tentativa.catch(() => {});
+      }
     }
   };
 
@@ -937,18 +920,14 @@ function aplicarBackgroundAleatorio() {
   if (bg.video && video && source) {
     configurarTrechoDoVideo(bg);
 
-    const tipoDetectado = bg.videoType || obterTipoVideo(bg.video);
     source.src = bg.video;
-
-    if (tipoDetectado) {
-      source.type = tipoDetectado;
-    } else {
-      source.removeAttribute("type");
-    }
-
-    video.src = bg.video;
+    source.type = bg.videoType || "";
     video.load();
-    garantirPlaybackVideo();
+
+    const tentativa = video.play();
+    if (tentativa && typeof tentativa.catch === "function") {
+      tentativa.catch(() => {});
+    }
   }
 }
 
@@ -1618,7 +1597,7 @@ function normalizarPartes(partes) {
 function obterPartesSobreEstatico() {
   return [
     { texto: "O FUTURO DA GRAPEFRUIT", bold: true, italic: true, underline: false },
-    { texto: "\n\nApesar de redator, sou analfabeto. Nunca escrevi uma linha de código. Na verdade, escrevia win+enter pra entrar no Windows em 1992. Nada além. Pula pra 2026. Matrix – a IA pluga o html no meu dedo.\n\nComeço esse experimento, algo que sempre quis: um livro vivo de nanocontos.  Que vai em breve conversar com você, ser baixado num chip e virar minha consciência, podendo ser instalada numa grapefruit ou algo que o valha.\n\nLaforismos é meu site beta de estimação. Beta forever, estilo Dolly, nadando disléxica entre botões CSS e figuras de linguagem de português brasileiro.\n\nMeu sáite de interê, que poderia se chamar: “Desabafos polissêmicos, a fuga da egotrip.” Ou: “Eu podia tá bebendo, podia tá comendo açúcar, mas tô só fazendo um trocadilho.” \n\nMas, se pegar o que tá escrito mesmo, linha após linha – nas mais de 2000 desse código, Laforismos é apenas um sisteminha, que fiz pra jogar umas frases que ficam querendo sair. \n\nObrigado por ler.\n\nPrazer!\n\nFelipe Koraicho Sauma.\nEscritor do Box de Frases  \nLaforismos.com.br", bold: false, italic: true, underline: false }
+    { texto: "\n\nApesar de redator, sou analfabeto. Nunca escrevi uma linha de código. Na verdade, escrevia win+enter pra entrar no Windows em 1992. Nada além. Pula pra 2026. Matrix – a IA pluga o html no meu dedo.\n\nComeço esse experimento, algo que sempre quis: um livro vivo de nanocontos.  Que vai em breve conversar com você, ser baixado num chip e virar minha consciência, podendo ser instalada numa grapefruit ou algo que o valha.\n\nLaforismos é meu site beta de estimação. Beta forever, estilo Dolly, nadando disléxica entre botões CSS e figuras de linguagem de português brasileiro.\n\nMeu sáite de interê, que poderia se chamar: “Desabafos polissêmicos Felipe Sauma. – A fuga da egotrip.” Ou: “Eu podia tá bebendo, podia tá comendo açúcar, mas tô só fazendo um trocadilho.”\n\nMas, se pegar o que tá escrito mesmo, linha após linha – nas mais de 2000 desse código, Laforismos é apenas um sisteminha, que fiz pra jogar umas frases que ficam querendo sair.\n\nObrigado por ler.\n\nPrazer!\n\nFelipe Koraicho Sauma.\nEscritor do Box de Frases  \nLaforismos.com.br", bold: false, italic: true, underline: false }
   ];
 }
 
@@ -1816,16 +1795,6 @@ inicializarInteracaoBox();
 renderizarSobre();
 window.addEventListener("resize", ajustarAlturaBoxDinamicamente);
 carregarFrasesDaApi();
-
-document.addEventListener("visibilitychange", () => {
-  if (!document.hidden) {
-    garantirPlaybackVideo();
-  }
-});
-
-window.addEventListener("pageshow", () => {
-  garantirPlaybackVideo();
-});
 </script>
 
 </body>
