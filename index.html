@@ -856,18 +856,61 @@ const MOBILE_BG_COLORS = [
   "#00ffde",
   "#42ff00",
   "#00ffc0",
-  "#7e00ff"
+  "#7e00ff",
+  "#fd2e77",
+  "#fd2ef6",
+  "#2efd9e",
+  "#e1ff16",
+  "#4683ff",
+  "#ff9446",
+  "#7646ff",
+  "#ff6b6b",
+  "#ffd93d",
+  "#6bcb77",
+  "#4d96ff",
+  "#b967ff",
+  "#ff8fab",
+  "#f15bb5",
+  "#fee440",
+  "#00bbf9",
+  "#00f5d4",
+  "#9bff00",
+  "#ff7b00",
+  "#ff3d81"
 ];
 
-function escolherCorMobileAleatoria() {
+let ultimaCorMobile = null;
+
+function escolherCorMobileAleatoriaSemRepeticao() {
   if (!Array.isArray(MOBILE_BG_COLORS) || MOBILE_BG_COLORS.length === 0) return "#ff00b4";
-  const indice = Math.floor(Math.random() * MOBILE_BG_COLORS.length);
-  return MOBILE_BG_COLORS[indice];
+  if (MOBILE_BG_COLORS.length === 1) return MOBILE_BG_COLORS[0];
+
+  let corEscolhida = MOBILE_BG_COLORS[Math.floor(Math.random() * MOBILE_BG_COLORS.length)];
+
+  while (corEscolhida === ultimaCorMobile) {
+    corEscolhida = MOBILE_BG_COLORS[Math.floor(Math.random() * MOBILE_BG_COLORS.length)];
+  }
+
+  return corEscolhida;
 }
 
-function aplicarBackgroundMobileAleatorio() {
-  const cor = escolherCorMobileAleatoria();
+function aplicarNovaCorMobile() {
+  if (!window.matchMedia("(max-width: 768px)").matches) return;
+
+  const cor = escolherCorMobileAleatoriaSemRepeticao();
+  ultimaCorMobile = cor;
   document.body.style.setProperty("--mobile-bg-color", cor);
+}
+
+function aplicarCorInicialMobile() {
+  if (!window.matchMedia("(max-width: 768px)").matches) return;
+
+  if (ultimaCorMobile) {
+    document.body.style.setProperty("--mobile-bg-color", ultimaCorMobile);
+    return;
+  }
+
+  aplicarNovaCorMobile();
 }
 
 let frases = [];
@@ -990,7 +1033,7 @@ function aplicarBackgroundAleatorio() {
 
   backgroundEmUso = bg;
   body.classList.toggle("bg-verde", !!bg.isGreen);
-  aplicarBackgroundMobileAleatorio();
+  aplicarCorInicialMobile();
 
   if (!desktop || !video || !source || !bg.video) {
     aplicarBackgroundVisualEstático(bg);
@@ -1552,6 +1595,7 @@ function irParaProximaFrase() {
   }
 
   const proxima = fila.shift();
+  aplicarNovaCorMobile();
   mostrarFraseObjeto(proxima, 1);
   aplicarTravaHoverParaEstadoAtual(proxima, 1, true);
 }
