@@ -35,6 +35,7 @@
     body {
       --mobile-bg-color: #ff00b4;
       --mobile-overlay-opacity: 0.18;
+      --desktop-fallback-bg: none;
       --site-text-color: white;
       margin: 0;
       font-family: Helvetica, Arial, sans-serif;
@@ -45,6 +46,8 @@
       min-height: 100dvh;
       overflow-x: hidden;
       overflow-y: auto;
+      background: var(--desktop-fallback-bg) no-repeat center center;
+      background-size: cover;
     }
 
     #bg-video {
@@ -1040,10 +1043,9 @@ function aplicarBackgroundVisualEstático(bg) {
   const body = document.body;
   const video = document.getElementById("bg-video");
   const source = document.getElementById("bg-video-source");
+  const fallbackImagem = bg?.mobile ? `url("${bg.mobile}")` : "none";
 
-  if (bg?.mobile) {
-    body.style.setProperty("--mobile-bg-image", `url("${bg.mobile}")`);
-  }
+  body.style.setProperty("--desktop-fallback-bg", fallbackImagem);
 
   if (source) {
     source.removeAttribute("src");
@@ -1092,6 +1094,8 @@ function aplicarBackgroundAleatorio(semRepetirAtual = false) {
   };
 
   video.addEventListener("error", videoErrorHandler);
+
+  body.style.setProperty("--desktop-fallback-bg", "none");
 
   source.src = bg.video;
   source.type = bg.videoType || "";
