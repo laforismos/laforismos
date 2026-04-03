@@ -363,6 +363,19 @@
     }
 
     @media (max-width: 768px) {
+      body.sobre-aberto {
+        overflow-x: hidden;
+      }
+
+      body.sobre-aberto main,
+      body.sobre-aberto .interacao-area,
+      body.sobre-aberto .interacao-area .box,
+      body.sobre-aberto .sobre-box-texto {
+        width: 100%;
+        max-width: 100%;
+        box-sizing: border-box;
+      }
+
       body.sobre-aberto .interacao-area .box {
         max-width: min(92vw, 760px);
         min-height: auto;
@@ -1925,7 +1938,26 @@ function normalizarPartes(partes) {
 function obterPartesSobreEstatico() {
   return [
     { texto: "O FUTURO DA GRAPEFRUIT", bold: true, italic: true, underline: false },
-    { texto: "\n\nApesar de redator, sou analfabeto. Nunca escrevi uma linha de código. Na verdade, escrevia win+enter pra entrar no Windows em 1992. Nada além. Pula pra 2026. Matrix – a IA pluga o html no meu dedo.\n\nComeço esse experimento, algo que sempre quis: um livro vivo de nanocontos.  Que vai em breve conversar com você, ser baixado num chip e virar minha consciência, podendo ser instalada numa grapefruit ou algo que o valha.\n\nLaforismos é meu site beta de estimação. Beta forever, estilo Dolly, nadando disléxica entre botões CSS e figuras de linguagem de português brasileiro.\n\nMeu sáite de interê, que poderia se chamar: “Desabafos polissêmicos Felipe Sauma. – A fuga da egotrip.” Ou: “Eu podia tá bebendo, podia tá comendo açúcar, mas tô só fazendo um trocadilho.”\n\nMas, se pegar o que tá escrito mesmo, linha após linha – nas mais de 2000 desse código, Laforismos é apenas um sisteminha, que fiz pra jogar umas frases que ficam querendo sair.\n\nObrigado por ler.\n\nPrazer!\n\nFelipe Koraicho Sauma.\nEscritor do Box de Frases  \nLaforismos.com.br", bold: false, italic: true, underline: false }
+    { texto: "
+
+Apesar de redator, sou analfabeto. Nunca escrevi uma linha de código. Na verdade, escrevia win+enter pra entrar no Windows em 1992. Nada além. Pula pra 2026. Matrix – a IA pluga o html embaixo do meu dedo. 
+
+Começo esse experimento, algo que sempre quis: um livro vivo de nanocontos. Que vai em breve conversar com você, ser baixado num chip e virar minha consciência, podendo ser instalada numa grapefruit ou algo que o valha.
+
+Laforismos é meu site beta de estimação. Beta forever, estilo Dolly, nadando disléxica entre botões CSS e figuras de linguagem de português brasileiro.
+
+Meu sáite de internê, que poderia se chamar: “Desabafos polissêmicos, a fuga da egotrip.” Ou: \"Eu podia tá bebendo, podia tá comendo açúcar, mas tô só fazendo um trocadilho.\"
+
+Mas se pegar o que tá escrito mesmo, linha após linha – nas mais de 2000 desse código: isso aqui é apenas um sisteminha, que fiz pra jogar umas frases que ficam querendo sair. 
+
+Obrigado por ler.
+
+Prazer!
+
+Felipe Koraicho Sauma
+Redator do Box de Frases  
+CCO • CTO
+Laforismos.com.br", bold: false, italic: true, underline: false }
   ];
 }
 
