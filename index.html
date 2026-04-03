@@ -121,6 +121,7 @@
       background: rgba(255,255,255,0.28);
       backdrop-filter: blur(3px);
       box-shadow: inset 0 0 12px rgba(255,255,255,0.08);
+      box-sizing: border-box;
     }
 
     .frase {
@@ -589,7 +590,7 @@
         width: min(90vw, 760px);
         max-width: min(90vw, 760px);
         box-sizing: border-box;
-        margin-bottom: 28px;
+        margin-bottom: 34px;
       }
 
       .interacao-area .filtro-obceno-principal {
@@ -846,6 +847,8 @@ let etapaAtual = 1;
 let hoverTravadoAteUltimoTempo = false;
 let videoTimeUpdateHandler = null;
 let videoLoadedMetadataHandler = null;
+let videoErrorHandler = null;
+let backgroundEmUso = null;
 
 function configurarTrechoDoVideo(bg) {
   const video = document.getElementById("bg-video");
@@ -908,6 +911,64 @@ function escolherBackgroundAleatorio() {
   return BACKGROUNDS[indice];
 }
 
+function videoPareceCompativel(bg) {
+  const video = document.createElement("video");
+  if (!bg?.video) return false;
+
+  const tipo = String(bg.videoType || "").toLowerCase();
+
+  if (tipo.includes("quicktime")) {
+    return false;
+  }
+
+  if (!tipo) return true;
+
+  try {
+    return video.canPlayType(tipo) !== "";
+  } catch (e) {
+    return true;
+  }
+}
+
+function obterFallbackVisual(bg) {
+  return bg?.mobile || "./balaocolor.png";
+}
+
+function aplicarBackgroundVisualEstático(bg) {
+  const body = document.body;
+  const video = document.getElementById("bg-video");
+  const source = document.getElementById("bg-video-source");
+
+  if (videoErrorHandler && video) {
+    video.removeEventListener("error", videoErrorHandler);
+    videoErrorHandler = null;
+  }
+
+  if (videoTimeUpdateHandler && video) {
+    video.removeEventListener("timeupdate", videoTimeUpdateHandler);
+    videoTimeUpdateHandler = null;
+  }
+
+  if (videoLoadedMetadataHandler && video) {
+    video.removeEventListener("loadedmetadata", videoLoadedMetadataHandler);
+    videoLoadedMetadataHandler = null;
+  }
+
+  body.style.setProperty("--mobile-bg-image", `url("${obterFallbackVisual(bg)}")`);
+
+  if (source) {
+    source.removeAttribute("src");
+    source.removeAttribute("type");
+  }
+
+  if (video) {
+    video.pause();
+    video.removeAttribute("src");
+    video.load();
+    video.style.display = "none";
+  }
+}
+
 function aplicarBackgroundAleatorio() {
   const bg = escolherBackgroundAleatorio();
   if (!bg) return;
@@ -915,24 +976,47 @@ function aplicarBackgroundAleatorio() {
   const body = document.body;
   const video = document.getElementById("bg-video");
   const source = document.getElementById("bg-video-source");
+  const desktop = window.matchMedia("(min-width: 769px)").matches;
 
+  backgroundEmUso = bg;
   body.classList.toggle("bg-verde", !!bg.isGreen);
 
   if (bg.mobile) {
     body.style.setProperty("--mobile-bg-image", `url("${bg.mobile}")`);
   }
 
-  if (bg.video && video && source) {
-    configurarTrechoDoVideo(bg);
+  if (!desktop || !video || !source || !bg.video) {
+    aplicarBackgroundVisualEstático(bg);
+    return;
+  }
 
-    source.src = bg.video;
-    source.type = bg.videoType || "";
-    video.load();
+  if (!videoPareceCompativel(bg)) {
+    aplicarBackgroundVisualEstático(bg);
+    return;
+  }
 
-    const tentativa = video.play();
-    if (tentativa && typeof tentativa.catch === "function") {
-      tentativa.catch(() => {});
-    }
+  configurarTrechoDoVideo(bg);
+
+  if (videoErrorHandler) {
+    video.removeEventListener("error", videoErrorHandler);
+  }
+
+  videoErrorHandler = () => {
+    aplicarBackgroundVisualEstático(backgroundEmUso || bg);
+  };
+
+  video.addEventListener("error", videoErrorHandler);
+
+  source.src = bg.video;
+  source.type = bg.videoType || "";
+  video.style.display = "block";
+  video.load();
+
+  const tentativa = video.play();
+  if (tentativa && typeof tentativa.catch === "function") {
+    tentativa.catch(() => {
+      aplicarBackgroundVisualEstático(backgroundEmUso || bg);
+    });
   }
 }
 
@@ -989,12 +1073,19 @@ function ajustarAlturaBoxDinamicamente() {
 
   box.style.height = "auto";
 
+  const estilosBox = window.getComputedStyle(box);
+  const paddingVertical =
+    parseFloat(estilosBox.paddingTop || "0") +
+    parseFloat(estilosBox.paddingBottom || "0") +
+    parseFloat(estilosBox.borderTopWidth || "0") +
+    parseFloat(estilosBox.borderBottomWidth || "0");
+
   if (sobreAberto) {
-    box.style.height = medirAlturaConteudo(sobreEl) + "px";
+    box.style.height = (medirAlturaConteudo(sobreEl) + paddingVertical) + "px";
     return;
   }
 
-  box.style.height = medirAlturaConteudo(fraseEl) + "px";
+  box.style.height = (medirAlturaConteudo(fraseEl) + paddingVertical) + "px";
 }
 
 function obterFrasesVistas() {
@@ -1045,6 +1136,15 @@ function parsePartesComTempos(partesOriginais) {
     return pilhaEtapas[pilhaEtapas.length - 1] || 1;
   }
 
+  function removerUltimaOcorrenciaDaEtapa(etapa) {
+    for (let i = pilhaEtapas.length - 1; i >= 1; i -= 1) {
+      if (pilhaEtapas[i] === etapa) {
+        pilhaEtapas.splice(i, 1);
+        break;
+      }
+    }
+  }
+
   for (const parte of (partesOriginais || [])) {
     const texto = String(parte?.texto || "");
 
@@ -1054,9 +1154,7 @@ function parsePartesComTempos(partesOriginais) {
         continue;
       }
       if (ch === "]") {
-        if (pilhaEtapas[pilhaEtapas.length - 1] === 2) {
-          pilhaEtapas.pop();
-        }
+        removerUltimaOcorrenciaDaEtapa(2);
         continue;
       }
       if (ch === "{") {
@@ -1064,22 +1162,20 @@ function parsePartesComTempos(partesOriginais) {
         continue;
       }
       if (ch === "}") {
-        if (pilhaEtapas[pilhaEtapas.length - 1] === 3) {
-          pilhaEtapas.pop();
-        }
+        removerUltimaOcorrenciaDaEtapa(3);
         continue;
       }
       if (ch === "*") {
-        if (pilhaEtapas[pilhaEtapas.length - 1] === 4) {
-          pilhaEtapas.pop();
+        if (etapaAtualDaPilha() === 4) {
+          removerUltimaOcorrenciaDaEtapa(4);
         } else {
           pilhaEtapas.push(4);
         }
         continue;
       }
-      if (ch === "\\") {
-        if (pilhaEtapas[pilhaEtapas.length - 1] === 5) {
-          pilhaEtapas.pop();
+      if (ch === "\") {
+        if (etapaAtualDaPilha() === 5) {
+          removerUltimaOcorrenciaDaEtapa(5);
         } else {
           pilhaEtapas.push(5);
         }
@@ -1124,6 +1220,7 @@ function parsePartesComTempos(partesOriginais) {
 }
 
 function maiorEtapa(partes) {
+
   if (!Array.isArray(partes) || partes.length === 0) return 1;
   return partes.reduce((maximo, parte) => Math.max(maximo, parte.etapa || 1), 1);
 }
@@ -1349,16 +1446,17 @@ function travarHoverSemTempo() {
 }
 
 function aplicarTravaHoverParaEstadoAtual(fraseObj, etapa, aoEntrarNovaFrase = false) {
+  const proximaEtapa = obterProximaEtapaDisponivel(fraseObj?.partes || [], etapa);
   const etapaFinal = maiorEtapa(fraseObj?.partes || []);
 
-  if (etapa < etapaFinal) {
+  if (proximaEtapa != null) {
     travarHoverSemTempo();
     return;
   }
 
   if (etapaFinal > 1 && !aoEntrarNovaFrase) {
-    const textoReveladoPorUltimo = obterTextoDaEtapa(fraseObj?.partes || [], etapaFinal);
-    travarHoverConformeTexto(textoReveladoPorUltimo || obterTextoVisivel(fraseObj?.partes || [], etapaFinal));
+    const textoReveladoPorUltimo = obterTextoDaEtapa(fraseObj?.partes || [], etapa);
+    travarHoverConformeTexto(textoReveladoPorUltimo || obterTextoVisivel(fraseObj?.partes || [], etapa));
     return;
   }
 
@@ -1397,11 +1495,10 @@ function irParaProximaFrase() {
 function proximaFrase() {
   if (sobreAberto) return;
   if (fraseAtual) {
-    const etapaFinal = maiorEtapa(fraseAtual.partes);
-    if (etapaAtual < etapaFinal) {
-      const novaEtapa = etapaAtual + 1;
-      mostrarFraseObjeto(fraseAtual, novaEtapa);
-      aplicarTravaHoverParaEstadoAtual(fraseAtual, novaEtapa, false);
+    const proximaEtapaDisponivel = obterProximaEtapaDisponivel(fraseAtual.partes, etapaAtual);
+    if (proximaEtapaDisponivel != null) {
+      mostrarFraseObjeto(fraseAtual, proximaEtapaDisponivel);
+      aplicarTravaHoverParaEstadoAtual(fraseAtual, proximaEtapaDisponivel, false);
       return;
     }
   }
@@ -1810,7 +1907,10 @@ sincronizarToggle();
 inicializarInteracaoToggle();
 inicializarInteracaoBox();
 renderizarSobre();
-window.addEventListener("resize", ajustarAlturaBoxDinamicamente);
+window.addEventListener("resize", () => {
+  ajustarAlturaBoxDinamicamente();
+  aplicarBackgroundAleatorio();
+});
 carregarFrasesDaApi();
 </script>
 
