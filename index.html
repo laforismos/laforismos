@@ -1147,6 +1147,300 @@
       }
     }
   </style>
+
+<style id="laforismos-loading-override">
+  .box.is-loading.backend-waiting {
+    background: rgba(255,255,255,0.10) !important;
+    backdrop-filter: none !important;
+    box-shadow: inset 0 0 0 1px rgba(255,255,255,0.06) !important;
+  }
+
+  .box.is-loading.backend-ready {
+    background: white !important;
+    backdrop-filter: none !important;
+    box-shadow: none !important;
+  }
+
+  .box.is-loading .overlay {
+    opacity: 1 !important;
+    pointer-events: none !important;
+    background: transparent !important;
+  }
+
+  .box.is-loading .frase {
+    opacity: 0 !important;
+    pointer-events: none !important;
+  }
+
+  .box.is-loading .backend-loading-layer,
+  .box.is-loading .ready-loading-layer {
+    position: absolute;
+    inset: 0;
+  }
+
+  .backend-loading-layer,
+  .ready-loading-layer {
+    display: none;
+  }
+
+  .box.is-loading.backend-waiting .backend-loading-layer {
+    display: block;
+  }
+
+  .box.is-loading.backend-ready .ready-loading-layer {
+    display: block;
+    background: white;
+  }
+
+  .backend-loading-shell {
+    position: absolute;
+    inset: 0;
+    background: rgba(255,255,255,0.10);
+    overflow: hidden;
+  }
+
+  .backend-loading-fill {
+    position: absolute;
+    inset: 0 auto 0 0;
+    width: min(100%, var(--backend-fill-width, 100%));
+    background: white;
+    overflow: hidden;
+    animation: backendBoxFill 1.8s ease forwards;
+  }
+
+  .backend-loading-fill-label {
+    position: absolute;
+    left: 20px;
+    top: 50%;
+    transform: translateY(-50%);
+    white-space: nowrap;
+    color: black;
+    font-size: 0.9rem;
+    letter-spacing: 1px;
+    text-transform: lowercase;
+    line-height: 1;
+  }
+
+  @keyframes backendBoxFill {
+    0% { width: 0%; }
+    100% { width: 100%; }
+  }
+
+  .ready-loading-layer {
+    display: none;
+    overflow: hidden;
+  }
+
+  .ready-track {
+    position: absolute;
+    inset: 0;
+    display: flex;
+    align-items: center;
+    white-space: nowrap;
+    color: black;
+    font-size: 0.9rem;
+    letter-spacing: 1px;
+    text-transform: lowercase;
+    will-change: transform;
+  }
+
+  .ready-track span {
+    display: inline-block;
+    padding-right: 28px;
+  }
+
+  .ready-track.accelerating {
+    animation: readyTrackAccelerate 1.15s cubic-bezier(0.22, 0.72, 0.12, 1) forwards;
+  }
+
+  .ready-track.looping {
+    animation: scroll 6.4s linear infinite;
+  }
+
+  @keyframes readyTrackAccelerate {
+    0% { transform: translateX(0); }
+    100% { transform: translateX(-18%); }
+  }
+
+  .maquina-wrap {
+    opacity: 1;
+  }
+
+  .maquina-wrap::before,
+  .maquina-wrap::after {
+    content: "";
+    position: absolute;
+    inset: 0;
+    background-image: url("./maquina-de-escrever_BLACK.png");
+    background-repeat: no-repeat;
+    background-position: center;
+    background-size: contain;
+    opacity: 0;
+    pointer-events: none;
+  }
+
+  body.machine-loading-active .maquina-wrap {
+    filter: contrast(1.14);
+  }
+
+  body.machine-loading-active.glitch-intensity-1 .maquina-wrap {
+    animation: typeGlitchShake1 0.34s steps(2, end) infinite;
+  }
+
+  body.machine-loading-active.glitch-intensity-1 .maquina-wrap::before {
+    opacity: 0.22;
+    animation: typeGlitchSliceA1 0.18s steps(2, end) infinite;
+  }
+
+  body.machine-loading-active.glitch-intensity-1 .maquina-wrap::after {
+    opacity: 0.16;
+    animation: typeGlitchSliceB1 0.22s steps(2, end) infinite;
+  }
+
+  body.machine-loading-active.glitch-intensity-1 .imagem-entre-sub-e-box {
+    animation: typeGlitchCore1 0.16s steps(2, end) infinite;
+  }
+
+  body.machine-loading-active.glitch-intensity-2 .maquina-wrap {
+    animation: typeGlitchShake2 0.22s steps(2, end) infinite;
+  }
+
+  body.machine-loading-active.glitch-intensity-2 .maquina-wrap::before {
+    opacity: 0.32;
+    animation: typeGlitchSliceA2 0.12s steps(2, end) infinite;
+  }
+
+  body.machine-loading-active.glitch-intensity-2 .maquina-wrap::after {
+    opacity: 0.24;
+    animation: typeGlitchSliceB2 0.15s steps(2, end) infinite;
+  }
+
+  body.machine-loading-active.glitch-intensity-2 .imagem-entre-sub-e-box {
+    animation: typeGlitchCore2 0.11s steps(2, end) infinite;
+  }
+
+  body.machine-loading-active.glitch-intensity-3 .maquina-wrap {
+    animation: typeGlitchShake3 0.40s steps(2, end) infinite;
+  }
+
+  body.machine-loading-active.glitch-intensity-3 .maquina-wrap::before {
+    opacity: 0.18;
+    animation: typeGlitchSliceA3 0.22s steps(2, end) infinite;
+  }
+
+  body.machine-loading-active.glitch-intensity-3 .maquina-wrap::after {
+    opacity: 0.12;
+    animation: typeGlitchSliceB3 0.26s steps(2, end) infinite;
+  }
+
+  body.machine-loading-active.glitch-intensity-3 .imagem-entre-sub-e-box {
+    animation: typeGlitchCore3 0.20s steps(2, end) infinite;
+  }
+
+  body.machine-loading-active.glitch-pause .maquina-wrap,
+  body.machine-loading-active.glitch-pause .maquina-wrap::before,
+  body.machine-loading-active.glitch-pause .maquina-wrap::after,
+  body.machine-loading-active.glitch-pause .imagem-entre-sub-e-box {
+    animation-play-state: paused !important;
+  }
+
+  body.machine-settle .maquina-wrap,
+  body.machine-settle .maquina-wrap::before,
+  body.machine-settle .maquina-wrap::after,
+  body.machine-settle .imagem-entre-sub-e-box {
+    animation: none !important;
+  }
+
+  body.machine-settle .maquina-wrap::before,
+  body.machine-settle .maquina-wrap::after {
+    opacity: 0 !important;
+  }
+
+  body.machine-settle .imagem-entre-sub-e-box {
+    opacity: 0.35 !important;
+    transition: opacity 3s linear !important;
+    transform: none !important;
+  }
+
+  @keyframes typeGlitchShake1 {
+    0% { transform: translate(0, 0); }
+    33% { transform: translate(-1px, 0); }
+    66% { transform: translate(1px, 0); }
+    100% { transform: translate(0, 0); }
+  }
+
+  @keyframes typeGlitchShake2 {
+    0% { transform: translate(0, 0); }
+    25% { transform: translate(-1px, 0); }
+    50% { transform: translate(1px, 0); }
+    75% { transform: translate(0, -1px); }
+    100% { transform: translate(0, 0); }
+  }
+
+  @keyframes typeGlitchShake3 {
+    0% { transform: translate(0, 0); }
+    25% { transform: translate(-1px, 0); }
+    50% { transform: translate(1px, 0); }
+    75% { transform: translate(0, -1px); }
+    100% { transform: translate(0, 0); }
+  }
+
+  @keyframes typeGlitchSliceA1 {
+    0% { transform: translate(-3px, 1px); clip-path: inset(0 0 78% 0); }
+    50% { transform: translate(2px, -1px); clip-path: inset(34% 0 28% 0); }
+    100% { transform: translate(-3px, 1px); clip-path: inset(0 0 78% 0); }
+  }
+
+  @keyframes typeGlitchSliceB1 {
+    0% { transform: translate(3px, -1px); clip-path: inset(74% 0 0 0); }
+    50% { transform: translate(-2px, 1px); clip-path: inset(18% 0 54% 0); }
+    100% { transform: translate(3px, -1px); clip-path: inset(74% 0 0 0); }
+  }
+
+  @keyframes typeGlitchCore1 {
+    0% { transform: translate(0, 0) scale(1); }
+    50% { transform: translate(-1px, 0) scale(1.006); }
+    100% { transform: translate(0, 0) scale(1); }
+  }
+
+  @keyframes typeGlitchSliceA2 {
+    0% { transform: translate(-4px, 1px); clip-path: inset(0 0 78% 0); }
+    50% { transform: translate(3px, -1px); clip-path: inset(30% 0 34% 0); }
+    100% { transform: translate(-4px, 1px); clip-path: inset(0 0 78% 0); }
+  }
+
+  @keyframes typeGlitchSliceB2 {
+    0% { transform: translate(4px, -1px); clip-path: inset(74% 0 0 0); }
+    50% { transform: translate(-3px, 1px); clip-path: inset(14% 0 60% 0); }
+    100% { transform: translate(4px, -1px); clip-path: inset(74% 0 0 0); }
+  }
+
+  @keyframes typeGlitchCore2 {
+    0% { transform: translate(0, 0) scale(1); }
+    25% { transform: translate(-1px, 1px) scale(1.010); }
+    50% { transform: translate(1px, -1px) scale(0.995); }
+    100% { transform: translate(0, 0) scale(1); }
+  }
+
+  @keyframes typeGlitchSliceA3 {
+    0% { transform: translate(-2px, 1px); clip-path: inset(0 0 80% 0); }
+    50% { transform: translate(2px, 0); clip-path: inset(22% 0 48% 0); }
+    100% { transform: translate(-2px, 1px); clip-path: inset(0 0 80% 0); }
+  }
+
+  @keyframes typeGlitchSliceB3 {
+    0% { transform: translate(2px, -1px); clip-path: inset(76% 0 0 0); }
+    50% { transform: translate(-2px, 1px); clip-path: inset(18% 0 58% 0); }
+    100% { transform: translate(2px, -1px); clip-path: inset(76% 0 0 0); }
+  }
+
+  @keyframes typeGlitchCore3 {
+    0% { transform: translate(0, 0) scale(1); }
+    50% { transform: translate(-1px, 0) scale(1.004); }
+    100% { transform: translate(0, 0) scale(1); }
+  }
+</style>
+
 </head>
 
 <body>
@@ -3007,6 +3301,270 @@ if (maquinaTrigger) {
 }
 
 carregarFrasesDaApi();</script>
+
+
+<script id="laforismos-loading-script">
+(function() {
+  const originalMostrarFraseObjeto = window.mostrarFraseObjeto;
+  const originalEntrarModoCarregandoTroca = window.entrarModoCarregandoTroca;
+  const originalSairModoCarregandoTroca = window.sairModoCarregandoTroca;
+  const originalAbrirSobre = window.abrirSobre;
+  const originalFecharSobre = window.fecharSobre;
+
+  let primeiraFrasePendente = null;
+  let aguardandoPrimeiraFrase = false;
+  let glitchCycleTimer = null;
+  let glitchPauseTimer = null;
+  const glitchIntensities = ["glitch-intensity-1", "glitch-intensity-2", "glitch-intensity-3"];
+  const glitchPauses = [500, 600, 900];
+
+  function garantirCamadasDeLoading() {
+    const overlay = document.querySelector("#box .overlay");
+    if (!overlay) return;
+
+    if (!overlay.querySelector(".backend-loading-layer")) {
+      const backend = document.createElement("div");
+      backend.className = "backend-loading-layer";
+      backend.innerHTML = `
+        <div class="backend-loading-shell">
+          <div class="backend-loading-fill">
+            <div class="backend-loading-fill-label">carregando espasmo...</div>
+          </div>
+        </div>
+      `;
+      overlay.prepend(backend);
+    }
+
+    if (!overlay.querySelector(".ready-loading-layer")) {
+      const ready = document.createElement("div");
+      ready.className = "ready-loading-layer";
+      ready.innerHTML = `
+        <div class="ready-track" id="readyTrack">
+          <span>carregando espasmo • carregando espasmo • carregando espasmo • carregando espasmo •</span>
+          <span>carregando espasmo • carregando espasmo • carregando espasmo • carregando espasmo •</span>
+        </div>
+      `;
+      overlay.appendChild(ready);
+    }
+
+    const oldTrack = overlay.querySelector(".track");
+    if (oldTrack) {
+      oldTrack.style.display = "none";
+    }
+  }
+
+  function limparClassesDeLoading() {
+    const box = document.getElementById("box");
+    if (!box) return;
+    box.classList.remove("backend-waiting", "backend-ready");
+  }
+
+  function ativarLoadingBackendInicial() {
+    const box = document.getElementById("box");
+    const frase = document.getElementById("frase");
+    if (!box || !frase) return;
+
+    garantirCamadasDeLoading();
+    limparClassesDeLoading();
+    box.classList.add("is-loading", "backend-waiting");
+    frase.innerHTML = "";
+    frase.classList.remove("dialogo");
+    box.classList.add("disable-hover");
+    document.body.classList.remove("machine-loading-active", "machine-settle");
+    limparGlitchDaMaquina();
+  }
+
+  function iniciarTrackComAceleracao() {
+    const track = document.getElementById("readyTrack");
+    if (!track) return;
+    track.classList.remove("looping");
+    void track.offsetWidth;
+    track.classList.add("accelerating");
+    setTimeout(() => {
+      track.classList.remove("accelerating");
+      track.classList.add("looping");
+    }, 1150);
+  }
+
+  function ativarLoadingProntoParaClique() {
+    const box = document.getElementById("box");
+    if (!box) return;
+
+    garantirCamadasDeLoading();
+    limparClassesDeLoading();
+    box.classList.add("is-loading", "backend-ready", "disable-hover");
+    document.body.classList.remove("machine-settle");
+    iniciarGlitchDaMaquina();
+    iniciarTrackComAceleracao();
+  }
+
+  function limparTimersGlitch() {
+    if (glitchCycleTimer) {
+      clearTimeout(glitchCycleTimer);
+      glitchCycleTimer = null;
+    }
+    if (glitchPauseTimer) {
+      clearTimeout(glitchPauseTimer);
+      glitchPauseTimer = null;
+    }
+  }
+
+  function limparGlitchDaMaquina() {
+    limparTimersGlitch();
+    document.body.classList.remove("machine-loading-active", "glitch-pause", ...glitchIntensities);
+  }
+
+  function agendarProximoGlitch() {
+    limparTimersGlitch();
+
+    if (!document.body.classList.contains("machine-loading-active") || document.body.classList.contains("machine-settle") || window.sobreAberto) {
+      return;
+    }
+
+    document.body.classList.remove(...glitchIntensities, "glitch-pause");
+    const intensidade = glitchIntensities[Math.floor(Math.random() * glitchIntensities.length)];
+    document.body.classList.add(intensidade);
+
+    const proximaTroca = 700 + Math.floor(Math.random() * 900);
+    if (Math.random() < 0.34) {
+      const pausa = glitchPauses[Math.floor(Math.random() * glitchPauses.length)];
+      const inicioDaPausa = Math.max(80, proximaTroca - pausa - 60);
+
+      glitchPauseTimer = setTimeout(() => {
+        if (!document.body.classList.contains("machine-loading-active") || document.body.classList.contains("machine-settle") || window.sobreAberto) {
+          return;
+        }
+        document.body.classList.add("glitch-pause");
+
+        glitchPauseTimer = setTimeout(() => {
+          document.body.classList.remove("glitch-pause");
+        }, pausa);
+      }, inicioDaPausa);
+    }
+
+    glitchCycleTimer = setTimeout(agendarProximoGlitch, proximaTroca);
+  }
+
+  function iniciarGlitchDaMaquina() {
+    if (window.sobreAberto) return;
+    document.body.classList.add("machine-loading-active");
+    document.body.classList.remove("machine-settle");
+    agendarProximoGlitch();
+  }
+
+  function pararGlitchDaMaquina() {
+    limparGlitchDaMaquina();
+  }
+
+  window.acionarAssentamentoDaMaquina = function() {
+    pararGlitchDaMaquina();
+    document.body.classList.add("machine-settle");
+    setTimeout(() => {
+      if (!document.getElementById("box")?.classList.contains("is-loading")) {
+        document.body.classList.remove("machine-settle");
+      }
+    }, 3000);
+  };
+
+  window.ativarEstadoLoadingBox = function() {
+    ativarLoadingProntoParaClique();
+  };
+
+  window.desativarEstadoLoadingBox = function() {
+    const box = document.getElementById("box");
+    if (!box) return;
+    box.classList.remove("is-loading", "backend-waiting", "backend-ready");
+    pararGlitchDaMaquina();
+  };
+
+  window.iniciar = function() {
+    window.acabou = false;
+    window.idsExibidos = new Set();
+    window.atualizarFrasesFiltradas();
+    window.fila = window.embaralhar(window.frasesFiltradas, window.frasesFiltradas.length);
+
+    if (window.fila.length > 0) {
+      primeiraFrasePendente = window.fila.shift();
+      aguardandoPrimeiraFrase = true;
+      ativarLoadingProntoParaClique();
+      window.logEstadoFila("aguardando primeiro clique");
+    } else {
+      const mensagemVazia = window.mostrarSoNovas
+        ? "Você já viu todas as novas."
+        : "Nenhuma frase ativa disponível.";
+      window.mostrarMensagem(mensagemVazia);
+      window.travarHoverConformeTexto(mensagemVazia);
+    }
+  };
+
+  window.proximaFrase = function() {
+    if (window.sobreAberto) return;
+
+    if (aguardandoPrimeiraFrase && primeiraFrasePendente) {
+      aguardandoPrimeiraFrase = false;
+      const primeira = primeiraFrasePendente;
+      primeiraFrasePendente = null;
+      window.mostrarFraseObjeto(primeira, 1);
+      window.aplicarTravaHoverParaEstadoAtual(primeira, 1, true);
+      return;
+    }
+
+    const box = document.getElementById("box");
+    if (box?.classList.contains("is-loading") && window.aguardandoCliqueParaTroca) {
+      window.irParaProximaFrase();
+      return;
+    }
+
+    if (window.fraseAtual) {
+      const proximaEtapaDisponivel = window.obterProximaEtapaDisponivel(window.fraseAtual.partes, window.etapaAtual);
+      if (proximaEtapaDisponivel != null) {
+        window.mostrarFraseObjeto(window.fraseAtual, proximaEtapaDisponivel);
+        window.aplicarTravaHoverParaEstadoAtual(window.fraseAtual, proximaEtapaDisponivel, false);
+        return;
+      }
+    }
+
+    originalEntrarModoCarregandoTroca();
+  };
+
+  window.entrarModoCarregandoTroca = function() {
+    originalEntrarModoCarregandoTroca();
+    ativarLoadingProntoParaClique();
+  };
+
+  window.sairModoCarregandoTroca = function() {
+    originalSairModoCarregandoTroca();
+  };
+
+  window.abrirSobre = function() {
+    pararGlitchDaMaquina();
+    originalAbrirSobre();
+  };
+
+  window.fecharSobre = function(event) {
+    originalFecharSobre(event);
+    if (document.getElementById("box")?.classList.contains("is-loading")) {
+      iniciarGlitchDaMaquina();
+    }
+  };
+
+  const oldCarregar = window.carregarFrasesDaApi;
+  if (typeof oldCarregar === "function") {
+    // primeira etapa visual: máquina sólida e loader do backend
+    ativarLoadingBackendInicial();
+  }
+
+  // reforça clique/drag também pela máquina
+  const maquinaTrigger = document.getElementById("maquinaTrigger");
+  if (maquinaTrigger && !maquinaTrigger.dataset.loadingHooked) {
+    maquinaTrigger.dataset.loadingHooked = "1";
+    maquinaTrigger.addEventListener("pointerdown", function() {}, { passive: true });
+  }
+
+  // se a API demorar e o script principal já estiver carregando, mantém o visual inicial
+  garantirCamadasDeLoading();
+})();
+</script>
 
 </body>
 </html>
