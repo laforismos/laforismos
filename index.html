@@ -3258,6 +3258,14 @@ carregarFrasesDaApi();</script>
     iniciarLoopDoLoader(true);
   }
 
+  function marcarLoadingInicialComoPronto() {
+    if (apiInicialCarregada) return;
+    apiInicialCarregada = true;
+    if (aguardandoPrimeiraFrase && primeiraFrasePendente) {
+      ativarLoadingProntoParaClique();
+    }
+  }
+
   window.ativarEstadoLoadingBox = function() {
     if (apiInicialCarregada) {
       ativarLoadingProntoParaClique();
@@ -3283,12 +3291,10 @@ carregarFrasesDaApi();</script>
     window.atualizarFrasesFiltradas();
     window.fila = window.embaralhar(window.frasesFiltradas, window.frasesFiltradas.length);
 
-    apiInicialCarregada = true;
-
     if (window.fila.length > 0) {
       primeiraFrasePendente = window.fila.shift();
       aguardandoPrimeiraFrase = true;
-      ativarLoadingProntoParaClique();
+      marcarLoadingInicialComoPronto();
       window.logEstadoFila("aguardando primeiro clique");
     } else {
       const mensagemVazia = window.mostrarSoNovas
