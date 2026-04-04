@@ -377,6 +377,7 @@
     
     
     
+    
     .maquina-wrap {
       position: relative;
       display: block;
@@ -404,7 +405,7 @@
       width: 106px;
       height: auto;
       display: block;
-      opacity: 0.4;
+      opacity: 1;
       margin: 0 auto;
       position: relative;
       z-index: 2;
@@ -412,6 +413,24 @@
       user-select: none;
       cursor: pointer;
       transition: opacity 3s linear, transform 0.14s ease, visibility 0.22s ease;
+    }
+
+    body.machine-initial .maquina-wrap,
+    body.machine-initial .maquina-wrap::before,
+    body.machine-initial .maquina-wrap::after,
+    body.machine-initial .imagem-entre-sub-e-box {
+      animation: none !important;
+    }
+
+    body.machine-initial .maquina-wrap::before,
+    body.machine-initial .maquina-wrap::after {
+      opacity: 0 !important;
+      transform: none !important;
+    }
+
+    body.machine-initial .imagem-entre-sub-e-box {
+      opacity: 1 !important;
+      transform: translate(0, 0) scale(1) !important;
     }
 
     body.machine-settle .maquina-wrap,
@@ -592,6 +611,7 @@
       pointer-events: none;
       transform: translateY(-8px);
     }
+
 
 
 
@@ -1431,11 +1451,13 @@ let videoLoadedMetadataHandler = null;
 
 
 
+
 let machineSettleTimer = null;
 let glitchPauseTimer = null;
+let glitchLoopAtivo = false;
+let machineBootTimer = null;
 const GLITCH_LEVEL_CLASSES = ["glitch-level-1", "glitch-level-2", "glitch-level-3"];
 const GLITCH_PAUSES = [500, 600, 900];
-let glitchLoopAtivo = false;
 
 function limparClassesGlitch() {
   document.body.classList.remove("glitch-level-1", "glitch-level-2", "glitch-level-3", "glitch-paused");
@@ -1451,37 +1473,53 @@ function pararGlitchDaMaquina() {
 }
 
 function aplicarNivelGlitchAleatorio() {
-  if (!glitchLoopAtivo || sobreAberto || document.body.classList.contains("machine-settle")) return;
+  if (!glitchLoopAtivo || sobreAberto || document.body.classList.contains("machine-settle") || document.body.classList.contains("machine-initial")) return;
 
   limparClassesGlitch();
   const classe = GLITCH_LEVEL_CLASSES[Math.floor(Math.random() * GLITCH_LEVEL_CLASSES.length)];
   document.body.classList.add(classe);
 
-  const vaiPausar = Math.random() < 0.34;
   const proximaTroca = 700 + Math.floor(Math.random() * 900);
+  const vaiPausar = Math.random() < 0.34;
 
   if (vaiPausar) {
     const pausa = GLITCH_PAUSES[Math.floor(Math.random() * GLITCH_PAUSES.length)];
     setTimeout(() => {
-      if (!glitchLoopAtivo || sobreAberto || document.body.classList.contains("machine-settle")) return;
+      if (!glitchLoopAtivo || sobreAberto || document.body.classList.contains("machine-settle") || document.body.classList.contains("machine-initial")) return;
       document.body.classList.add("glitch-paused");
-
       glitchPauseTimer = setTimeout(() => {
         document.body.classList.remove("glitch-paused");
+        glitchPauseTimer = null;
       }, pausa);
     }, Math.max(80, proximaTroca - pausa - 60));
   }
 
-  setTimeout(() => {
-    aplicarNivelGlitchAleatorio();
-  }, proximaTroca);
+  setTimeout(aplicarNivelGlitchAleatorio, proximaTroca);
 }
 
 function iniciarGlitchDaMaquina() {
-  if (sobreAberto || document.body.classList.contains("machine-settle")) return;
+  if (sobreAberto || document.body.classList.contains("machine-settle") || document.body.classList.contains("machine-initial")) return;
   pararGlitchDaMaquina();
   glitchLoopAtivo = true;
   aplicarNivelGlitchAleatorio();
+}
+
+function iniciarEstadoInicialDaMaquina() {
+  document.body.classList.add("machine-initial");
+  pararGlitchDaMaquina();
+
+  if (machineBootTimer) {
+    clearTimeout(machineBootTimer);
+    machineBootTimer = null;
+  }
+
+  machineBootTimer = setTimeout(() => {
+    document.body.classList.remove("machine-initial");
+    if (document.getElementById("box")?.classList.contains("is-loading") && !sobreAberto) {
+      iniciarEstadoInicialDaMaquina();
+    }
+    machineBootTimer = null;
+  }, 1000);
 }
 
 function acionarAssentamentoDaMaquina() {
@@ -1497,6 +1535,7 @@ function acionarAssentamentoDaMaquina() {
     machineSettleTimer = null;
   }, 3000);
 }
+
 
 
 
@@ -1677,6 +1716,7 @@ function ativarEstadoLoadingBox() {
 function desativarEstadoLoadingBox() {
   const box = document.getElementById("box");
   box.classList.remove("is-loading");
+  pararGlitchDaMaquina();
 }
 
 function congelarTamanhoAtualDoBox() {
@@ -2669,6 +2709,7 @@ function renderizarSobre() {
 function abrirSobre() {
   sobreAberto = true;
   document.body.classList.add("sobre-aberto");
+  document.body.classList.remove("machine-initial");
   pararGlitchDaMaquina();
 
   const ehMobile = window.matchMedia("(max-width: 768px)").matches;
@@ -2752,7 +2793,7 @@ function fecharSobre(event) {
   if (fraseEl) fraseEl.style.display = "block";
   if (overlayEl) overlayEl.style.display = "";
   ajustarAlturaBoxDinamicamente();
-  if (!document.body.classList.contains("machine-settle")) {
+  if (document.getElementById("box")?.classList.contains("is-loading") && !document.body.classList.contains("machine-settle")) {
     iniciarGlitchDaMaquina();
   }
 }
