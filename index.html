@@ -970,6 +970,29 @@ let etapaAtual = 1;
 let hoverTravadoAteUltimoTempo = false;
 let videoTimeUpdateHandler = null;
 let videoLoadedMetadataHandler = null;
+
+const DEBUG_FRASES = true;
+
+function debugFrases(...args) {
+  if (!DEBUG_FRASES) return;
+  console.log("[LAFORISMOS DEBUG]", ...args);
+}
+
+function obterIdsPendentes() {
+  return frasesFiltradas
+    .filter(item => item?.id != null && !idsExibidos.has(item.id))
+    .map(item => item.id);
+}
+
+function logEstadoFila(contexto = "") {
+  debugFrases(contexto || "estado");
+  debugFrases("total API:", frases.length);
+  debugFrases("total filtradas:", frasesFiltradas.length);
+  debugFrases("ids exibidos:", [...idsExibidos]);
+  debugFrases("ids na fila:", fila.map(item => item?.id).filter(id => id != null));
+  debugFrases("ids pendentes:", obterIdsPendentes());
+}
+
 let aguardandoCliqueParaTroca = false;
 let ultimoBackgroundIndex = -1;
 
@@ -1534,8 +1557,16 @@ function mostrarFraseObjeto(fraseObj, etapa = 1) {
 
     marcarFraseComoVista(fraseObj);
 
+    debugFrases("frase exibida", {
+      id: fraseObj?.id ?? null,
+      etapa,
+      maiorEtapa: maiorEtapa(fraseObj?.partes || []),
+      texto: textoVisivel
+    });
+
     el.style.opacity = 1;
     ajustarAlturaBoxDinamicamente();
+    logEstadoFila("após mostrar frase");
   }, 200);
 }
 
@@ -1561,6 +1592,14 @@ function atualizarFrasesFiltradas() {
     const passaNovidade = !mostrarSoNovas || !fraseJaFoiVista(item);
     return passaObscenidade && passaNovidade;
   });
+
+  debugFrases("filtros aplicados", {
+    mostrarObcenas,
+    mostrarSoNovas,
+    totalFrases: frases.length,
+    totalFiltradas: frasesFiltradas.length,
+    idsFiltrados: frasesFiltradas.map(item => item?.id).filter(id => id != null)
+  });
 }
 
 function iniciar() {
@@ -1569,10 +1608,17 @@ function iniciar() {
   atualizarFrasesFiltradas();
   fila = embaralhar(frasesFiltradas, frasesFiltradas.length);
 
+  debugFrases("início da sessão", {
+    seedSessao: SESSION_RANDOM_SEED,
+    ordemInicial: fila.map(item => item?.id).filter(id => id != null)
+  });
+
   if (fila.length > 0) {
     const primeira = fila.shift();
+    debugFrases("primeira frase da sessão", primeira?.id);
     mostrarFraseObjeto(primeira, 1);
     aplicarTravaHoverParaEstadoAtual(primeira, 1, true);
+    logEstadoFila("após iniciar");
   } else {
     const mensagemVazia = mostrarSoNovas
       ? "Você já viu todas as novas."
@@ -1611,6 +1657,13 @@ function recomporFilaPreservandoAtual() {
 
   const aindaFaltam = frasesFiltradas.some(item => item?.id != null && item.id !== atualId && !idsExibidos.has(item.id));
   acabou = !aindaFaltam && fila.length === 0;
+
+  debugFrases("fila recomposta", {
+    fraseAtual: atualId,
+    pendentes: pendentes.map(item => item?.id).filter(id => id != null),
+    novaFila: fila.map(item => item?.id).filter(id => id != null),
+    acabou
+  });
 }
 
 function calcularTempoLeitura(texto) {
@@ -2198,13 +2251,24 @@ async function carregarFrasesDaApi() {
       throw new Error("Resposta inválida da API.");
     }
 
-    frases = data.frases
+    const frasesNormalizadas = data.frases
       .map((item, index) => ({
         id: index + 1,
         partes: normalizarPartes(item.partes),
         obceno: normalizarBoolean(item.obceno)
-      }))
-      .filter(item => item.partes.length > 0);
+      }));
+
+    const frasesDescartadas = frasesNormalizadas
+      .filter(item => item.partes.length === 0)
+      .map(item => item.id);
+
+    frases = frasesNormalizadas.filter(item => item.partes.length > 0);
+
+    debugFrases("API carregada", {
+      totalRecebidas: Array.isArray(data.frases) ? data.frases.length : 0,
+      totalValidas: frases.length,
+      idsDescartados: frasesDescartadas
+    });
 
     renderizarSobre();
 
