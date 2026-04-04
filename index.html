@@ -652,6 +652,13 @@
     body.sobre-aberto .footer-links {
       opacity: 1;
       transform: none;
+    }
+
+    body.sobre-aberto .footer-sobre-trigger {
+      pointer-events: none;
+    }
+
+    body.sobre-aberto .footer-links {
       pointer-events: auto;
     }
 
@@ -2250,18 +2257,30 @@ const FALLBACKS_SOBRE = [
 const STORAGE_SOBRE_FALLBACK_INDICE = "laforismos_sobre_fallback_indice_v1";
 let partesSobreAtuais = FALLBACKS_SOBRE[0];
 let partesSobreApi = null;
+let fallbackSobreAtualIndice = 0;
+let sobreAbertoComFallbackSequencial = false;
 
-function obterProximoFallbackSobre() {
+function obterIndiceFallbackSobreAtual() {
   try {
     const indiceSalvo = Number(localStorage.getItem(STORAGE_SOBRE_FALLBACK_INDICE) || "0");
     const indiceAtual = Number.isFinite(indiceSalvo) ? indiceSalvo : 0;
-    const indiceNormalizado = ((indiceAtual % FALLBACKS_SOBRE.length) + FALLBACKS_SOBRE.length) % FALLBACKS_SOBRE.length;
-    const fallback = FALLBACKS_SOBRE[indiceNormalizado];
-    localStorage.setItem(STORAGE_SOBRE_FALLBACK_INDICE, String((indiceNormalizado + 1) % FALLBACKS_SOBRE.length));
-    return fallback;
+    return ((indiceAtual % FALLBACKS_SOBRE.length) + FALLBACKS_SOBRE.length) % FALLBACKS_SOBRE.length;
   } catch (e) {
-    return FALLBACKS_SOBRE[0];
+    return 0;
   }
+}
+
+function obterFallbackSobreAtual() {
+  fallbackSobreAtualIndice = obterIndiceFallbackSobreAtual();
+  return FALLBACKS_SOBRE[fallbackSobreAtualIndice] || FALLBACKS_SOBRE[0];
+}
+
+function avancarFallbackSobre() {
+  try {
+    const proximoIndice = (fallbackSobreAtualIndice + 1) % FALLBACKS_SOBRE.length;
+    fallbackSobreAtualIndice = proximoIndice;
+    localStorage.setItem(STORAGE_SOBRE_FALLBACK_INDICE, String(proximoIndice));
+  } catch (e) {}
 }
 
 function textoSobreParaPartes(texto) {
@@ -2273,16 +2292,20 @@ function textoSobreParaPartes(texto) {
 function definirSobreApiOuFallback(sobreTexto) {
   partesSobreApi = textoSobreParaPartes(sobreTexto);
   partesSobreAtuais = partesSobreApi || FALLBACKS_SOBRE[0];
+  sobreAbertoComFallbackSequencial = false;
   renderizarSobre();
 }
 
 function prepararConteudoSobre(origem = "geral") {
   if (partesSobreApi) {
     partesSobreAtuais = partesSobreApi;
+    sobreAbertoComFallbackSequencial = false;
   } else if (origem === "footer") {
-    partesSobreAtuais = obterProximoFallbackSobre();
+    partesSobreAtuais = obterFallbackSobreAtual();
+    sobreAbertoComFallbackSequencial = true;
   } else {
     partesSobreAtuais = partesSobreAtuais || FALLBACKS_SOBRE[0];
+    sobreAbertoComFallbackSequencial = false;
   }
 
   renderizarSobre();
@@ -2339,6 +2362,8 @@ function fecharSobre(event) {
     event.stopPropagation();
   }
 
+  const deveAvancarFallback = !partesSobreApi && sobreAbertoComFallbackSequencial;
+
   sobreAberto = false;
   document.body.classList.remove("sobre-aberto");
 
@@ -2362,9 +2387,25 @@ function fecharSobre(event) {
     sobreEl.style.position = "";
   }
 
+  if (deveAvancarFallback) {
+    avancarFallbackSobre();
+  }
+
+  sobreAbertoComFallbackSequencial = false;
+
   if (fraseEl) fraseEl.style.display = "block";
   if (overlayEl) overlayEl.style.display = "";
   ajustarAlturaBoxDinamicamente();
+}
+
+function inicializarAtalhosDoSobre() {
+  const headerLink = document.querySelector(".site-header-link");
+  if (headerLink) {
+    headerLink.addEventListener("click", (event) => {
+      if (!sobreAberto) return;
+      fecharSobre(event);
+    });
+  }
 }
 
 function toggleSobre(event, origem = "geral") {
