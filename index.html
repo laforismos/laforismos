@@ -358,7 +358,20 @@
       border-radius: 999px;
     }
 
-    .sobre-foto-topo {
+    
+    .imagem-entre-sub-e-box {
+      width: 75px;
+      height: auto;
+      display: block;
+      opacity: 0.4;
+      margin: 22px auto 10px;
+      position: relative;
+      z-index: 2;
+      pointer-events: none;
+      user-select: none;
+    }
+
+.sobre-foto-topo {
       width: 106px;
       height: 106px;
       object-fit: cover;
@@ -430,6 +443,11 @@
     }
 
     @media (max-width: 768px) {
+      .imagem-entre-sub-e-box {
+        width: 75px;
+        margin: 18px auto 8px;
+      }
+
       html.sobre-mobile-lock,
       body.sobre-aberto.sobre-mobile-lock {
         width: 100%;
@@ -893,6 +911,12 @@
   <a class="sobre-foto-link" href="./" aria-label="Ir para a home">
     <img class="sobre-foto-topo" src="./Fe_FOTO_AVATAR.png" alt="Felipe Koraicho Sauma">
   </a>
+
+  <img
+    class="imagem-entre-sub-e-box"
+    src="./maquina-de-escrever.png"
+    alt="Ícone de máquina de escrever"
+  >
 
   <div class="interacao-area">
     <div class="box is-loading" id="box">
