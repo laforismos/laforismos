@@ -33,9 +33,8 @@
 
   <style>
     body {
-      --mobile-bg-color: #ff00b4;
+      --site-bg-color: #ff00b4;
       --mobile-overlay-opacity: 0.18;
-      --desktop-fallback-bg: none;
       --site-text-color: white;
       margin: 0;
       font-family: Helvetica, Arial, sans-serif;
@@ -46,19 +45,11 @@
       min-height: 100dvh;
       overflow-x: hidden;
       overflow-y: auto;
-      background: var(--desktop-fallback-bg) no-repeat center center;
-      background-size: cover;
+      background: var(--site-bg-color);
     }
 
     #bg-video {
-      position: fixed;
-      top: 0;
-      left: 0;
-      width: 100%;
-      height: 100%;
-      object-fit: cover;
-      z-index: -1;
-      filter: contrast(1.4) brightness(1.2);
+      display: none !important;
     }
 
     main {
@@ -657,7 +648,7 @@
 
     @media (max-width: 768px) {
       body {
-        background: var(--mobile-bg-color);
+        background: var(--site-bg-color);
         min-height: 100dvh;
       }
 
@@ -921,38 +912,34 @@ const MOBILE_BG_COLORS = [
   "#ff3d81"
 ];
 
-let ultimaCorMobile = null;
+let ultimaCorDoSite = null;
 
-function escolherCorMobileAleatoriaSemRepeticao() {
+function escolherCorAleatoriaSemRepeticao() {
   if (!Array.isArray(MOBILE_BG_COLORS) || MOBILE_BG_COLORS.length === 0) return "#ff00b4";
   if (MOBILE_BG_COLORS.length === 1) return MOBILE_BG_COLORS[0];
 
   let corEscolhida = MOBILE_BG_COLORS[Math.floor(Math.random() * MOBILE_BG_COLORS.length)];
 
-  while (corEscolhida === ultimaCorMobile) {
+  while (corEscolhida === ultimaCorDoSite) {
     corEscolhida = MOBILE_BG_COLORS[Math.floor(Math.random() * MOBILE_BG_COLORS.length)];
   }
 
   return corEscolhida;
 }
 
-function aplicarNovaCorMobile() {
-  if (!window.matchMedia("(max-width: 768px)").matches) return;
-
-  const cor = escolherCorMobileAleatoriaSemRepeticao();
-  ultimaCorMobile = cor;
-  document.body.style.setProperty("--mobile-bg-color", cor);
+function aplicarNovaCorDoSite() {
+  const cor = escolherCorAleatoriaSemRepeticao();
+  ultimaCorDoSite = cor;
+  document.body.style.setProperty("--site-bg-color", cor);
 }
 
-function aplicarCorInicialMobile() {
-  if (!window.matchMedia("(max-width: 768px)").matches) return;
-
-  if (ultimaCorMobile) {
-    document.body.style.setProperty("--mobile-bg-color", ultimaCorMobile);
+function aplicarCorInicialDoSite() {
+  if (ultimaCorDoSite) {
+    document.body.style.setProperty("--site-bg-color", ultimaCorDoSite);
     return;
   }
 
-  aplicarNovaCorMobile();
+  aplicarNovaCorDoSite();
 }
 
 let frases = [];
@@ -1108,12 +1095,8 @@ function videoPareceCompativel(bg) {
 }
 
 function aplicarBackgroundVisualEstático(bg) {
-  const body = document.body;
   const video = document.getElementById("bg-video");
   const source = document.getElementById("bg-video-source");
-  const fallbackImagem = bg?.mobile ? `url("${bg.mobile}")` : "none";
-
-  body.style.setProperty("--desktop-fallback-bg", fallbackImagem);
 
   if (source) {
     source.removeAttribute("src");
@@ -1133,49 +1116,10 @@ function aplicarBackgroundAleatorio(semRepetirAtual = false) {
   if (!bg) return;
 
   const body = document.body;
-  const video = document.getElementById("bg-video");
-  const source = document.getElementById("bg-video-source");
-  const desktop = window.matchMedia("(min-width: 769px)").matches;
-
   backgroundEmUso = bg;
   body.classList.toggle("bg-verde", !!bg.isGreen);
-  aplicarCorInicialMobile();
-
-  if (!desktop || !video || !source || !bg.video) {
-    aplicarBackgroundVisualEstático(bg);
-    return;
-  }
-
-  if (!videoPareceCompativel(bg)) {
-    aplicarBackgroundVisualEstático(bg);
-    return;
-  }
-
-  configurarTrechoDoVideo(bg);
-
-  if (videoErrorHandler) {
-    video.removeEventListener("error", videoErrorHandler);
-  }
-
-  videoErrorHandler = () => {
-    aplicarBackgroundVisualEstático(backgroundEmUso || bg);
-  };
-
-  video.addEventListener("error", videoErrorHandler);
-
-  body.style.setProperty("--desktop-fallback-bg", "none");
-
-  source.src = bg.video;
-  source.type = bg.videoType || "";
-  video.style.display = "block";
-  video.load();
-
-  const tentativa = video.play();
-  if (tentativa && typeof tentativa.catch === "function") {
-    tentativa.catch(() => {
-      aplicarBackgroundVisualEstático(backgroundEmUso || bg);
-    });
-  }
+  aplicarCorInicialDoSite();
+  aplicarBackgroundVisualEstático(bg);
 }
 
 function ativarEstadoLoadingBox() {
@@ -1780,7 +1724,7 @@ function irParaProximaFrase() {
 
   acabou = false;
   const proxima = fila.shift();
-  aplicarBackgroundAleatorio(true);
+  aplicarNovaCorDoSite();
   mostrarFraseObjeto(proxima, 1);
   aplicarTravaHoverParaEstadoAtual(proxima, 1, true);
 }
