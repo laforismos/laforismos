@@ -2270,6 +2270,8 @@ let partesSobreAtuais = FALLBACKS_SOBRE[0];
 let partesSobreApi = null;
 let fallbackSobreAtualIndice = 0;
 let sobreAbertoComFallbackSequencial = false;
+let sobreTransicaoTravadaAte = 0;
+const BLOQUEIO_TRANSICAO_SOBRE_MS = 320;
 
 function obterIndiceFallbackSobreAtual() {
   try {
@@ -2373,6 +2375,10 @@ function fecharSobre(event) {
     event.stopPropagation();
   }
 
+  if (!sobreAberto) return;
+
+  travarTransicaoSobre();
+
   const deveAvancarFallback = !partesSobreApi && sobreAbertoComFallbackSequencial;
 
   sobreAberto = false;
@@ -2419,11 +2425,26 @@ function inicializarAtalhosDoSobre() {
   }
 }
 
+function sobreTransicaoEstaTravada() {
+  return Date.now() < sobreTransicaoTravadaAte;
+}
+
+function travarTransicaoSobre() {
+  sobreTransicaoTravadaAte = Date.now() + BLOQUEIO_TRANSICAO_SOBRE_MS;
+}
+
 function toggleSobre(event, origem = "geral") {
   if (event) {
     event.preventDefault();
     event.stopPropagation();
   }
+
+  if (sobreTransicaoEstaTravada()) {
+    return;
+  }
+
+  travarTransicaoSobre();
+
   if (sobreAberto) {
     fecharSobre();
   } else {
@@ -2462,7 +2483,11 @@ function inicializarInteracaoBox() {
   }
 
   box.addEventListener("click", (event) => {
-    if (sobreAberto) return;
+    if (sobreAberto) {
+      event.preventDefault();
+      event.stopPropagation();
+      return;
+    }
     if (event.target.closest(".toggle-btn")) return;
 
     if (ignorarProximoClick) {
