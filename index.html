@@ -1149,7 +1149,6 @@
   </style>
 
 
-
 <style id="laforismos-loading-override">
   .box.is-loading.backend-waiting {
     background: rgba(255,255,255,0.10) !important;
@@ -1174,6 +1173,10 @@
     pointer-events: none !important;
   }
 
+  .box.is-loading .track {
+    display: none !important;
+  }
+
   .backend-loading-layer,
   .ready-loading-layer {
     position: absolute;
@@ -1191,11 +1194,6 @@
     background: white;
   }
 
-  .box.is-loading.backend-waiting .track,
-  .box.is-loading.backend-ready .track {
-    display: none !important;
-  }
-
   .backend-loading-shell {
     position: absolute;
     inset: 0;
@@ -1209,12 +1207,12 @@
     width: 0%;
     background: white;
     overflow: hidden;
-    animation: backendBoxFill 1.75s ease forwards;
+    animation: backendBoxFill 1.8s ease forwards;
   }
 
-  .backend-loading-reveal {
+  .backend-loading-marquee {
     position: absolute;
-    right: 18px;
+    left: 18px;
     top: 50%;
     transform: translateY(-50%);
     white-space: nowrap;
@@ -1223,12 +1221,7 @@
     letter-spacing: 1px;
     text-transform: lowercase;
     line-height: 1;
-    opacity: 0;
-    transition: opacity 0.04s linear;
-  }
-
-  .box.is-loading.backend-waiting.reveal-static-label .backend-loading-reveal {
-    opacity: 1;
+    user-select: none;
   }
 
   @keyframes backendBoxFill {
@@ -1238,7 +1231,7 @@
 
   .ready-track {
     position: absolute;
-    left: 100%;
+    left: 0;
     top: 50%;
     transform: translateY(-50%);
     display: inline-flex;
@@ -1249,21 +1242,21 @@
     letter-spacing: 1px;
     text-transform: lowercase;
     line-height: 1;
-    will-change: transform, left;
+    will-change: transform;
   }
 
   .ready-track span {
     display: inline-block;
-    padding-right: 24px;
+    padding-right: 28px;
   }
 
-  .ready-track.frenetic {
-    animation: readyTrackFrenetic 2.2s linear infinite;
+  .ready-track.left-loop {
+    animation: readyTrackLeftLoop 3.2s linear infinite;
   }
 
-  @keyframes readyTrackFrenetic {
-    0% { left: 100%; transform: translateY(-50%) translateX(0); }
-    100% { left: 100%; transform: translateY(-50%) translateX(-260%); }
+  @keyframes readyTrackLeftLoop {
+    0% { transform: translateY(-50%) translateX(0); }
+    100% { transform: translateY(-50%) translateX(-50%); }
   }
 </style>
 
@@ -3130,24 +3123,13 @@ carregarFrasesDaApi();</script>
 
 
 
-
 <script id="laforismos-loading-script">
 (function () {
-  const originalEntrarModoCarregandoTroca = window.entrarModoCarregandoTroca;
-  const originalSairModoCarregandoTroca = window.sairModoCarregandoTroca;
-  const originalAbrirSobre = window.abrirSobre;
-  const originalFecharSobre = window.fecharSobre;
+  const LOADER_TEXT = 'carregando espasmo • carregando espasmo • carregando espasmo • carregando espasmo • clica aí • carregando espasmo • carregando espasmo • carregando espasmo • clica! • carregando espasmo • carregando espasmo • carregando espasmo • carregando espasmo • carregando espasmo • carregando espasmo • carregando espasmo • pode clicar';
 
   let primeiraFrasePendente = null;
   let aguardandoPrimeiraFrase = false;
   let apiInicialCarregada = false;
-
-  let glitchCycleTimer = null;
-  let glitchPauseTimer = null;
-  let backendRevealTimer = null;
-
-  const glitchIntensities = ["glitch-intensity-1", "glitch-intensity-2", "glitch-intensity-3"];
-  const glitchPauses = [500, 600, 900];
 
   function garantirCamadasDeLoading() {
     const overlay = document.querySelector("#box .overlay");
@@ -3158,8 +3140,9 @@ carregarFrasesDaApi();</script>
       backend.className = "backend-loading-layer";
       backend.innerHTML = `
         <div class="backend-loading-shell">
-          <div class="backend-loading-fill"></div>
-          <div class="backend-loading-reveal">carregando espasmo</div>
+          <div class="backend-loading-fill">
+            <div class="backend-loading-marquee">${LOADER_TEXT}</div>
+          </div>
         </div>
       `;
       overlay.prepend(backend);
@@ -3170,8 +3153,8 @@ carregarFrasesDaApi();</script>
       ready.className = "ready-loading-layer";
       ready.innerHTML = `
         <div class="ready-track" id="readyTrack">
-          <span>carregando espasmo • carregando espasmo • carregando espasmo • carregando espasmo •</span>
-          <span>carregando espasmo • carregando espasmo • carregando espasmo • carregando espasmo •</span>
+          <span>${LOADER_TEXT}</span>
+          <span>${LOADER_TEXT}</span>
         </div>
       `;
       overlay.appendChild(ready);
@@ -3181,13 +3164,7 @@ carregarFrasesDaApi();</script>
   function limparClassesDeLoading() {
     const box = document.getElementById("box");
     if (!box) return;
-    box.classList.remove("backend-waiting", "backend-ready", "reveal-static-label");
-  }
-
-  function liberarCliqueDoLoader() {
-    const box = document.getElementById("box");
-    if (!box) return;
-    box.classList.remove("disable-hover");
+    box.classList.remove("backend-waiting", "backend-ready");
   }
 
   function ativarLoadingBackendInicial() {
@@ -3198,30 +3175,22 @@ carregarFrasesDaApi();</script>
     garantirCamadasDeLoading();
     limparClassesDeLoading();
     box.classList.add("is-loading", "backend-waiting");
+    box.classList.remove("disable-hover");
     frase.innerHTML = "";
     frase.classList.remove("dialogo");
-    box.classList.add("disable-hover");
-    document.body.classList.remove("machine-loading-active", "machine-settle");
-    limparGlitchDaMaquina();
 
-    if (backendRevealTimer) {
-      clearTimeout(backendRevealTimer);
-      backendRevealTimer = null;
+    if (typeof window.pararGlitchDaMaquina === "function") {
+      window.pararGlitchDaMaquina();
     }
-
-    backendRevealTimer = setTimeout(() => {
-      box.classList.add("reveal-static-label");
-      backendRevealTimer = null;
-    }, 1710);
+    document.body.classList.remove("machine-settle");
   }
 
-  function iniciarTrackFrenetico() {
+  function iniciarLoopDoLoader() {
     const track = document.getElementById("readyTrack");
     if (!track) return;
-    track.classList.remove("frenetic");
-    track.style.left = "100%";
+    track.classList.remove("left-loop");
     void track.offsetWidth;
-    track.classList.add("frenetic");
+    track.classList.add("left-loop");
   }
 
   function ativarLoadingProntoParaClique() {
@@ -3231,81 +3200,16 @@ carregarFrasesDaApi();</script>
     garantirCamadasDeLoading();
     limparClassesDeLoading();
     box.classList.add("is-loading", "backend-ready");
-    liberarCliqueDoLoader();
+    box.classList.remove("disable-hover");
+
+    if (typeof window.iniciarGlitchDaMaquina === "function") {
+      window.iniciarGlitchDaMaquina();
+    }
     document.body.classList.remove("machine-settle");
-    iniciarGlitchDaMaquina();
-    iniciarTrackFrenetico();
+    iniciarLoopDoLoader();
   }
 
-  function limparTimersGlitch() {
-    if (glitchCycleTimer) {
-      clearTimeout(glitchCycleTimer);
-      glitchCycleTimer = null;
-    }
-    if (glitchPauseTimer) {
-      clearTimeout(glitchPauseTimer);
-      glitchPauseTimer = null;
-    }
-  }
-
-  function limparGlitchDaMaquina() {
-    limparTimersGlitch();
-    document.body.classList.remove("machine-loading-active", "glitch-pause", ...glitchIntensities);
-  }
-
-  function agendarProximoGlitch() {
-    limparTimersGlitch();
-
-    if (!document.body.classList.contains("machine-loading-active") || document.body.classList.contains("machine-settle") || window.sobreAberto) {
-      return;
-    }
-
-    document.body.classList.remove(...glitchIntensities, "glitch-pause");
-    const intensidade = glitchIntensities[Math.floor(Math.random() * glitchIntensities.length)];
-    document.body.classList.add(intensidade);
-
-    const proximaTroca = 700 + Math.floor(Math.random() * 900);
-
-    if (Math.random() < 0.34) {
-      const pausa = glitchPauses[Math.floor(Math.random() * glitchPauses.length)];
-      const inicioDaPausa = Math.max(80, proximaTroca - pausa - 60);
-
-      glitchPauseTimer = setTimeout(() => {
-        if (!document.body.classList.contains("machine-loading-active") || document.body.classList.contains("machine-settle") || window.sobreAberto) {
-          return;
-        }
-        document.body.classList.add("glitch-pause");
-
-        glitchPauseTimer = setTimeout(() => {
-          document.body.classList.remove("glitch-pause");
-        }, pausa);
-      }, inicioDaPausa);
-    }
-
-    glitchCycleTimer = setTimeout(agendarProximoGlitch, proximaTroca);
-  }
-
-  function iniciarGlitchDaMaquina() {
-    if (window.sobreAberto) return;
-    document.body.classList.add("machine-loading-active");
-    document.body.classList.remove("machine-settle");
-    agendarProximoGlitch();
-  }
-
-  function pararGlitchDaMaquina() {
-    limparGlitchDaMaquina();
-  }
-
-  window.acionarAssentamentoDaMaquina = function() {
-    pararGlitchDaMaquina();
-    document.body.classList.add("machine-settle");
-    setTimeout(() => {
-      if (!document.getElementById("box")?.classList.contains("is-loading")) {
-        document.body.classList.remove("machine-settle");
-      }
-    }, 3000);
-  };
-
+  const originalAtivarEstadoLoadingBox = window.ativarEstadoLoadingBox;
   window.ativarEstadoLoadingBox = function() {
     if (apiInicialCarregada) {
       ativarLoadingProntoParaClique();
@@ -3314,17 +3218,18 @@ carregarFrasesDaApi();</script>
     }
   };
 
+  const originalDesativarEstadoLoadingBox = window.desativarEstadoLoadingBox;
   window.desativarEstadoLoadingBox = function() {
     const box = document.getElementById("box");
-    if (!box) return;
-    box.classList.remove("is-loading", "backend-waiting", "backend-ready", "reveal-static-label");
-    pararGlitchDaMaquina();
-    if (backendRevealTimer) {
-      clearTimeout(backendRevealTimer);
-      backendRevealTimer = null;
+    if (box) {
+      box.classList.remove("is-loading", "backend-waiting", "backend-ready");
+    }
+    if (typeof window.pararGlitchDaMaquina === "function") {
+      window.pararGlitchDaMaquina();
     }
   };
 
+  const originalIniciar = window.iniciar;
   window.iniciar = function() {
     window.acabou = false;
     window.idsExibidos = new Set();
@@ -3347,58 +3252,6 @@ carregarFrasesDaApi();</script>
     }
   };
 
-  window.proximaFrase = function() {
-    if (window.sobreAberto) return;
-
-    if (aguardandoPrimeiraFrase && primeiraFrasePendente) {
-      aguardandoPrimeiraFrase = false;
-      const primeira = primeiraFrasePendente;
-      primeiraFrasePendente = null;
-      window.mostrarFraseObjeto(primeira, 1);
-      window.aplicarTravaHoverParaEstadoAtual(primeira, 1, true);
-      return;
-    }
-
-    const box = document.getElementById("box");
-    if (box?.classList.contains("is-loading") && window.aguardandoCliqueParaTroca) {
-      window.irParaProximaFrase();
-      return;
-    }
-
-    if (window.fraseAtual) {
-      const proximaEtapaDisponivel = window.obterProximaEtapaDisponivel(window.fraseAtual.partes, window.etapaAtual);
-      if (proximaEtapaDisponivel != null) {
-        window.mostrarFraseObjeto(window.fraseAtual, proximaEtapaDisponivel);
-        window.aplicarTravaHoverParaEstadoAtual(window.fraseAtual, proximaEtapaDisponivel, false);
-        return;
-      }
-    }
-
-    originalEntrarModoCarregandoTroca();
-    ativarLoadingProntoParaClique();
-  };
-
-  window.entrarModoCarregandoTroca = function() {
-    originalEntrarModoCarregandoTroca();
-    ativarLoadingProntoParaClique();
-  };
-
-  window.sairModoCarregandoTroca = function() {
-    originalSairModoCarregandoTroca();
-  };
-
-  window.abrirSobre = function() {
-    pararGlitchDaMaquina();
-    originalAbrirSobre();
-  };
-
-  window.fecharSobre = function(event) {
-    originalFecharSobre(event);
-    if (document.getElementById("box")?.classList.contains("is-loading")) {
-      iniciarGlitchDaMaquina();
-    }
-  };
-
   function dispararPrimeiraFrasePendente() {
     if (!aguardandoPrimeiraFrase || !primeiraFrasePendente || window.sobreAberto) return false;
 
@@ -3410,9 +3263,20 @@ carregarFrasesDaApi();</script>
     return true;
   }
 
+  const originalProximaFrase = window.proximaFrase;
+  window.proximaFrase = function() {
+    if (window.sobreAberto) return;
+
+    if (dispararPrimeiraFrasePendente()) {
+      return;
+    }
+
+    return originalProximaFrase();
+  };
+
   const boxEl = document.getElementById("box");
-  if (boxEl && !boxEl.dataset.loaderPrimeiraFraseHooked) {
-    boxEl.dataset.loaderPrimeiraFraseHooked = "1";
+  if (boxEl && !boxEl.dataset.loaderClickHooked) {
+    boxEl.dataset.loaderClickHooked = "1";
     boxEl.addEventListener("click", function(event) {
       if (!document.getElementById("box")?.classList.contains("is-loading")) return;
       if (!aguardandoPrimeiraFrase || !primeiraFrasePendente) return;
@@ -3423,8 +3287,8 @@ carregarFrasesDaApi();</script>
   }
 
   const maquinaEl = document.getElementById("maquinaTrigger");
-  if (maquinaEl && !maquinaEl.dataset.loaderPrimeiraFraseHooked) {
-    maquinaEl.dataset.loaderPrimeiraFraseHooked = "1";
+  if (maquinaEl && !maquinaEl.dataset.loaderClickHooked) {
+    maquinaEl.dataset.loaderClickHooked = "1";
     maquinaEl.addEventListener("click", function(event) {
       if (!document.getElementById("box")?.classList.contains("is-loading")) return;
       if (!aguardandoPrimeiraFrase || !primeiraFrasePendente) return;
@@ -3433,6 +3297,28 @@ carregarFrasesDaApi();</script>
       dispararPrimeiraFrasePendente();
     }, true);
   }
+
+  const originalEntrarModoCarregandoTroca = window.entrarModoCarregandoTroca;
+  window.entrarModoCarregandoTroca = function() {
+    originalEntrarModoCarregandoTroca();
+    ativarLoadingProntoParaClique();
+  };
+
+  const originalAbrirSobre = window.abrirSobre;
+  window.abrirSobre = function() {
+    if (typeof window.pararGlitchDaMaquina === "function") {
+      window.pararGlitchDaMaquina();
+    }
+    originalAbrirSobre();
+  };
+
+  const originalFecharSobre = window.fecharSobre;
+  window.fecharSobre = function(event) {
+    originalFecharSobre(event);
+    if (document.getElementById("box")?.classList.contains("is-loading") && typeof window.iniciarGlitchDaMaquina === "function") {
+      window.iniciarGlitchDaMaquina();
+    }
+  };
 
   garantirCamadasDeLoading();
   ativarLoadingBackendInicial();
