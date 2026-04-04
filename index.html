@@ -2197,17 +2197,61 @@ function normalizarPartes(partes) {
   );
 }
 
-function obterPartesSobreEstatico() {
-  return [
-    { texto: "O FUTURO DA GRAPEFRUIT", bold: true, italic: true, underline: false },
-    { texto: "\n\nApesar de redator, sou analfabeto. Nunca escrevi uma linha de código. Na verdade, escrevia win+enter pra entrar no Windows em 1992. Nada além. Pula pra 2026. Matrix – a IA pluga o html embaixo do meu dedo.\n\nComeço esse experimento, algo que sempre quis: um livro vivo de nanocontos. Que vai em breve conversar com você, ser baixado num chip e virar minha consciência, podendo ser instalada numa grapefruit ou algo que o valha.\n\nLaforismos é meu site beta de estimação. Beta forever, estilo Dolly, nadando disléxica entre botões CSS e figuras de linguagem de português brasileiro.\n\nMeu sáite de internê, que poderia se chamar: “Desabafos polissêmicos, a fuga da egotrip.” Ou: \"Eu podia tá bebendo, podia tá comendo açúcar, mas tô só fazendo um trocadilho.\"\n\nMas se pegar o que tá escrito mesmo, linha após linha – nas mais de 2000 desse código: isso aqui é apenas um sisteminha, que fiz pra jogar umas frases que ficam querendo sair.\n\nObrigado por ler.\n\nPrazer!\n\nFelipe Koraicho Sauma\nRedator do Box de Frases  \nCCO • CTO\nLaforismos.com.br", bold: false, italic: true, underline: false }
-  ];
+const FALLBACKS_SOBRE = [
+  [
+    { texto: "Sobre de Felipe carregando...", bold: false, italic: false, underline: false },
+    { texto: "
+
+Olá, prazer, sou Hamlet, um HTML que ataca de Escritor.
+Estou elocubrante e inocuamente tentando achar o Word com esse \"Sobre\".
+Cabisbaixo com tal experiência, clamo para que voltes outra hora aqui.
+Grátis. Digo, grato.", bold: false, italic: false, underline: false }
+  ],
+  [
+    { texto: "Ó. perdão a metalinguagem, mas...
+Guenta aí, isso é um texto de fixo – não o que o cara quer que você leia.
+Ass.: Hamlet.", bold: false, italic: false, underline: false }
+  ],
+  [
+    { texto: "Ah! Foi mal. O código ainda não achou o Sobre que o cara quer.
+Hamlet. O programador HTML perdido no tempo.
+
+Sobre de Felipe, ainda carregando... Malz!", bold: false, italic: false, underline: false }
+  ]
+];
+
+const STORAGE_SOBRE_FALLBACK_INDICE = "laforismos_sobre_fallback_indice_v1";
+let partesSobreAtuais = FALLBACKS_SOBRE[0];
+
+function obterProximoFallbackSobre() {
+  try {
+    const indiceSalvo = Number(localStorage.getItem(STORAGE_SOBRE_FALLBACK_INDICE) || "0");
+    const indiceAtual = Number.isFinite(indiceSalvo) ? indiceSalvo : 0;
+    const indiceNormalizado = ((indiceAtual % FALLBACKS_SOBRE.length) + FALLBACKS_SOBRE.length) % FALLBACKS_SOBRE.length;
+    const fallback = FALLBACKS_SOBRE[indiceNormalizado];
+    localStorage.setItem(STORAGE_SOBRE_FALLBACK_INDICE, String((indiceNormalizado + 1) % FALLBACKS_SOBRE.length));
+    return fallback;
+  } catch (e) {
+    return FALLBACKS_SOBRE[0];
+  }
+}
+
+function textoSobreParaPartes(texto) {
+  const textoNormalizado = String(texto || "").trim();
+  if (!textoNormalizado) return null;
+  return [{ texto: textoNormalizado, bold: false, italic: false, underline: false }];
+}
+
+function definirSobreApiOuFallback(sobreTexto) {
+  const partesApi = textoSobreParaPartes(sobreTexto);
+  partesSobreAtuais = partesApi || obterProximoFallbackSobre();
+  renderizarSobre();
 }
 
 function renderizarSobre() {
   const el = document.getElementById("sobreBoxTexto");
   if (!el) return;
-  el.innerHTML = montarHtmlPartes(obterPartesSobreEstatico(), 99);
+  el.innerHTML = montarHtmlPartes(partesSobreAtuais || FALLBACKS_SOBRE[0], 99);
 }
 function abrirSobre() {
   sobreAberto = true;
@@ -2415,6 +2459,8 @@ async function carregarFrasesDaApi() {
         obceno: normalizarBoolean(item.obceno)
       }));
 
+    definirSobreApiOuFallback(data.sobreTexto);
+
     const frasesDescartadas = frasesNormalizadas
       .filter(item => item.partes.length === 0)
       .map(item => item.id);
@@ -2426,8 +2472,6 @@ async function carregarFrasesDaApi() {
       totalValidas: frases.length,
       idsDescartados: frasesDescartadas
     });
-
-    renderizarSobre();
 
     iniciar();
 
@@ -2448,7 +2492,7 @@ aplicarBackgroundAleatorio();
 sincronizarToggle();
 inicializarInteracaoToggle();
 inicializarInteracaoBox();
-renderizarSobre();
+definirSobreApiOuFallback("");
 window.addEventListener("resize", ajustarAlturaBoxDinamicamente);
 carregarFrasesDaApi();</script>
 
