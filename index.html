@@ -1150,6 +1150,7 @@
 
 
 
+
 <style id="laforismos-loading-override">
   .box.is-loading.backend-waiting {
     background: rgba(255,255,255,0.10) !important;
@@ -3128,6 +3129,7 @@ carregarFrasesDaApi();</script>
 
 
 
+
 <script id="laforismos-loading-script">
 (function () {
   const LOADER_TEXT = 'carregando espasmo • carregando espasmo • carregando espasmo • carregando espasmo • clica aí • carregando espasmo • carregando espasmo • carregando espasmo • clica! • carregando espasmo • carregando espasmo • carregando espasmo • carregando espasmo • carregando espasmo • carregando espasmo • carregando espasmo • pode clicar';
@@ -3136,6 +3138,7 @@ carregarFrasesDaApi();</script>
   let aguardandoPrimeiraFrase = false;
   let apiInicialCarregada = false;
   let loaderSpeedTimer = null;
+  let loaderKickoffTimer = null;
 
   function garantirCamadasDeLoading() {
     const overlay = document.querySelector("#box .overlay");
@@ -3178,6 +3181,10 @@ carregarFrasesDaApi();</script>
       clearTimeout(loaderSpeedTimer);
       loaderSpeedTimer = null;
     }
+    if (loaderKickoffTimer) {
+      clearTimeout(loaderKickoffTimer);
+      loaderKickoffTimer = null;
+    }
   }
 
   function variarVelocidadeLoader() {
@@ -3187,10 +3194,10 @@ carregarFrasesDaApi();</script>
       return;
     }
 
-    const duration = 3.2 + (Math.random() * (4.57 - 3.2));  // até +30% mais lento
+    const duration = 3.2 + (Math.random() * (6.4 - 3.2)); // até 100% mais lento em alguns trechos
     track.style.setProperty("--loader-speed", `${duration.toFixed(2)}s`);
 
-    const nextIn = 420 + Math.floor(Math.random() * 900);
+    const nextIn = 300 + Math.floor(Math.random() * 1200);
     loaderSpeedTimer = setTimeout(variarVelocidadeLoader, nextIn);
   }
 
@@ -3213,15 +3220,26 @@ carregarFrasesDaApi();</script>
     limparVariacaoVelocidade();
   }
 
-  function iniciarLoopDoLoader() {
+  function iniciarLoopDoLoader(imediato = false) {
     const track = document.getElementById("readyTrack");
     if (!track) return;
+
     track.classList.remove("left-loop");
     track.style.setProperty("--loader-speed", "3.2s");
     void track.offsetWidth;
     track.classList.add("left-loop");
+
     limparVariacaoVelocidade();
-    variarVelocidadeLoader();
+
+    if (imediato) {
+      // força o texto a começar andando já no primeiro frame visível
+      loaderKickoffTimer = setTimeout(() => {
+        variarVelocidadeLoader();
+        loaderKickoffTimer = null;
+      }, 30);
+    } else {
+      variarVelocidadeLoader();
+    }
   }
 
   function ativarLoadingProntoParaClique() {
@@ -3237,10 +3255,9 @@ carregarFrasesDaApi();</script>
       window.iniciarGlitchDaMaquina();
     }
     document.body.classList.remove("machine-settle");
-    iniciarLoopDoLoader();
+    iniciarLoopDoLoader(true);
   }
 
-  const originalAtivarEstadoLoadingBox = window.ativarEstadoLoadingBox;
   window.ativarEstadoLoadingBox = function() {
     if (apiInicialCarregada) {
       ativarLoadingProntoParaClique();
@@ -3350,7 +3367,7 @@ carregarFrasesDaApi();</script>
       if (typeof window.iniciarGlitchDaMaquina === "function") {
         window.iniciarGlitchDaMaquina();
       }
-      iniciarLoopDoLoader();
+      iniciarLoopDoLoader(true);
     }
   };
 
