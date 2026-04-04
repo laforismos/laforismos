@@ -367,9 +367,72 @@
       margin: 14px auto 14px;
       position: relative;
       z-index: 2;
-      pointer-events: none;
+      pointer-events: auto;
       user-select: none;
+      cursor: pointer;
+      transition: opacity 0.22s ease, transform 0.22s ease, visibility 0.22s ease;
     }
+
+    .maquina-wrap {
+      position: relative;
+      display: block;
+      width: 106px;
+      margin: 14px auto 14px;
+      z-index: 2;
+    }
+
+    .maquina-wrap::before,
+    .maquina-wrap::after {
+      content: "";
+      position: absolute;
+      inset: 0;
+      background-image: url("./maquina-de-escrever_BLACK.png");
+      background-repeat: no-repeat;
+      background-position: center;
+      background-size: contain;
+      opacity: 0;
+      pointer-events: none;
+      mix-blend-mode: normal;
+    }
+
+    .box.is-loading ~ .maquina-wrap::before,
+    .box.is-loading ~ .maquina-wrap::after {
+      opacity: 0.26;
+    }
+
+    .box.is-loading ~ .maquina-wrap::before {
+      animation: maquinaGlitchA 0.16s steps(2, end) infinite;
+    }
+
+    .box.is-loading ~ .maquina-wrap::after {
+      opacity: 0.18;
+      animation: maquinaGlitchB 0.22s steps(2, end) infinite;
+    }
+
+    @keyframes maquinaGlitchA {
+      0% { transform: translate(0, 0); clip-path: inset(0 0 78% 0); }
+      20% { transform: translate(-2px, 1px); clip-path: inset(18% 0 54% 0); }
+      40% { transform: translate(2px, -1px); clip-path: inset(42% 0 28% 0); }
+      60% { transform: translate(-1px, 2px); clip-path: inset(64% 0 12% 0); }
+      80% { transform: translate(2px, 0); clip-path: inset(28% 0 48% 0); }
+      100% { transform: translate(0, 0); clip-path: inset(0 0 78% 0); }
+    }
+
+    @keyframes maquinaGlitchB {
+      0% { transform: translate(0, 0); clip-path: inset(72% 0 0 0); }
+      25% { transform: translate(2px, 0); clip-path: inset(8% 0 70% 0); }
+      50% { transform: translate(-2px, 1px); clip-path: inset(34% 0 38% 0); }
+      75% { transform: translate(1px, -2px); clip-path: inset(58% 0 14% 0); }
+      100% { transform: translate(0, 0); clip-path: inset(72% 0 0 0); }
+    }
+
+    body.sobre-aberto .maquina-wrap {
+      opacity: 0;
+      visibility: hidden;
+      pointer-events: none;
+      transform: translateY(-8px);
+    }
+
 
 .sobre-foto-topo {
       width: 106px;
@@ -443,6 +506,16 @@
     }
 
     @media (max-width: 768px) {
+      .imagem-entre-sub-e-box {
+        width: 94px;
+        margin: 12px auto 12px;
+      }
+
+      .maquina-wrap {
+        width: 94px;
+        margin: 12px auto 12px;
+      }
+
       .imagem-entre-sub-e-box {
         width: 94px;
         margin: 12px auto 12px;
@@ -912,11 +985,15 @@
     <img class="sobre-foto-topo" src="./Fe_FOTO_AVATAR.png" alt="Felipe Koraicho Sauma">
   </a>
 
-  <img
-    class="imagem-entre-sub-e-box"
-    src="./maquina-de-escrever_BLACK.png"
-    alt="Ícone de máquina de escrever"
-  >
+  <div class="maquina-wrap" id="maquinaTrigger" aria-hidden="true">
+    <div class="maquina-wrap" id="maquinaTrigger" aria-hidden="true">
+    <img
+      class="imagem-entre-sub-e-box"
+      src="./maquina-de-escrever_BLACK.png"
+      alt="Ícone de máquina de escrever"
+    >
+  </div>
+  </div>
 
   <div class="interacao-area">
     <div class="box is-loading" id="box">
@@ -2636,6 +2713,17 @@ inicializarInteracaoToggle();
 inicializarInteracaoBox();
 definirSobreApiOuFallback("");
 window.addEventListener("resize", ajustarAlturaBoxDinamicamente);
+
+const maquinaTrigger = document.getElementById("maquinaTrigger");
+if (maquinaTrigger) {
+  maquinaTrigger.addEventListener("click", (event) => {
+    if (sobreAberto) return;
+    event.preventDefault();
+    event.stopPropagation();
+    proximaFrase();
+  });
+}
+
 carregarFrasesDaApi();</script>
 
 </body>
