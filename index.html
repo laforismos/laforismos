@@ -375,15 +375,14 @@
 
     
     
+    
     .maquina-wrap {
       position: relative;
       display: block;
       width: 106px;
       margin: 14px auto 14px;
       z-index: 2;
-      animation: maquinaGlitchShake 0.34s steps(2, end) infinite;
-      filter: contrast(1.12) saturate(0.94);
-      transition: opacity 1.1s ease;
+      transition: opacity 3s ease;
     }
 
     .maquina-wrap::before,
@@ -397,20 +396,7 @@
       background-size: contain;
       pointer-events: none;
       mix-blend-mode: normal;
-    }
-
-    .maquina-wrap::before {
-      opacity: 0.25;
-      transform: translate(-2px, 0);
-      animation: maquinaGlitchA 0.18s steps(2, end) infinite;
-      filter: blur(0.15px);
-    }
-
-    .maquina-wrap::after {
-      transform: translate(2px, 0);
-      opacity: 0.2;
-      animation: maquinaGlitchB 0.22s steps(2, end) infinite;
-      filter: blur(0.2px);
+      opacity: 0;
     }
 
     .imagem-entre-sub-e-box {
@@ -424,68 +410,185 @@
       pointer-events: auto;
       user-select: none;
       cursor: pointer;
-      transition: opacity 1.1s ease, transform 0.22s ease, visibility 0.22s ease;
-      animation: maquinaGlitchCore 0.16s steps(2, end) infinite;
+      transition: opacity 3s ease, transform 0.18s ease, visibility 0.22s ease;
+    }
+
+    body.machine-settle .imagem-entre-sub-e-box {
+      opacity: 0.35 !important;
+      transform: translate(0, 0) scale(1) !important;
     }
 
     body.machine-settle .maquina-wrap,
+    body.machine-settle .maquina-wrap::before,
+    body.machine-settle .maquina-wrap::after,
     body.machine-settle .imagem-entre-sub-e-box {
       animation: none !important;
     }
 
     body.machine-settle .maquina-wrap::before,
     body.machine-settle .maquina-wrap::after {
-      animation: none !important;
       opacity: 0 !important;
+      transform: none !important;
     }
 
-    body.machine-settle .imagem-entre-sub-e-box {
-      opacity: 0.36 !important;
+    body.glitch-level-1 .maquina-wrap {
+      animation: maquinaGlitchShake1 0.34s steps(2, end) infinite;
+      filter: contrast(1.12) saturate(0.94);
     }
 
-    @keyframes maquinaGlitchA {
+    body.glitch-level-1 .maquina-wrap::before {
+      opacity: 0.25;
+      transform: translate(-2px, 0);
+      animation: maquinaGlitchA1 0.18s steps(2, end) infinite;
+      filter: blur(0.15px);
+    }
+
+    body.glitch-level-1 .maquina-wrap::after {
+      opacity: 0.20;
+      transform: translate(2px, 0);
+      animation: maquinaGlitchB1 0.22s steps(2, end) infinite;
+      filter: blur(0.20px);
+    }
+
+    body.glitch-level-1 .imagem-entre-sub-e-box {
+      animation: maquinaGlitchCore1 0.16s steps(2, end) infinite;
+    }
+
+    body.glitch-level-2 .maquina-wrap {
+      animation: maquinaGlitchShake2 0.24s steps(2, end) infinite;
+      filter: contrast(1.18) saturate(0.92);
+    }
+
+    body.glitch-level-2 .maquina-wrap::before {
+      opacity: 0.38;
+      transform: translate(-3px, 0);
+      animation: maquinaGlitchA2 0.12s steps(2, end) infinite;
+      filter: blur(0.20px);
+    }
+
+    body.glitch-level-2 .maquina-wrap::after {
+      opacity: 0.30;
+      transform: translate(3px, 0);
+      animation: maquinaGlitchB2 0.15s steps(2, end) infinite;
+      filter: blur(0.28px);
+    }
+
+    body.glitch-level-2 .imagem-entre-sub-e-box {
+      animation: maquinaGlitchCore2 0.11s steps(2, end) infinite;
+    }
+
+    body.glitch-level-3 .maquina-wrap {
+      animation: maquinaGlitchShake3 0.40s steps(2, end) infinite;
+      filter: contrast(1.08) saturate(0.96);
+    }
+
+    body.glitch-level-3 .maquina-wrap::before {
+      opacity: 0.21;
+      transform: translate(-2px, 0);
+      animation: maquinaGlitchA3 0.22s steps(2, end) infinite;
+      filter: blur(0.10px);
+    }
+
+    body.glitch-level-3 .maquina-wrap::after {
+      opacity: 0.16;
+      transform: translate(2px, 0);
+      animation: maquinaGlitchB3 0.26s steps(2, end) infinite;
+      filter: blur(0.15px);
+    }
+
+    body.glitch-level-3 .imagem-entre-sub-e-box {
+      animation: maquinaGlitchCore3 0.20s steps(2, end) infinite;
+    }
+
+    body.glitch-paused .maquina-wrap,
+    body.glitch-paused .maquina-wrap::before,
+    body.glitch-paused .maquina-wrap::after,
+    body.glitch-paused .imagem-entre-sub-e-box {
+      animation-play-state: paused !important;
+    }
+
+    @keyframes maquinaGlitchA1 {
       0%   { transform: translate(-3px, 1px); clip-path: inset(0 0 78% 0); }
-      10%  { transform: translate(2px, -1px); clip-path: inset(8% 0 60% 0); }
-      20%  { transform: translate(-3px, 1px); clip-path: inset(18% 0 50% 0); }
-      30%  { transform: translate(3px, -1px); clip-path: inset(28% 0 34% 0); }
-      40%  { transform: translate(-2px, 1px); clip-path: inset(40% 0 22% 0); }
-      50%  { transform: translate(3px, 0); clip-path: inset(52% 0 14% 0); }
-      60%  { transform: translate(-3px, -1px); clip-path: inset(62% 0 8% 0); }
-      70%  { transform: translate(2px, 1px); clip-path: inset(22% 0 46% 0); }
-      80%  { transform: translate(-2px, -1px); clip-path: inset(12% 0 58% 0); }
-      90%  { transform: translate(3px, 1px); clip-path: inset(68% 0 4% 0); }
+      25%  { transform: translate(2px, -1px); clip-path: inset(20% 0 46% 0); }
+      50%  { transform: translate(-2px, 1px); clip-path: inset(42% 0 22% 0); }
+      75%  { transform: translate(3px, 0); clip-path: inset(62% 0 8% 0); }
       100% { transform: translate(-3px, 1px); clip-path: inset(0 0 78% 0); }
     }
 
-    @keyframes maquinaGlitchB {
+    @keyframes maquinaGlitchB1 {
       0%   { transform: translate(3px, -1px); clip-path: inset(74% 0 0 0); }
-      10%  { transform: translate(-2px, 1px); clip-path: inset(10% 0 68% 0); }
-      20%  { transform: translate(3px, 0); clip-path: inset(24% 0 46% 0); }
-      30%  { transform: translate(-3px, -1px); clip-path: inset(36% 0 30% 0); }
-      40%  { transform: translate(2px, 1px); clip-path: inset(50% 0 16% 0); }
-      50%  { transform: translate(-3px, 1px); clip-path: inset(64% 0 6% 0); }
-      60%  { transform: translate(3px, -1px); clip-path: inset(6% 0 72% 0); }
-      70%  { transform: translate(-2px, 1px); clip-path: inset(18% 0 54% 0); }
-      80%  { transform: translate(3px, -1px); clip-path: inset(44% 0 24% 0); }
-      90%  { transform: translate(-3px, 0); clip-path: inset(58% 0 12% 0); }
+      25%  { transform: translate(-2px, 1px); clip-path: inset(14% 0 60% 0); }
+      50%  { transform: translate(2px, 0); clip-path: inset(36% 0 28% 0); }
+      75%  { transform: translate(-3px, 1px); clip-path: inset(58% 0 10% 0); }
       100% { transform: translate(3px, -1px); clip-path: inset(74% 0 0 0); }
     }
 
-    @keyframes maquinaGlitchCore {
+    @keyframes maquinaGlitchCore1 {
       0%   { transform: translate(0, 0) scale(1); }
-      20%  { transform: translate(-1px, 0) scale(1.006); }
-      40%  { transform: translate(1px, -1px) scale(0.997); }
-      60%  { transform: translate(-1px, 0) scale(1.007); }
-      80%  { transform: translate(1px, 0) scale(0.998); }
+      33%  { transform: translate(-1px, 0) scale(1.006); }
+      66%  { transform: translate(1px, -1px) scale(0.997); }
       100% { transform: translate(0, 0) scale(1); }
     }
 
-    @keyframes maquinaGlitchShake {
+    @keyframes maquinaGlitchShake1 {
+      0%   { transform: translate(0, 0); }
+      33%  { transform: translate(-1px, 0); }
+      66%  { transform: translate(1px, 0); }
+      100% { transform: translate(0, 0); }
+    }
+
+    @keyframes maquinaGlitchA2 {
+      0%   { transform: translate(-4px, 1px); clip-path: inset(0 0 78% 0); }
+      20%  { transform: translate(3px, -1px); clip-path: inset(10% 0 58% 0); }
+      40%  { transform: translate(-4px, 1px); clip-path: inset(30% 0 34% 0); }
+      60%  { transform: translate(3px, -1px); clip-path: inset(48% 0 18% 0); }
+      80%  { transform: translate(-3px, 1px); clip-path: inset(66% 0 6% 0); }
+      100% { transform: translate(-4px, 1px); clip-path: inset(0 0 78% 0); }
+    }
+
+    @keyframes maquinaGlitchB2 {
+      0%   { transform: translate(4px, -1px); clip-path: inset(74% 0 0 0); }
+      20%  { transform: translate(-3px, 1px); clip-path: inset(14% 0 60% 0); }
+      40%  { transform: translate(3px, 0); clip-path: inset(32% 0 30% 0); }
+      60%  { transform: translate(-4px, 1px); clip-path: inset(52% 0 14% 0); }
+      80%  { transform: translate(3px, -1px); clip-path: inset(66% 0 4% 0); }
+      100% { transform: translate(4px, -1px); clip-path: inset(74% 0 0 0); }
+    }
+
+    @keyframes maquinaGlitchCore2 {
+      0%   { transform: translate(0, 0) scale(1); }
+      25%  { transform: translate(-1px, 1px) scale(1.010); }
+      50%  { transform: translate(1px, -1px) scale(0.995); }
+      75%  { transform: translate(-1px, 0) scale(1.012); }
+      100% { transform: translate(0, 0) scale(1); }
+    }
+
+    @keyframes maquinaGlitchShake2 {
       0%   { transform: translate(0, 0); }
       25%  { transform: translate(-1px, 0); }
       50%  { transform: translate(1px, 0); }
       75%  { transform: translate(0, -1px); }
       100% { transform: translate(0, 0); }
+    }
+
+    @keyframes maquinaGlitchA3 {
+      0%   { transform: translate(-2px, 1px); clip-path: inset(0 0 80% 0); }
+      33%  { transform: translate(2px, 0); clip-path: inset(22% 0 48% 0); }
+      66%  { transform: translate(-2px, 1px); clip-path: inset(54% 0 12% 0); }
+      100% { transform: translate(-2px, 1px); clip-path: inset(0 0 80% 0); }
+    }
+
+    @keyframes maquinaGlitchB3 {
+      0%   { transform: translate(2px, -1px); clip-path: inset(76% 0 0 0); }
+      33%  { transform: translate(-2px, 1px); clip-path: inset(18% 0 58% 0); }
+      66%  { transform: translate(2px, 0); clip-path: inset(50% 0 14% 0); }
+      100% { transform: translate(2px, -1px); clip-path: inset(76% 0 0 0); }
+    }
+
+    @keyframes maquinaGlitchCore3 {
+      0%   { transform: translate(0, 0) scale(1); }
+      50%  { transform: translate(-1px, 0) scale(1.004); }
+      100% { transform: translate(0, 0) scale(1); }
     }
 
     body.sobre-aberto .maquina-wrap {
@@ -1331,10 +1434,73 @@ let hoverTravadoAteUltimoTempo = false;
 let videoTimeUpdateHandler = null;
 let videoLoadedMetadataHandler = null;
 
+
 let machineSettleTimer = null;
+let glitchCycleTimer = null;
+let glitchPauseTimer = null;
+const GLITCH_LEVEL_CLASSES = ["glitch-level-1", "glitch-level-2", "glitch-level-3"];
+
+function limparClassesGlitch() {
+  document.body.classList.remove("glitch-level-1", "glitch-level-2", "glitch-level-3", "glitch-paused");
+}
+
+function agendarPausaGlitchAleatoria() {
+  if (glitchPauseTimer) {
+    clearTimeout(glitchPauseTimer);
+    glitchPauseTimer = null;
+  }
+
+  const delays = [500, 600, 900];
+  const pausa = delays[Math.floor(Math.random() * delays.length)];
+
+  document.body.classList.add("glitch-paused");
+
+  glitchPauseTimer = setTimeout(() => {
+    document.body.classList.remove("glitch-paused");
+    glitchPauseTimer = null;
+  }, pausa);
+}
+
+function iniciarCicloGlitchDaMaquina() {
+  if (glitchCycleTimer) {
+    clearInterval(glitchCycleTimer);
+    glitchCycleTimer = null;
+  }
+
+  limparClassesGlitch();
+
+  if (sobreAberto || document.body.classList.contains("machine-settle")) {
+    return;
+  }
+
+  let indiceAtual = 0;
+  document.body.classList.add(GLITCH_LEVEL_CLASSES[indiceAtual]);
+
+  glitchCycleTimer = setInterval(() => {
+    if (sobreAberto || document.body.classList.contains("machine-settle")) {
+      return;
+    }
+
+    document.body.classList.remove(GLITCH_LEVEL_CLASSES[indiceAtual]);
+
+    const proximoIndice = Math.floor(Math.random() * GLITCH_LEVEL_CLASSES.length);
+    indiceAtual = proximoIndice;
+    document.body.classList.add(GLITCH_LEVEL_CLASSES[indiceAtual]);
+
+    if (Math.random() < 0.34) {
+      agendarPausaGlitchAleatoria();
+    }
+  }, 1600);
+}
 
 function acionarAssentamentoDaMaquina() {
   document.body.classList.add("machine-settle");
+  limparClassesGlitch();
+
+  if (glitchPauseTimer) {
+    clearTimeout(glitchPauseTimer);
+    glitchPauseTimer = null;
+  }
 
   if (machineSettleTimer) {
     clearTimeout(machineSettleTimer);
@@ -1344,10 +1510,12 @@ function acionarAssentamentoDaMaquina() {
   machineSettleTimer = setTimeout(() => {
     if (!sobreAberto) {
       document.body.classList.remove("machine-settle");
+      iniciarCicloGlitchDaMaquina();
     }
     machineSettleTimer = null;
-  }, 2200);
+  }, 3000);
 }
+
 
 
 const DEBUG_FRASES = true;
@@ -2515,6 +2683,7 @@ function renderizarSobre() {
 function abrirSobre() {
   sobreAberto = true;
   document.body.classList.add("sobre-aberto");
+  limparClassesGlitch();
 
   const ehMobile = window.matchMedia("(max-width: 768px)").matches;
   const htmlEl = document.documentElement;
@@ -2550,6 +2719,7 @@ function abrirSobre() {
   }
 
   ajustarAlturaBoxDinamicamente();
+  iniciarCicloGlitchDaMaquina();
 }
 
 function fecharSobre(event) {
