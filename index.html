@@ -3399,6 +3399,41 @@ carregarFrasesDaApi();</script>
     }
   };
 
+  function dispararPrimeiraFrasePendente() {
+    if (!aguardandoPrimeiraFrase || !primeiraFrasePendente || window.sobreAberto) return false;
+
+    aguardandoPrimeiraFrase = false;
+    const primeira = primeiraFrasePendente;
+    primeiraFrasePendente = null;
+    window.mostrarFraseObjeto(primeira, 1);
+    window.aplicarTravaHoverParaEstadoAtual(primeira, 1, true);
+    return true;
+  }
+
+  const boxEl = document.getElementById("box");
+  if (boxEl && !boxEl.dataset.loaderPrimeiraFraseHooked) {
+    boxEl.dataset.loaderPrimeiraFraseHooked = "1";
+    boxEl.addEventListener("click", function(event) {
+      if (!document.getElementById("box")?.classList.contains("is-loading")) return;
+      if (!aguardandoPrimeiraFrase || !primeiraFrasePendente) return;
+      event.preventDefault();
+      event.stopPropagation();
+      dispararPrimeiraFrasePendente();
+    }, true);
+  }
+
+  const maquinaEl = document.getElementById("maquinaTrigger");
+  if (maquinaEl && !maquinaEl.dataset.loaderPrimeiraFraseHooked) {
+    maquinaEl.dataset.loaderPrimeiraFraseHooked = "1";
+    maquinaEl.addEventListener("click", function(event) {
+      if (!document.getElementById("box")?.classList.contains("is-loading")) return;
+      if (!aguardandoPrimeiraFrase || !primeiraFrasePendente) return;
+      event.preventDefault();
+      event.stopPropagation();
+      dispararPrimeiraFrasePendente();
+    }, true);
+  }
+
   garantirCamadasDeLoading();
   ativarLoadingBackendInicial();
 })();
