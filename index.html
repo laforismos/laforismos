@@ -402,6 +402,7 @@
       color: rgba(26, 26, 26, 0.9);
       text-shadow: none;
       line-height: 1.72;
+      pointer-events: none;
     }
 
     body.sobre-aberto .interacao-area .filtro-obceno-principal {
@@ -494,6 +495,7 @@
 
       body.sobre-aberto .sobre-box-texto {
         color: rgba(24, 24, 24, 0.92);
+        pointer-events: none;
       }
     }
 
@@ -929,7 +931,7 @@ carregando espasmo • carregando espasmo • carregando espasmo • carregando 
 </main>
 
 <footer>
-  <div class="sobre-trigger footer-sobre-trigger" onclick="toggleSobre(event)">Sobre (e sob) o site</div>
+  <div class="sobre-trigger footer-sobre-trigger" onclick="toggleSobre(event, 'footer')">Sobre (e sob) o site</div>
   <div class="footer-links">
     <span onclick="feMail()">EML</span> |
     <span onclick="lk()">LKN</span> |
@@ -2247,6 +2249,7 @@ const FALLBACKS_SOBRE = [
 
 const STORAGE_SOBRE_FALLBACK_INDICE = "laforismos_sobre_fallback_indice_v1";
 let partesSobreAtuais = FALLBACKS_SOBRE[0];
+let partesSobreApi = null;
 
 function obterProximoFallbackSobre() {
   try {
@@ -2268,8 +2271,20 @@ function textoSobreParaPartes(texto) {
 }
 
 function definirSobreApiOuFallback(sobreTexto) {
-  const partesApi = textoSobreParaPartes(sobreTexto);
-  partesSobreAtuais = partesApi || obterProximoFallbackSobre();
+  partesSobreApi = textoSobreParaPartes(sobreTexto);
+  partesSobreAtuais = partesSobreApi || FALLBACKS_SOBRE[0];
+  renderizarSobre();
+}
+
+function prepararConteudoSobre(origem = "geral") {
+  if (partesSobreApi) {
+    partesSobreAtuais = partesSobreApi;
+  } else if (origem === "footer") {
+    partesSobreAtuais = obterProximoFallbackSobre();
+  } else {
+    partesSobreAtuais = partesSobreAtuais || FALLBACKS_SOBRE[0];
+  }
+
   renderizarSobre();
 }
 
@@ -2352,7 +2367,7 @@ function fecharSobre(event) {
   ajustarAlturaBoxDinamicamente();
 }
 
-function toggleSobre(event) {
+function toggleSobre(event, origem = "geral") {
   if (event) {
     event.preventDefault();
     event.stopPropagation();
@@ -2360,6 +2375,7 @@ function toggleSobre(event) {
   if (sobreAberto) {
     fecharSobre();
   } else {
+    prepararConteudoSobre(origem);
     abrirSobre();
   }
 }
