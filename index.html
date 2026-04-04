@@ -1035,7 +1035,6 @@ let hoverTimer = null;
 let mostrarObcenas = true;
 let mostrarSoNovas = false;
 let sobreAberto = false;
-let sobrePartesApi = [];
 let fraseAtual = null;
 let etapaAtual = 1;
 let hoverTravadoAteUltimoTempo = false;
@@ -2127,20 +2126,17 @@ function normalizarPartes(partes) {
   );
 }
 
-function obterPartesSobreAtuais() {
-  if (Array.isArray(sobrePartesApi) && sobrePartesApi.length > 0) {
-    return sobrePartesApi;
-  }
-
-  return [
-    { texto: "Guenta aí, carregando...", bold: false, italic: true, underline: false }
-  ];
-}
+let sobrePartesApi = [];
 
 function renderizarSobre() {
   const el = document.getElementById("sobreBoxTexto");
   if (!el) return;
-  el.innerHTML = montarHtmlPartes(obterPartesSobreAtuais(), 99);
+
+  if (Array.isArray(sobrePartesApi) && sobrePartesApi.length > 0) {
+    el.innerHTML = montarHtmlPartes(normalizarPartes(sobrePartesApi), 99);
+  } else {
+    el.textContent = "Guenta aí, carregando...";
+  }
 }
 function abrirSobre() {
   sobreAberto = true;
@@ -2354,17 +2350,13 @@ async function carregarFrasesDaApi() {
 
     frases = frasesNormalizadas.filter(item => item.partes.length > 0);
 
-    sobrePartesApi = normalizarPartes(data?.sobre?.partes || []);
-    const sobreOrigem = sobrePartesApi.length > 0 ? "api" : "carregando";
-
     debugFrases("API carregada", {
       totalRecebidas: Array.isArray(data.frases) ? data.frases.length : 0,
       totalValidas: frases.length,
-      idsDescartados: frasesDescartadas,
-      totalPartesSobre: sobrePartesApi.length,
-      sobreOrigem
+      idsDescartados: frasesDescartadas
     });
 
+    sobrePartesApi = Array.isArray(data?.sobre?.partes) ? data.sobre.partes : [];
     renderizarSobre();
 
     iniciar();
