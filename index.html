@@ -36,6 +36,7 @@
       --site-bg-color: #ff00b4;
       --mobile-overlay-opacity: 0.18;
       --site-text-color: white;
+      --dynamic-box-border-color: rgba(255,255,255,0.6);
       margin: 0;
       font-family: Helvetica, Arial, sans-serif;
       color: var(--site-text-color);
@@ -107,7 +108,7 @@
     .box {
       position: relative;
       z-index: 1;
-      border: 1px solid rgba(255,255,255,0.6);
+      border: 1px solid var(--dynamic-box-border-color);
       padding: 20px 30px;
       max-width: 90%;
       line-height: 1.4;
@@ -220,7 +221,7 @@
       background: white;
       backdrop-filter: none;
       box-shadow: none;
-      border-color: rgba(255,255,255,0.95);
+      border-color: var(--dynamic-box-border-color);
     }
 
     .box.is-loading .frase {
@@ -588,7 +589,6 @@
     }
 
     body.bg-verde {
-      --site-text-color: rgba(64, 64, 64, 1);
     }
 
     body.bg-verde .toggle-btn {
@@ -677,7 +677,6 @@
       }
 
       body.bg-verde {
-        --site-text-color: white;
       }
 
       body.bg-verde .toggle-btn {
@@ -897,69 +896,91 @@ const BACKGROUNDS = [
 
 
 const MOBILE_BG_COLORS = [
-  "#ff2ce9",
-  "#0fff7a",
-  "#90ff00",
-  "#78fffd",
-  "#ffa178",
-  "#18e7ff",
-  "#ff18c1",
-  "#ff185f",
-  "#cbff18",
-  "#33ff18",
-  "#ff00b4",
-  "#00fffc",
-  "#ff5a00",
-  "#00ffde",
-  "#42ff00",
-  "#00ffc0",
-  "#7e00ff",
-  "#fd2e77",
-  "#fd2ef6",
-  "#2efd9e",
-  "#e1ff16",
-  "#4683ff",
-  "#ff9446",
-  "#7646ff",
-  "#ff6b6b",
-  "#ffd93d",
-  "#6bcb77",
-  "#4d96ff",
-  "#b967ff",
-  "#ff8fab",
-  "#f15bb5",
-  "#fee440",
-  "#00bbf9",
-  "#00f5d4",
-  "#9bff00",
-  "#ff7b00",
-  "#ff3d81"
+  "#ff2ce9", // 01
+  "#0fff7a", // 02
+  "#90ff00", // 03
+  "#78fffd", // 04
+  "#ffa178", // 05
+  "#18e7ff", // 06
+  "#ff18c1", // 07
+  "#ff185f", // 08
+  "#cbff18", // 09
+  "#33ff18", // 10
+  "#ff00b4", // 11
+  "#00fffc", // 12
+  "#ff5a00", // 13
+  "#00ffde", // 14
+  "#42ff00", // 15
+  "#00ffc0", // 16
+  "#7e00ff", // 17
+  "#fd2e77", // 18
+  "#fd2ef6", // 19
+  "#2efd9e", // 20
+  "#e1ff16", // 21
+  "#4683ff", // 22
+  "#ff9446", // 23
+  "#7646ff", // 24
+  "#ff6b6b", // 25
+  "#ffd93d", // 26
+  "#6bcb77", // 27
+  "#4d96ff", // 28
+  "#b967ff", // 29
+  "#ff8fab", // 30
+  "#f15bb5", // 31
+  "#fee440", // 32
+  "#00bbf9", // 33
+  "#00f5d4", // 34
+  "#9bff00", // 35
+  "#ff7b00", // 36
+  "#ff3d81"  // 37
 ];
 
 let ultimaCorDoSite = null;
+let ultimoIndiceCorDoSite = -1;
+
+const INDICES_FONTE_BRANCA = new Set([
+  1, 5, 7, 8, 11, 13, 17, 18, 19, 22, 24, 28, 29, 31, 33, 36, 37
+]);
 
 function escolherCorAleatoriaSemRepeticao() {
-  if (!Array.isArray(MOBILE_BG_COLORS) || MOBILE_BG_COLORS.length === 0) return "#ff00b4";
-  if (MOBILE_BG_COLORS.length === 1) return MOBILE_BG_COLORS[0];
-
-  let corEscolhida = MOBILE_BG_COLORS[Math.floor(Math.random() * MOBILE_BG_COLORS.length)];
-
-  while (corEscolhida === ultimaCorDoSite) {
-    corEscolhida = MOBILE_BG_COLORS[Math.floor(Math.random() * MOBILE_BG_COLORS.length)];
+  if (!Array.isArray(MOBILE_BG_COLORS) || MOBILE_BG_COLORS.length === 0) {
+    return { color: "#ff00b4", index: 1 };
   }
 
-  return corEscolhida;
+  if (MOBILE_BG_COLORS.length === 1) {
+    return { color: MOBILE_BG_COLORS[0], index: 1 };
+  }
+
+  let index = Math.floor(Math.random() * MOBILE_BG_COLORS.length);
+
+  while (MOBILE_BG_COLORS[index] === ultimaCorDoSite) {
+    index = Math.floor(Math.random() * MOBILE_BG_COLORS.length);
+  }
+
+  return {
+    color: MOBILE_BG_COLORS[index],
+    index: index + 1
+  };
+}
+
+function aplicarEstiloDaCorAtual(index) {
+  const fonteBranca = INDICES_FONTE_BRANCA.has(index);
+  document.body.style.setProperty("--site-text-color", fonteBranca ? "white" : "rgba(64, 64, 64, 1)");
+  document.body.style.setProperty("--dynamic-box-border-color", fonteBranca ? "rgba(255,255,255,0.6)" : "transparent");
 }
 
 function aplicarNovaCorDoSite() {
-  const cor = escolherCorAleatoriaSemRepeticao();
-  ultimaCorDoSite = cor;
-  document.body.style.setProperty("--site-bg-color", cor);
+  const escolha = escolherCorAleatoriaSemRepeticao();
+  ultimaCorDoSite = escolha.color;
+  ultimoIndiceCorDoSite = escolha.index;
+  document.body.style.setProperty("--site-bg-color", escolha.color);
+  aplicarEstiloDaCorAtual(escolha.index);
 }
 
 function aplicarCorInicialDoSite() {
   if (ultimaCorDoSite) {
     document.body.style.setProperty("--site-bg-color", ultimaCorDoSite);
+    aplicarEstiloDaCorAtual(ultimoIndiceCorDoSite);
     return;
   }
 
@@ -1141,7 +1162,7 @@ function aplicarBackgroundAleatorio(semRepetirAtual = false) {
 
   const body = document.body;
   backgroundEmUso = bg;
-  body.classList.toggle("bg-verde", !!bg.isGreen);
+  body.classList.remove("bg-verde");
   aplicarCorInicialDoSite();
   aplicarBackgroundVisualEstático(bg);
 }
