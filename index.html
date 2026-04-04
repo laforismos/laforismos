@@ -832,7 +832,7 @@
   <div class="site-header">
     <a class="site-header-link" href="./" aria-label="Ir para a home">
       <h1 class="site-title">LAFORISMOS</h1>
-      <div class="subtitulo">de Felipe Koraicho Sauma</div>
+      <div class="subtitulo" id="subtituloSite">de Felipe Koraicho Sauma</div>
     </a>
   </div>
   <a class="sobre-foto-link" href="./" aria-label="Ir para a home">
@@ -975,6 +975,77 @@ const MOBILE_BG_COLORS = [
 
 let ultimaCorDoSite = null;
 let ultimoIndiceCorDoSite = -1;
+
+const SUBTITULOS = [
+  "Rede social de 1 pessoa só.",
+  "Cancelada, desde o dia 1.",
+  "Reclamações? Só do autor.",
+  "Tá fácil, SQN, since 1982.",
+  "0,1% biográfico.",
+  "Redator de português fazendo HTML."
+];
+
+const STORAGE_SUBTITULOS_ORDEM = "laforismos_subtitulos_ordem_v1";
+const STORAGE_SUBTITULOS_INDICE = "laforismos_subtitulos_indice_v1";
+
+function embaralharSubtitulos(lista) {
+  const copia = Array.isArray(lista) ? [...lista] : [];
+  for (let i = copia.length - 1; i > 0; i -= 1) {
+    const j = Math.floor(Math.random() * (i + 1));
+    [copia[i], copia[j]] = [copia[j], copia[i]];
+  }
+  return copia;
+}
+
+function obterProximoSubtitulo() {
+  try {
+    const ordemSalva = JSON.parse(localStorage.getItem(STORAGE_SUBTITULOS_ORDEM) || "[]");
+    let indiceAtual = Number(localStorage.getItem(STORAGE_SUBTITULOS_INDICE) || "0");
+
+    let ordem = Array.isArray(ordemSalva)
+      ? ordemSalva.filter(item => SUBTITULOS.includes(item))
+      : [];
+
+    if (ordem.length !== SUBTITULOS.length) {
+      ordem = embaralharSubtitulos(SUBTITULOS);
+      indiceAtual = 0;
+    }
+
+    if (indiceAtual >= ordem.length) {
+      const ultimoExibido = ordem[ordem.length - 1] || "";
+      let novaOrdem = embaralharSubtitulos(SUBTITULOS);
+
+      if (novaOrdem.length > 1 && novaOrdem[0] === ultimoExibido) {
+        const primeiroDiferente = novaOrdem.findIndex(item => item !== ultimoExibido);
+        if (primeiroDiferente > 0) {
+          [novaOrdem[0], novaOrdem[primeiroDiferente]] = [novaOrdem[primeiroDiferente], novaOrdem[0]];
+        }
+      }
+
+      ordem = novaOrdem;
+      indiceAtual = 0;
+    }
+
+    const subtitulo = ordem[indiceAtual] || SUBTITULOS[0] || "";
+
+    localStorage.setItem(STORAGE_SUBTITULOS_ORDEM, JSON.stringify(ordem));
+    localStorage.setItem(STORAGE_SUBTITULOS_INDICE, String(indiceAtual + 1));
+
+    return subtitulo;
+  } catch (e) {
+    return SUBTITULOS[Math.floor(Math.random() * SUBTITULOS.length)] || "";
+  }
+}
+
+function aplicarSubtituloAleatorio() {
+  const el = document.getElementById("subtituloSite");
+  if (!el) return;
+  const subtitulo = obterProximoSubtitulo();
+  if (subtitulo) {
+    el.textContent = subtitulo;
+  }
+}
+
 
 const INDICES_FONTE_BRANCA = new Set([
   1, 5, 7, 8, 11, 13, 17, 18, 19, 22, 24, 28, 29, 31, 33, 36, 37
@@ -2133,12 +2204,10 @@ function obterPartesSobreEstatico() {
   ];
 }
 
-let sobreTextoApi = "";
-
 function renderizarSobre() {
   const el = document.getElementById("sobreBoxTexto");
   if (!el) return;
-  el.textContent = sobreTextoApi || "Guenta aí, carregando...";
+  el.innerHTML = montarHtmlPartes(obterPartesSobreEstatico(), 99);
 }
 function abrirSobre() {
   sobreAberto = true;
@@ -2334,7 +2403,6 @@ async function carregarFrasesDaApi() {
     }
 
     const data = await response.json();
-    sobreTextoApi = String(data?.sobreTexto || "").trim();
 
     if (!data?.ok || !Array.isArray(data.frases)) {
       throw new Error("Resposta inválida da API.");
@@ -2375,6 +2443,7 @@ document.addEventListener("keydown", (event) => {
   }
 });
 
+aplicarSubtituloAleatorio();
 aplicarBackgroundAleatorio();
 sincronizarToggle();
 inicializarInteracaoToggle();
