@@ -1242,6 +1242,7 @@
     letter-spacing: 1px;
     text-transform: lowercase;
     will-change: transform;
+    transform: translateX(0);
   }
 
   .ready-track span {
@@ -1249,16 +1250,19 @@
     padding-right: 28px;
   }
 
-  .ready-track.accelerating {
-    animation: readyTrackAccelerate 1.15s cubic-bezier(0.22, 0.72, 0.12, 1) forwards;
+  .ready-track.kickoff {
+    animation: readyTrackKickoff 1.15s cubic-bezier(0.22, 0.72, 0.12, 1) forwards;
   }
 
   .ready-track.looping {
     animation: scroll 6.4s linear infinite;
   }
 
-  @keyframes readyTrackAccelerate {
+  @keyframes readyTrackKickoff {
     0% { transform: translateX(0); }
+    42% { transform: translateX(calc(100% - var(--ready-track-width, 260px) - 18px)); }
+    100% { transform: translateX(-18%); }
+  }
     100% { transform: translateX(-18%); }
   }
 
@@ -3340,8 +3344,7 @@ carregarFrasesDaApi();</script>
       ready.className = "ready-loading-layer";
       ready.innerHTML = `
         <div class="ready-track" id="readyTrack">
-          <span>carregando espasmo • carregando espasmo • carregando espasmo • carregando espasmo •</span>
-          <span>carregando espasmo • carregando espasmo • carregando espasmo • carregando espasmo •</span>
+          <span>carregando espasmo</span><span> • carregando espasmo • carregando espasmo • carregando espasmo •</span>
         </div>
       `;
       overlay.appendChild(ready);
@@ -3377,11 +3380,19 @@ carregarFrasesDaApi();</script>
   function iniciarTrackComAceleracao() {
     const track = document.getElementById("readyTrack");
     if (!track) return;
-    track.classList.remove("looping");
+
+    track.classList.remove("looping", "kickoff");
+    track.style.removeProperty("--ready-track-width");
+
+    const firstSpan = track.querySelector("span");
+    const largura = Math.ceil(track.scrollWidth || firstSpan?.offsetWidth || 260);
+    track.style.setProperty("--ready-track-width", `${largura}px`);
+
     void track.offsetWidth;
-    track.classList.add("accelerating");
+    track.classList.add("kickoff");
+
     setTimeout(() => {
-      track.classList.remove("accelerating");
+      track.classList.remove("kickoff");
       track.classList.add("looping");
     }, 1150);
   }
