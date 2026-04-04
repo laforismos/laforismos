@@ -1149,6 +1149,7 @@
   </style>
 
 
+
 <style id="laforismos-loading-override">
   .box.is-loading.backend-waiting {
     background: rgba(255,255,255,0.10) !important;
@@ -1211,7 +1212,7 @@
     animation: backendBoxFill 1.75s ease forwards;
   }
 
-  .backend-loading-fill-label {
+  .backend-loading-reveal {
     position: absolute;
     right: 18px;
     top: 50%;
@@ -1222,6 +1223,12 @@
     letter-spacing: 1px;
     text-transform: lowercase;
     line-height: 1;
+    opacity: 0;
+    transition: opacity 0.04s linear;
+  }
+
+  .box.is-loading.backend-waiting.reveal-static-label .backend-loading-reveal {
+    opacity: 1;
   }
 
   @keyframes backendBoxFill {
@@ -1251,12 +1258,12 @@
   }
 
   .ready-track.frenetic {
-    animation: readyTrackFrenetic 3.1s linear infinite;
+    animation: readyTrackFrenetic 2.2s linear infinite;
   }
 
   @keyframes readyTrackFrenetic {
-    0% { transform: translateY(-50%) translateX(0); }
-    100% { transform: translateY(-50%) translateX(-210%); }
+    0% { left: 100%; transform: translateY(-50%) translateX(0); }
+    100% { left: 100%; transform: translateY(-50%) translateX(-260%); }
   }
 </style>
 
@@ -3123,6 +3130,7 @@ carregarFrasesDaApi();</script>
 
 
 
+
 <script id="laforismos-loading-script">
 (function () {
   const originalEntrarModoCarregandoTroca = window.entrarModoCarregandoTroca;
@@ -3136,6 +3144,8 @@ carregarFrasesDaApi();</script>
 
   let glitchCycleTimer = null;
   let glitchPauseTimer = null;
+  let backendRevealTimer = null;
+
   const glitchIntensities = ["glitch-intensity-1", "glitch-intensity-2", "glitch-intensity-3"];
   const glitchPauses = [500, 600, 900];
 
@@ -3148,9 +3158,8 @@ carregarFrasesDaApi();</script>
       backend.className = "backend-loading-layer";
       backend.innerHTML = `
         <div class="backend-loading-shell">
-          <div class="backend-loading-fill">
-            <div class="backend-loading-fill-label">carregando espasmo</div>
-          </div>
+          <div class="backend-loading-fill"></div>
+          <div class="backend-loading-reveal">carregando espasmo</div>
         </div>
       `;
       overlay.prepend(backend);
@@ -3172,7 +3181,13 @@ carregarFrasesDaApi();</script>
   function limparClassesDeLoading() {
     const box = document.getElementById("box");
     if (!box) return;
-    box.classList.remove("backend-waiting", "backend-ready");
+    box.classList.remove("backend-waiting", "backend-ready", "reveal-static-label");
+  }
+
+  function liberarCliqueDoLoader() {
+    const box = document.getElementById("box");
+    if (!box) return;
+    box.classList.remove("disable-hover");
   }
 
   function ativarLoadingBackendInicial() {
@@ -3182,11 +3197,22 @@ carregarFrasesDaApi();</script>
 
     garantirCamadasDeLoading();
     limparClassesDeLoading();
-    box.classList.add("is-loading", "backend-waiting", "disable-hover");
+    box.classList.add("is-loading", "backend-waiting");
     frase.innerHTML = "";
     frase.classList.remove("dialogo");
+    box.classList.add("disable-hover");
     document.body.classList.remove("machine-loading-active", "machine-settle");
     limparGlitchDaMaquina();
+
+    if (backendRevealTimer) {
+      clearTimeout(backendRevealTimer);
+      backendRevealTimer = null;
+    }
+
+    backendRevealTimer = setTimeout(() => {
+      box.classList.add("reveal-static-label");
+      backendRevealTimer = null;
+    }, 1710);
   }
 
   function iniciarTrackFrenetico() {
@@ -3204,7 +3230,8 @@ carregarFrasesDaApi();</script>
 
     garantirCamadasDeLoading();
     limparClassesDeLoading();
-    box.classList.add("is-loading", "backend-ready", "disable-hover");
+    box.classList.add("is-loading", "backend-ready");
+    liberarCliqueDoLoader();
     document.body.classList.remove("machine-settle");
     iniciarGlitchDaMaquina();
     iniciarTrackFrenetico();
@@ -3290,8 +3317,12 @@ carregarFrasesDaApi();</script>
   window.desativarEstadoLoadingBox = function() {
     const box = document.getElementById("box");
     if (!box) return;
-    box.classList.remove("is-loading", "backend-waiting", "backend-ready");
+    box.classList.remove("is-loading", "backend-waiting", "backend-ready", "reveal-static-label");
     pararGlitchDaMaquina();
+    if (backendRevealTimer) {
+      clearTimeout(backendRevealTimer);
+      backendRevealTimer = null;
+    }
   };
 
   window.iniciar = function() {
@@ -3344,6 +3375,7 @@ carregarFrasesDaApi();</script>
     }
 
     originalEntrarModoCarregandoTroca();
+    ativarLoadingProntoParaClique();
   };
 
   window.entrarModoCarregandoTroca = function() {
