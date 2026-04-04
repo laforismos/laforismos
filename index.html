@@ -1149,6 +1149,7 @@
   </style>
 
 
+
 <style id="laforismos-loading-override">
   .box.is-loading.backend-waiting {
     background: rgba(255,255,255,0.10) !important;
@@ -1233,7 +1234,7 @@
     position: absolute;
     left: 0;
     top: 50%;
-    transform: translateY(-50%);
+    transform: translateY(-50%) translateX(0);
     display: inline-flex;
     align-items: center;
     white-space: nowrap;
@@ -1251,7 +1252,10 @@
   }
 
   .ready-track.left-loop {
-    animation: readyTrackLeftLoop 3.2s linear infinite;
+    animation-name: readyTrackLeftLoop;
+    animation-timing-function: linear;
+    animation-iteration-count: infinite;
+    animation-duration: var(--loader-speed, 3.2s);
   }
 
   @keyframes readyTrackLeftLoop {
@@ -3123,6 +3127,7 @@ carregarFrasesDaApi();</script>
 
 
 
+
 <script id="laforismos-loading-script">
 (function () {
   const LOADER_TEXT = 'carregando espasmo • carregando espasmo • carregando espasmo • carregando espasmo • clica aí • carregando espasmo • carregando espasmo • carregando espasmo • clica! • carregando espasmo • carregando espasmo • carregando espasmo • carregando espasmo • carregando espasmo • carregando espasmo • carregando espasmo • pode clicar';
@@ -3130,6 +3135,7 @@ carregarFrasesDaApi();</script>
   let primeiraFrasePendente = null;
   let aguardandoPrimeiraFrase = false;
   let apiInicialCarregada = false;
+  let loaderSpeedTimer = null;
 
   function garantirCamadasDeLoading() {
     const overlay = document.querySelector("#box .overlay");
@@ -3167,6 +3173,27 @@ carregarFrasesDaApi();</script>
     box.classList.remove("backend-waiting", "backend-ready");
   }
 
+  function limparVariacaoVelocidade() {
+    if (loaderSpeedTimer) {
+      clearTimeout(loaderSpeedTimer);
+      loaderSpeedTimer = null;
+    }
+  }
+
+  function variarVelocidadeLoader() {
+    const track = document.getElementById("readyTrack");
+    const box = document.getElementById("box");
+    if (!track || !box?.classList.contains("backend-ready") || !box.classList.contains("is-loading")) {
+      return;
+    }
+
+    const duration = 3.2 + (Math.random() * (4.57 - 3.2));  // até +30% mais lento
+    track.style.setProperty("--loader-speed", `${duration.toFixed(2)}s`);
+
+    const nextIn = 420 + Math.floor(Math.random() * 900);
+    loaderSpeedTimer = setTimeout(variarVelocidadeLoader, nextIn);
+  }
+
   function ativarLoadingBackendInicial() {
     const box = document.getElementById("box");
     const frase = document.getElementById("frase");
@@ -3183,14 +3210,18 @@ carregarFrasesDaApi();</script>
       window.pararGlitchDaMaquina();
     }
     document.body.classList.remove("machine-settle");
+    limparVariacaoVelocidade();
   }
 
   function iniciarLoopDoLoader() {
     const track = document.getElementById("readyTrack");
     if (!track) return;
     track.classList.remove("left-loop");
+    track.style.setProperty("--loader-speed", "3.2s");
     void track.offsetWidth;
     track.classList.add("left-loop");
+    limparVariacaoVelocidade();
+    variarVelocidadeLoader();
   }
 
   function ativarLoadingProntoParaClique() {
@@ -3218,18 +3249,17 @@ carregarFrasesDaApi();</script>
     }
   };
 
-  const originalDesativarEstadoLoadingBox = window.desativarEstadoLoadingBox;
   window.desativarEstadoLoadingBox = function() {
     const box = document.getElementById("box");
     if (box) {
       box.classList.remove("is-loading", "backend-waiting", "backend-ready");
     }
+    limparVariacaoVelocidade();
     if (typeof window.pararGlitchDaMaquina === "function") {
       window.pararGlitchDaMaquina();
     }
   };
 
-  const originalIniciar = window.iniciar;
   window.iniciar = function() {
     window.acabou = false;
     window.idsExibidos = new Set();
@@ -3306,6 +3336,7 @@ carregarFrasesDaApi();</script>
 
   const originalAbrirSobre = window.abrirSobre;
   window.abrirSobre = function() {
+    limparVariacaoVelocidade();
     if (typeof window.pararGlitchDaMaquina === "function") {
       window.pararGlitchDaMaquina();
     }
@@ -3315,8 +3346,11 @@ carregarFrasesDaApi();</script>
   const originalFecharSobre = window.fecharSobre;
   window.fecharSobre = function(event) {
     originalFecharSobre(event);
-    if (document.getElementById("box")?.classList.contains("is-loading") && typeof window.iniciarGlitchDaMaquina === "function") {
-      window.iniciarGlitchDaMaquina();
+    if (document.getElementById("box")?.classList.contains("is-loading")) {
+      if (typeof window.iniciarGlitchDaMaquina === "function") {
+        window.iniciarGlitchDaMaquina();
+      }
+      iniciarLoopDoLoader();
     }
   };
 
