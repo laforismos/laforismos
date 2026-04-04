@@ -1040,6 +1040,7 @@ let etapaAtual = 1;
 let hoverTravadoAteUltimoTempo = false;
 let videoTimeUpdateHandler = null;
 let videoLoadedMetadataHandler = null;
+let sobreTextoApi = "";
 
 const DEBUG_FRASES = true;
 
@@ -2126,17 +2127,12 @@ function normalizarPartes(partes) {
   );
 }
 
-let sobrePartesApi = [];
-
 function renderizarSobre() {
   const el = document.getElementById("sobreBoxTexto");
   if (!el) return;
 
-  if (Array.isArray(sobrePartesApi) && sobrePartesApi.length > 0) {
-    el.innerHTML = montarHtmlPartes(normalizarPartes(sobrePartesApi), 99);
-  } else {
-    el.textContent = "Guenta aí, carregando...";
-  }
+  const texto = String(sobreTextoApi || "").trim();
+  el.innerHTML = texto ? escaparHtml(texto) : "Guenta aí, carregando...";
 }
 function abrirSobre() {
   sobreAberto = true;
@@ -2356,7 +2352,12 @@ async function carregarFrasesDaApi() {
       idsDescartados: frasesDescartadas
     });
 
-    sobrePartesApi = Array.isArray(data?.sobre?.partes) ? data.sobre.partes : [];
+    sobreTextoApi = String(
+      data?.sobreTexto ??
+      data?.sobre?.texto ??
+      ""
+    ).replace(/\r\n/g, "\n").trim();
+
     renderizarSobre();
 
     iniciar();
