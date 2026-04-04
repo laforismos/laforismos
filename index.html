@@ -1148,6 +1148,7 @@
     }
   </style>
 
+
 <style id="laforismos-loading-override">
   .box.is-loading.backend-waiting {
     background: rgba(255,255,255,0.10) !important;
@@ -1172,15 +1173,12 @@
     pointer-events: none !important;
   }
 
-  .box.is-loading .backend-loading-layer,
-  .box.is-loading .ready-loading-layer {
-    position: absolute;
-    inset: 0;
-  }
-
   .backend-loading-layer,
   .ready-loading-layer {
+    position: absolute;
+    inset: 0;
     display: none;
+    overflow: hidden;
   }
 
   .box.is-loading.backend-waiting .backend-loading-layer {
@@ -1190,6 +1188,11 @@
   .box.is-loading.backend-ready .ready-loading-layer {
     display: block;
     background: white;
+  }
+
+  .box.is-loading.backend-waiting .track,
+  .box.is-loading.backend-ready .track {
+    display: none !important;
   }
 
   .backend-loading-shell {
@@ -1202,15 +1205,15 @@
   .backend-loading-fill {
     position: absolute;
     inset: 0 auto 0 0;
-    width: min(100%, var(--backend-fill-width, 100%));
+    width: 0%;
     background: white;
     overflow: hidden;
-    animation: backendBoxFill 1.8s ease forwards;
+    animation: backendBoxFill 1.75s ease forwards;
   }
 
   .backend-loading-fill-label {
     position: absolute;
-    left: 20px;
+    right: 18px;
     top: 50%;
     transform: translateY(-50%);
     white-space: nowrap;
@@ -1226,222 +1229,34 @@
     100% { width: 100%; }
   }
 
-  .ready-loading-layer {
-    display: none;
-    overflow: hidden;
-  }
-
   .ready-track {
     position: absolute;
-    inset: 0;
-    display: flex;
+    left: 100%;
+    top: 50%;
+    transform: translateY(-50%);
+    display: inline-flex;
     align-items: center;
     white-space: nowrap;
     color: black;
     font-size: 0.9rem;
     letter-spacing: 1px;
     text-transform: lowercase;
-    will-change: transform;
-    transform: translateX(0);
+    line-height: 1;
+    will-change: transform, left;
   }
 
   .ready-track span {
     display: inline-block;
-    padding-right: 28px;
+    padding-right: 24px;
   }
 
-  .ready-track.kickoff {
-    animation: readyTrackKickoff 1.15s cubic-bezier(0.22, 0.72, 0.12, 1) forwards;
+  .ready-track.frenetic {
+    animation: readyTrackFrenetic 3.1s linear infinite;
   }
 
-  .ready-track.looping {
-    animation: scroll 6.4s linear infinite;
-  }
-
-  @keyframes readyTrackKickoff {
-    0% { transform: translateX(0); }
-    42% { transform: translateX(calc(100% - var(--ready-track-width, 260px) - 18px)); }
-    100% { transform: translateX(-18%); }
-  }
-    100% { transform: translateX(-18%); }
-  }
-
-  .maquina-wrap {
-    opacity: 1;
-  }
-
-  .maquina-wrap::before,
-  .maquina-wrap::after {
-    content: "";
-    position: absolute;
-    inset: 0;
-    background-image: url("./maquina-de-escrever_BLACK.png");
-    background-repeat: no-repeat;
-    background-position: center;
-    background-size: contain;
-    opacity: 0;
-    pointer-events: none;
-  }
-
-  body.machine-loading-active .maquina-wrap {
-    filter: contrast(1.14);
-  }
-
-  body.machine-loading-active.glitch-intensity-1 .maquina-wrap {
-    animation: typeGlitchShake1 0.34s steps(2, end) infinite;
-  }
-
-  body.machine-loading-active.glitch-intensity-1 .maquina-wrap::before {
-    opacity: 0.22;
-    animation: typeGlitchSliceA1 0.18s steps(2, end) infinite;
-  }
-
-  body.machine-loading-active.glitch-intensity-1 .maquina-wrap::after {
-    opacity: 0.16;
-    animation: typeGlitchSliceB1 0.22s steps(2, end) infinite;
-  }
-
-  body.machine-loading-active.glitch-intensity-1 .imagem-entre-sub-e-box {
-    animation: typeGlitchCore1 0.16s steps(2, end) infinite;
-  }
-
-  body.machine-loading-active.glitch-intensity-2 .maquina-wrap {
-    animation: typeGlitchShake2 0.22s steps(2, end) infinite;
-  }
-
-  body.machine-loading-active.glitch-intensity-2 .maquina-wrap::before {
-    opacity: 0.32;
-    animation: typeGlitchSliceA2 0.12s steps(2, end) infinite;
-  }
-
-  body.machine-loading-active.glitch-intensity-2 .maquina-wrap::after {
-    opacity: 0.24;
-    animation: typeGlitchSliceB2 0.15s steps(2, end) infinite;
-  }
-
-  body.machine-loading-active.glitch-intensity-2 .imagem-entre-sub-e-box {
-    animation: typeGlitchCore2 0.11s steps(2, end) infinite;
-  }
-
-  body.machine-loading-active.glitch-intensity-3 .maquina-wrap {
-    animation: typeGlitchShake3 0.40s steps(2, end) infinite;
-  }
-
-  body.machine-loading-active.glitch-intensity-3 .maquina-wrap::before {
-    opacity: 0.18;
-    animation: typeGlitchSliceA3 0.22s steps(2, end) infinite;
-  }
-
-  body.machine-loading-active.glitch-intensity-3 .maquina-wrap::after {
-    opacity: 0.12;
-    animation: typeGlitchSliceB3 0.26s steps(2, end) infinite;
-  }
-
-  body.machine-loading-active.glitch-intensity-3 .imagem-entre-sub-e-box {
-    animation: typeGlitchCore3 0.20s steps(2, end) infinite;
-  }
-
-  body.machine-loading-active.glitch-pause .maquina-wrap,
-  body.machine-loading-active.glitch-pause .maquina-wrap::before,
-  body.machine-loading-active.glitch-pause .maquina-wrap::after,
-  body.machine-loading-active.glitch-pause .imagem-entre-sub-e-box {
-    animation-play-state: paused !important;
-  }
-
-  body.machine-settle .maquina-wrap,
-  body.machine-settle .maquina-wrap::before,
-  body.machine-settle .maquina-wrap::after,
-  body.machine-settle .imagem-entre-sub-e-box {
-    animation: none !important;
-  }
-
-  body.machine-settle .maquina-wrap::before,
-  body.machine-settle .maquina-wrap::after {
-    opacity: 0 !important;
-  }
-
-  body.machine-settle .imagem-entre-sub-e-box {
-    opacity: 0.35 !important;
-    transition: opacity 3s linear !important;
-    transform: none !important;
-  }
-
-  @keyframes typeGlitchShake1 {
-    0% { transform: translate(0, 0); }
-    33% { transform: translate(-1px, 0); }
-    66% { transform: translate(1px, 0); }
-    100% { transform: translate(0, 0); }
-  }
-
-  @keyframes typeGlitchShake2 {
-    0% { transform: translate(0, 0); }
-    25% { transform: translate(-1px, 0); }
-    50% { transform: translate(1px, 0); }
-    75% { transform: translate(0, -1px); }
-    100% { transform: translate(0, 0); }
-  }
-
-  @keyframes typeGlitchShake3 {
-    0% { transform: translate(0, 0); }
-    25% { transform: translate(-1px, 0); }
-    50% { transform: translate(1px, 0); }
-    75% { transform: translate(0, -1px); }
-    100% { transform: translate(0, 0); }
-  }
-
-  @keyframes typeGlitchSliceA1 {
-    0% { transform: translate(-3px, 1px); clip-path: inset(0 0 78% 0); }
-    50% { transform: translate(2px, -1px); clip-path: inset(34% 0 28% 0); }
-    100% { transform: translate(-3px, 1px); clip-path: inset(0 0 78% 0); }
-  }
-
-  @keyframes typeGlitchSliceB1 {
-    0% { transform: translate(3px, -1px); clip-path: inset(74% 0 0 0); }
-    50% { transform: translate(-2px, 1px); clip-path: inset(18% 0 54% 0); }
-    100% { transform: translate(3px, -1px); clip-path: inset(74% 0 0 0); }
-  }
-
-  @keyframes typeGlitchCore1 {
-    0% { transform: translate(0, 0) scale(1); }
-    50% { transform: translate(-1px, 0) scale(1.006); }
-    100% { transform: translate(0, 0) scale(1); }
-  }
-
-  @keyframes typeGlitchSliceA2 {
-    0% { transform: translate(-4px, 1px); clip-path: inset(0 0 78% 0); }
-    50% { transform: translate(3px, -1px); clip-path: inset(30% 0 34% 0); }
-    100% { transform: translate(-4px, 1px); clip-path: inset(0 0 78% 0); }
-  }
-
-  @keyframes typeGlitchSliceB2 {
-    0% { transform: translate(4px, -1px); clip-path: inset(74% 0 0 0); }
-    50% { transform: translate(-3px, 1px); clip-path: inset(14% 0 60% 0); }
-    100% { transform: translate(4px, -1px); clip-path: inset(74% 0 0 0); }
-  }
-
-  @keyframes typeGlitchCore2 {
-    0% { transform: translate(0, 0) scale(1); }
-    25% { transform: translate(-1px, 1px) scale(1.010); }
-    50% { transform: translate(1px, -1px) scale(0.995); }
-    100% { transform: translate(0, 0) scale(1); }
-  }
-
-  @keyframes typeGlitchSliceA3 {
-    0% { transform: translate(-2px, 1px); clip-path: inset(0 0 80% 0); }
-    50% { transform: translate(2px, 0); clip-path: inset(22% 0 48% 0); }
-    100% { transform: translate(-2px, 1px); clip-path: inset(0 0 80% 0); }
-  }
-
-  @keyframes typeGlitchSliceB3 {
-    0% { transform: translate(2px, -1px); clip-path: inset(76% 0 0 0); }
-    50% { transform: translate(-2px, 1px); clip-path: inset(18% 0 58% 0); }
-    100% { transform: translate(2px, -1px); clip-path: inset(76% 0 0 0); }
-  }
-
-  @keyframes typeGlitchCore3 {
-    0% { transform: translate(0, 0) scale(1); }
-    50% { transform: translate(-1px, 0) scale(1.004); }
-    100% { transform: translate(0, 0) scale(1); }
+  @keyframes readyTrackFrenetic {
+    0% { transform: translateY(-50%) translateX(0); }
+    100% { transform: translateY(-50%) translateX(-210%); }
   }
 </style>
 
@@ -3307,9 +3122,9 @@ if (maquinaTrigger) {
 carregarFrasesDaApi();</script>
 
 
+
 <script id="laforismos-loading-script">
-(function() {
-  const originalMostrarFraseObjeto = window.mostrarFraseObjeto;
+(function () {
   const originalEntrarModoCarregandoTroca = window.entrarModoCarregandoTroca;
   const originalSairModoCarregandoTroca = window.sairModoCarregandoTroca;
   const originalAbrirSobre = window.abrirSobre;
@@ -3317,6 +3132,8 @@ carregarFrasesDaApi();</script>
 
   let primeiraFrasePendente = null;
   let aguardandoPrimeiraFrase = false;
+  let apiInicialCarregada = false;
+
   let glitchCycleTimer = null;
   let glitchPauseTimer = null;
   const glitchIntensities = ["glitch-intensity-1", "glitch-intensity-2", "glitch-intensity-3"];
@@ -3332,7 +3149,7 @@ carregarFrasesDaApi();</script>
       backend.innerHTML = `
         <div class="backend-loading-shell">
           <div class="backend-loading-fill">
-            <div class="backend-loading-fill-label">carregando espasmo...</div>
+            <div class="backend-loading-fill-label">carregando espasmo</div>
           </div>
         </div>
       `;
@@ -3344,15 +3161,11 @@ carregarFrasesDaApi();</script>
       ready.className = "ready-loading-layer";
       ready.innerHTML = `
         <div class="ready-track" id="readyTrack">
-          <span>carregando espasmo</span><span> • carregando espasmo • carregando espasmo • carregando espasmo •</span>
+          <span>carregando espasmo • carregando espasmo • carregando espasmo • carregando espasmo •</span>
+          <span>carregando espasmo • carregando espasmo • carregando espasmo • carregando espasmo •</span>
         </div>
       `;
       overlay.appendChild(ready);
-    }
-
-    const oldTrack = overlay.querySelector(".track");
-    if (oldTrack) {
-      oldTrack.style.display = "none";
     }
   }
 
@@ -3369,32 +3182,20 @@ carregarFrasesDaApi();</script>
 
     garantirCamadasDeLoading();
     limparClassesDeLoading();
-    box.classList.add("is-loading", "backend-waiting");
+    box.classList.add("is-loading", "backend-waiting", "disable-hover");
     frase.innerHTML = "";
     frase.classList.remove("dialogo");
-    box.classList.add("disable-hover");
     document.body.classList.remove("machine-loading-active", "machine-settle");
     limparGlitchDaMaquina();
   }
 
-  function iniciarTrackComAceleracao() {
+  function iniciarTrackFrenetico() {
     const track = document.getElementById("readyTrack");
     if (!track) return;
-
-    track.classList.remove("looping", "kickoff");
-    track.style.removeProperty("--ready-track-width");
-
-    const firstSpan = track.querySelector("span");
-    const largura = Math.ceil(track.scrollWidth || firstSpan?.offsetWidth || 260);
-    track.style.setProperty("--ready-track-width", `${largura}px`);
-
+    track.classList.remove("frenetic");
+    track.style.left = "100%";
     void track.offsetWidth;
-    track.classList.add("kickoff");
-
-    setTimeout(() => {
-      track.classList.remove("kickoff");
-      track.classList.add("looping");
-    }, 1150);
+    track.classList.add("frenetic");
   }
 
   function ativarLoadingProntoParaClique() {
@@ -3406,7 +3207,7 @@ carregarFrasesDaApi();</script>
     box.classList.add("is-loading", "backend-ready", "disable-hover");
     document.body.classList.remove("machine-settle");
     iniciarGlitchDaMaquina();
-    iniciarTrackComAceleracao();
+    iniciarTrackFrenetico();
   }
 
   function limparTimersGlitch() {
@@ -3437,6 +3238,7 @@ carregarFrasesDaApi();</script>
     document.body.classList.add(intensidade);
 
     const proximaTroca = 700 + Math.floor(Math.random() * 900);
+
     if (Math.random() < 0.34) {
       const pausa = glitchPauses[Math.floor(Math.random() * glitchPauses.length)];
       const inicioDaPausa = Math.max(80, proximaTroca - pausa - 60);
@@ -3478,7 +3280,11 @@ carregarFrasesDaApi();</script>
   };
 
   window.ativarEstadoLoadingBox = function() {
-    ativarLoadingProntoParaClique();
+    if (apiInicialCarregada) {
+      ativarLoadingProntoParaClique();
+    } else {
+      ativarLoadingBackendInicial();
+    }
   };
 
   window.desativarEstadoLoadingBox = function() {
@@ -3493,6 +3299,8 @@ carregarFrasesDaApi();</script>
     window.idsExibidos = new Set();
     window.atualizarFrasesFiltradas();
     window.fila = window.embaralhar(window.frasesFiltradas, window.frasesFiltradas.length);
+
+    apiInicialCarregada = true;
 
     if (window.fila.length > 0) {
       primeiraFrasePendente = window.fila.shift();
@@ -3559,21 +3367,8 @@ carregarFrasesDaApi();</script>
     }
   };
 
-  const oldCarregar = window.carregarFrasesDaApi;
-  if (typeof oldCarregar === "function") {
-    // primeira etapa visual: máquina sólida e loader do backend
-    ativarLoadingBackendInicial();
-  }
-
-  // reforça clique/drag também pela máquina
-  const maquinaTrigger = document.getElementById("maquinaTrigger");
-  if (maquinaTrigger && !maquinaTrigger.dataset.loadingHooked) {
-    maquinaTrigger.dataset.loadingHooked = "1";
-    maquinaTrigger.addEventListener("pointerdown", function() {}, { passive: true });
-  }
-
-  // se a API demorar e o script principal já estiver carregando, mantém o visual inicial
   garantirCamadasDeLoading();
+  ativarLoadingBackendInicial();
 })();
 </script>
 
