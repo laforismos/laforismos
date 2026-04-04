@@ -1570,6 +1570,20 @@ let videoLoadedMetadataHandler = null;
 
 
 
+
+// ponte para permitir que scripts posteriores acessem o estado global declarado com `let`
+Object.defineProperties(window, {
+  acabou: { get: () => acabou, set: (v) => { acabou = v; } },
+  idsExibidos: { get: () => idsExibidos, set: (v) => { idsExibidos = v; } },
+  frasesFiltradas: { get: () => frasesFiltradas, set: (v) => { frasesFiltradas = v; } },
+  fila: { get: () => fila, set: (v) => { fila = v; } },
+  mostrarSoNovas: { get: () => mostrarSoNovas, set: (v) => { mostrarSoNovas = v; } },
+  sobreAberto: { get: () => sobreAberto, set: (v) => { sobreAberto = v; } },
+  fraseAtual: { get: () => fraseAtual, set: (v) => { fraseAtual = v; } },
+  etapaAtual: { get: () => etapaAtual, set: (v) => { etapaAtual = v; } },
+  aguardandoCliqueParaTroca: { get: () => aguardandoCliqueParaTroca, set: (v) => { aguardandoCliqueParaTroca = v; } }
+});
+
 let machineSettleTimer = null;
 let glitchPauseTimer = null;
 let glitchLoopAtivo = false;
@@ -3258,14 +3272,6 @@ carregarFrasesDaApi();</script>
     iniciarLoopDoLoader(true);
   }
 
-  function marcarLoadingInicialComoPronto() {
-    if (apiInicialCarregada) return;
-    apiInicialCarregada = true;
-    if (aguardandoPrimeiraFrase && primeiraFrasePendente) {
-      ativarLoadingProntoParaClique();
-    }
-  }
-
   window.ativarEstadoLoadingBox = function() {
     if (apiInicialCarregada) {
       ativarLoadingProntoParaClique();
@@ -3291,10 +3297,12 @@ carregarFrasesDaApi();</script>
     window.atualizarFrasesFiltradas();
     window.fila = window.embaralhar(window.frasesFiltradas, window.frasesFiltradas.length);
 
+    apiInicialCarregada = true;
+
     if (window.fila.length > 0) {
       primeiraFrasePendente = window.fila.shift();
       aguardandoPrimeiraFrase = true;
-      marcarLoadingInicialComoPronto();
+      ativarLoadingProntoParaClique();
       window.logEstadoFila("aguardando primeiro clique");
     } else {
       const mensagemVazia = window.mostrarSoNovas
