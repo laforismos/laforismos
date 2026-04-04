@@ -2017,12 +2017,64 @@ function normalizarBoolean(valor) {
   if (typeof valor === "boolean") return valor;
   if (typeof valor === "number") return valor === 1;
 
+  if (valor && typeof valor === "object") {
+    if ("value" in valor) return normalizarBoolean(valor.value);
+    if ("booleanValue" in valor) return normalizarBoolean(valor.booleanValue);
+    if ("boolValue" in valor) return normalizarBoolean(valor.boolValue);
+    if ("underlined" in valor) return normalizarBoolean(valor.underlined);
+    if ("underline" in valor) return normalizarBoolean(valor.underline);
+    if ("textDecoration" in valor) return normalizarBoolean(valor.textDecoration);
+  }
+
   const v = String(valor ?? "").trim().toLowerCase();
-  return v === "true" || v === "verdadeiro" || v === "1" || v === "sim";
+  return (
+    v === "true" ||
+    v === "verdadeiro" ||
+    v === "1" ||
+    v === "sim" ||
+    v === "underline" ||
+    v === "underlined" ||
+    v === "single" ||
+    v === "solid"
+  );
+}
+
+function procurarUnderlineRecursivo(valor, profundidade = 0) {
+  if (profundidade > 4 || valor == null) return false;
+
+  if (typeof valor !== "object") {
+    return normalizarBoolean(valor);
+  }
+
+  const entradas = Array.isArray(valor)
+    ? valor.map((item, index) => [String(index), item])
+    : Object.entries(valor);
+
+  for (const [chave, conteudo] of entradas) {
+    const chaveNormalizada = String(chave || "").toLowerCase();
+
+    if (
+      chaveNormalizada.includes("underline") ||
+      chaveNormalizada.includes("underlined") ||
+      chaveNormalizada.includes("sublinh") ||
+      chaveNormalizada.includes("textdecoration")
+    ) {
+      if (normalizarBoolean(conteudo)) return true;
+      if (conteudo && typeof conteudo === "object" && procurarUnderlineRecursivo(conteudo, profundidade + 1)) {
+        return true;
+      }
+    }
+
+    if (conteudo && typeof conteudo === "object") {
+      if (procurarUnderlineRecursivo(conteudo, profundidade + 1)) return true;
+    }
+  }
+
+  return false;
 }
 
 function normalizarMarcacaoUnderline(parte) {
-  return normalizarBoolean(
+  const valorDireto =
     parte?.underline ??
     parte?.underlined ??
     parte?.sublinhado ??
@@ -2035,8 +2087,15 @@ function normalizarMarcacaoUnderline(parte) {
     parte?.style?.underlined ??
     parte?.textFormat?.underline ??
     parte?.textStyle?.underline ??
-    false
-  );
+    parte?.textStyle?.underlined ??
+    parte?.textFormat?.textDecoration ??
+    parte?.textStyle?.textDecoration;
+
+  if (valorDireto != null && normalizarBoolean(valorDireto)) {
+    return true;
+  }
+
+  return procurarUnderlineRecursivo(parte);
 }
 
 function normalizarPartes(partes) {
