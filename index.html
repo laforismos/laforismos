@@ -1,6 +1,18 @@
 <!DOCTYPE html>
 <html lang="pt-BR">
 <head>
+  <!--
+    LAFORISMOS — versão comentada
+    Esta edição inclui:
+    1) tempo de leitura refinado por texto
+    2) melhoria de viewport no mobile
+    3) toggle "Obscenidades" redesenhado
+    4) toggle não interfere na frase atual, exceto ao desligar durante frase obscena
+    5) hover "carregando espasmo" só volta após o último tempo da frase
+    6) bloqueio de hover preservado corretamente até o momento de liberação
+    7) fundos aleatórios na entrada (desktop em vídeo / mobile em imagem estática)
+    8) estado inicial do box igual ao mouse over
+  -->
   <meta charset="UTF-8">
   <meta name="viewport" content="width=device-width, initial-scale=1.0">
   <title>LAFORISMOS</title>
@@ -1139,7 +1151,6 @@
 
 
 
-
 <style id="laforismos-loading-override">
   .box.is-loading.backend-waiting {
     background: rgba(255,255,255,0.10) !important;
@@ -1181,9 +1192,7 @@
   }
 
   .box.is-loading.backend-ready .ready-loading-layer {
-    display: flex;
-    align-items: center;
-    justify-content: center;
+    display: block;
     background: white;
   }
 
@@ -1203,11 +1212,11 @@
     animation: backendBoxFill 1.8s ease forwards;
   }
 
-  .backend-loading-label {
+  .backend-loading-marquee {
     position: absolute;
-    left: 50%;
+    left: 18px;
     top: 50%;
-    transform: translate(-50%, -50%);
+    transform: translateY(-50%);
     white-space: nowrap;
     color: black;
     font-size: 0.9rem;
@@ -1215,12 +1224,44 @@
     text-transform: lowercase;
     line-height: 1;
     user-select: none;
-    pointer-events: none;
   }
 
   @keyframes backendBoxFill {
     0% { width: 0%; }
     100% { width: 100%; }
+  }
+
+  .ready-track {
+    position: absolute;
+    left: 0;
+    top: 50%;
+    transform: translateY(-50%) translateX(0);
+    display: inline-flex;
+    align-items: center;
+    white-space: nowrap;
+    color: black;
+    font-size: 0.9rem;
+    letter-spacing: 1px;
+    text-transform: lowercase;
+    line-height: 1;
+    will-change: transform;
+  }
+
+  .ready-track span {
+    display: inline-block;
+    padding-right: 28px;
+  }
+
+  .ready-track.left-loop {
+    animation-name: readyTrackLeftLoop;
+    animation-timing-function: linear;
+    animation-iteration-count: infinite;
+    animation-duration: var(--loader-speed, 3.2s);
+  }
+
+  @keyframes readyTrackLeftLoop {
+    0% { transform: translateY(-50%) translateX(0); }
+    100% { transform: translateY(-50%) translateX(-50%); }
   }
 </style>
 
@@ -1390,18 +1431,12 @@ let ultimaCorDoSite = null;
 let ultimoIndiceCorDoSite = -1;
 
 const SUBTITULOS = [
-  "Nanocontos. Mais nano do que contos.",
   "Rede social de 1 pessoa só.",
   "Cancelada, desde o dia 1.",
   "Reclamações? Só do autor.",
   "Tá fácil, SQN, since 1982.",
-  "0,1% biográfico,",
-  "Um boxinho de frases. Ou um rizoma do carilho.",
-  "/root, não. Rizoma.",
-  "Linguagem HTML e linguagem figurada, in love.",
-  "Mais de 100 mil caracteres (somando o HTML.)",
-  "3 mil palavras (tirando o HTML, umas 200 marromeno.)",
-  "Site escrito por um redator analfabeto em html."
+  "0,1% biográfico.",
+  "Redator de português fazendo HTML."
 ];
 
 const STORAGE_SUBTITULOS_ORDEM = "laforismos_subtitulos_ordem_v1";
@@ -2739,44 +2774,23 @@ function normalizarPartes(partes) {
 
 const FALLBACKS_SOBRE = [
   [
-    { texto: `Sessão "Sobre o autor".
-
-A real:
-"Eu podia tá bebendo, podia tá comendo açúcar, mas tô só fazendo um trocadilho."
-
-O plano:
-Criar um alterego e falar com o leitor por ele, sem nóias. Vai começar assim:
-"Olá, sou Hamlet, um HTML que ataca de Escritor."
-
-Obrigado por ler.
-
-Prazer!
-
-Felipe Koraicho Sauma`, bold: false, italic: false, underline: false }
+    { texto: "Sobre de Felipe carregando...\n\nOlá, prazer, sou Hamlet, um HTML que ataca de Escritor.\nEstou elocubrante e inocuamente tentando achar o Word com esse \"Sobre\".\nCabisbaixo com tal experiência, clamo para que voltes outra hora aqui.\nGrátis. Digo, grato.", bold: false, italic: false, underline: false }
+  ],
+  [
+    { texto: "Ó. perdão a metalinguagem, mas...\nGuenta aí, isso é um texto de fixo – não o que o cara quer que você leia.\nAss.: Hamlet.", bold: false, italic: false, underline: false }
+  ],
+  [
+    { texto: "Ah! Foi mal. O código ainda não achou o Sobre que o cara quer.\nHamlet. O programador HTML perdido no tempo.\n\nSobre de Felipe, ainda carregando... Malz!", bold: false, italic: false, underline: false }
   ]
 ];
 
 const STORAGE_SOBRE_FALLBACK_INDICE = "laforismos_sobre_fallback_indice_v1";
 let partesSobreAtuais = FALLBACKS_SOBRE[0];
-let partesSobreApi = textoSobreParaPartes(`Sessão "Sobre o autor".
-
-A real:
-"Eu podia tá bebendo, podia tá comendo açúcar, mas tô só fazendo um trocadilho."
-
-O plano:
-Criar um alterego e falar com o leitor por ele, sem nóias. Vai começar assim:
-"Olá, sou Hamlet, um HTML que ataca de Escritor."
-
-Obrigado por ler.
-
-Prazer!
-
-Felipe Koraicho Sauma`);
+let partesSobreApi = null;
 let fallbackSobreAtualIndice = 0;
 let sobreAbertoComFallbackSequencial = false;
 let sobreTransicaoTravadaAte = 0;
 const BLOQUEIO_TRANSICAO_SOBRE_MS = 320;
-let sobreEstavaEmLoadingAoAbrir = false;
 
 function obterIndiceFallbackSobreAtual() {
   try {
@@ -2808,20 +2822,7 @@ function textoSobreParaPartes(texto) {
 }
 
 function definirSobreApiOuFallback(sobreTexto) {
-  partesSobreApi = textoSobreParaPartes("Sessão \"Sobre o autor\".
-
-A real:
-\"Eu podia tá bebendo, podia tá comendo açúcar, mas tô só fazendo um trocadilho.\"
-
-O plano:
-Criar um alterego e falar com o leitor por ele, sem nóias. Vai começar assim:
-\"Olá, sou Hamlet, um HTML que ataca de Escritor.\"
-
-Obrigado por ler.
-
-Prazer!
-
-Felipe Koraicho Sauma");
+  partesSobreApi = textoSobreParaPartes(sobreTexto);
   partesSobreAtuais = partesSobreApi || FALLBACKS_SOBRE[0];
   sobreAbertoComFallbackSequencial = false;
   renderizarSobre();
@@ -2856,7 +2857,6 @@ function abrirSobre() {
   const ehMobile = window.matchMedia("(max-width: 768px)").matches;
   const htmlEl = document.documentElement;
   const boxEl = document.getElementById("box");
-  sobreEstavaEmLoadingAoAbrir = !!boxEl?.classList.contains("is-loading");
   const fraseEl = document.getElementById("frase");
   const sobreEl = document.getElementById("sobreBoxTexto");
   const overlayEl = document.querySelector(".overlay");
@@ -2889,6 +2889,7 @@ function abrirSobre() {
 
   resetarDimensoesDoBox();
   ajustarAlturaBoxDinamicamente();
+  iniciarGlitchDaMaquina();
 }
 
 function fecharSobre(event) {
@@ -2932,24 +2933,13 @@ function fecharSobre(event) {
 
   sobreAbertoComFallbackSequencial = false;
 
-  const boxEl = document.getElementById("box");
   if (fraseEl) fraseEl.style.display = "block";
   if (overlayEl) overlayEl.style.display = "";
-
-  if (sobreEstavaEmLoadingAoAbrir && boxEl) {
-    boxEl.classList.add("is-loading");
-  }
-
   resetarDimensoesDoBox();
   ajustarAlturaBoxDinamicamente();
-
-  if (sobreEstavaEmLoadingAoAbrir && boxEl && !document.body.classList.contains("machine-settle")) {
-    if (typeof iniciarGlitchDaMaquina === "function") {
-      iniciarGlitchDaMaquina();
-    }
+  if (document.getElementById("box")?.classList.contains("is-loading") && !document.body.classList.contains("machine-settle")) {
+    iniciarGlitchDaMaquina();
   }
-
-  sobreEstavaEmLoadingAoAbrir = false;
 }
 
 function inicializarAtalhosDoSobre() {
@@ -3169,12 +3159,15 @@ carregarFrasesDaApi();</script>
 
 
 
-
 <script id="laforismos-loading-script">
 (function () {
+  const LOADER_TEXT = 'carregando espasmo • carregando espasmo • carregando espasmo • carregando espasmo • clica aí • carregando espasmo • carregando espasmo • carregando espasmo • clica! • carregando espasmo • carregando espasmo • carregando espasmo • carregando espasmo • carregando espasmo • carregando espasmo • carregando espasmo • pode clicar';
+
   let primeiraFrasePendente = null;
   let aguardandoPrimeiraFrase = false;
   let apiInicialCarregada = false;
+  let loaderSpeedTimer = null;
+  let loaderKickoffTimer = null;
 
   function garantirCamadasDeLoading() {
     const overlay = document.querySelector("#box .overlay");
@@ -3186,7 +3179,7 @@ carregarFrasesDaApi();</script>
       backend.innerHTML = `
         <div class="backend-loading-shell">
           <div class="backend-loading-fill">
-            <div class="backend-loading-label">carregando espasmo</div>
+            <div class="backend-loading-marquee">${LOADER_TEXT}</div>
           </div>
         </div>
       `;
@@ -3196,7 +3189,12 @@ carregarFrasesDaApi();</script>
     if (!overlay.querySelector(".ready-loading-layer")) {
       const ready = document.createElement("div");
       ready.className = "ready-loading-layer";
-      ready.innerHTML = `<div class="backend-loading-label">carregando espasmo</div>`;
+      ready.innerHTML = `
+        <div class="ready-track" id="readyTrack">
+          <span>${LOADER_TEXT}</span>
+          <span>${LOADER_TEXT}</span>
+        </div>
+      `;
       overlay.appendChild(ready);
     }
   }
@@ -3205,6 +3203,31 @@ carregarFrasesDaApi();</script>
     const box = document.getElementById("box");
     if (!box) return;
     box.classList.remove("backend-waiting", "backend-ready");
+  }
+
+  function limparVariacaoVelocidade() {
+    if (loaderSpeedTimer) {
+      clearTimeout(loaderSpeedTimer);
+      loaderSpeedTimer = null;
+    }
+    if (loaderKickoffTimer) {
+      clearTimeout(loaderKickoffTimer);
+      loaderKickoffTimer = null;
+    }
+  }
+
+  function variarVelocidadeLoader() {
+    const track = document.getElementById("readyTrack");
+    const box = document.getElementById("box");
+    if (!track || !box?.classList.contains("backend-ready") || !box.classList.contains("is-loading")) {
+      return;
+    }
+
+    const duration = 3.2 + (Math.random() * (6.4 - 3.2)); // até 100% mais lento em alguns trechos
+    track.style.setProperty("--loader-speed", `${duration.toFixed(2)}s`);
+
+    const nextIn = 300 + Math.floor(Math.random() * 1200);
+    loaderSpeedTimer = setTimeout(variarVelocidadeLoader, nextIn);
   }
 
   function ativarLoadingBackendInicial() {
@@ -3223,6 +3246,29 @@ carregarFrasesDaApi();</script>
       window.pararGlitchDaMaquina();
     }
     document.body.classList.remove("machine-settle");
+    limparVariacaoVelocidade();
+  }
+
+  function iniciarLoopDoLoader(imediato = false) {
+    const track = document.getElementById("readyTrack");
+    if (!track) return;
+
+    track.classList.remove("left-loop");
+    track.style.setProperty("--loader-speed", "3.2s");
+    void track.offsetWidth;
+    track.classList.add("left-loop");
+
+    limparVariacaoVelocidade();
+
+    if (imediato) {
+      // força o texto a começar andando já no primeiro frame visível
+      loaderKickoffTimer = setTimeout(() => {
+        variarVelocidadeLoader();
+        loaderKickoffTimer = null;
+      }, 30);
+    } else {
+      variarVelocidadeLoader();
+    }
   }
 
   function ativarLoadingProntoParaClique() {
@@ -3238,6 +3284,7 @@ carregarFrasesDaApi();</script>
       window.iniciarGlitchDaMaquina();
     }
     document.body.classList.remove("machine-settle");
+    iniciarLoopDoLoader(true);
   }
 
   window.ativarEstadoLoadingBox = function() {
@@ -3253,6 +3300,7 @@ carregarFrasesDaApi();</script>
     if (box) {
       box.classList.remove("is-loading", "backend-waiting", "backend-ready");
     }
+    limparVariacaoVelocidade();
     if (typeof window.pararGlitchDaMaquina === "function") {
       window.pararGlitchDaMaquina();
     }
@@ -3334,6 +3382,7 @@ carregarFrasesDaApi();</script>
 
   const originalAbrirSobre = window.abrirSobre;
   window.abrirSobre = function() {
+    limparVariacaoVelocidade();
     if (typeof window.pararGlitchDaMaquina === "function") {
       window.pararGlitchDaMaquina();
     }
@@ -3347,6 +3396,7 @@ carregarFrasesDaApi();</script>
       if (typeof window.iniciarGlitchDaMaquina === "function") {
         window.iniciarGlitchDaMaquina();
       }
+      iniciarLoopDoLoader(true);
     }
   };
 
