@@ -1,18 +1,6 @@
 <!DOCTYPE html>
 <html lang="pt-BR">
 <head>
-  <!--
-    LAFORISMOS — versão comentada
-    Esta edição inclui:
-    1) tempo de leitura refinado por texto
-    2) melhoria de viewport no mobile
-    3) toggle "Obscenidades" redesenhado
-    4) toggle não interfere na frase atual, exceto ao desligar durante frase obscena
-    5) hover "carregando espasmo" só volta após o último tempo da frase
-    6) bloqueio de hover preservado corretamente até o momento de liberação
-    7) fundos aleatórios na entrada (desktop em vídeo / mobile em imagem estática)
-    8) estado inicial do box igual ao mouse over
-  -->
   <meta charset="UTF-8">
   <meta name="viewport" content="width=device-width, initial-scale=1.0">
   <title>LAFORISMOS</title>
@@ -2751,14 +2739,14 @@ function normalizarPartes(partes) {
 
 const FALLBACKS_SOBRE = [
   [
-    { texto: "Sessão \"Sobre o autor\".
+    { texto: "Sessão "Sobre o autor".
 
 A real:
-\"Eu podia tá bebendo, podia tá comendo açúcar, mas tô só fazendo um trocadilho.\"
+"Eu podia tá bebendo, podia tá comendo açúcar, mas tô só fazendo um trocadilho."
 
-O plano: 
-Criar um alterego e falar com o leitor por ele, sem nóias. Vai começar assim: 
-\"Olá, sou Hamlet, um HTML que ataca de Escritor.\"
+O plano:
+Criar um alterego e falar com o leitor por ele, sem nóias. Vai começar assim:
+"Olá, sou Hamlet, um HTML que ataca de Escritor."
 
 Obrigado por ler.
 
@@ -2770,14 +2758,14 @@ Felipe Koraicho Sauma", bold: false, italic: false, underline: false }
 
 const STORAGE_SOBRE_FALLBACK_INDICE = "laforismos_sobre_fallback_indice_v1";
 let partesSobreAtuais = FALLBACKS_SOBRE[0];
-let partesSobreApi = textoSobreParaPartes("Sessão \"Sobre o autor\".
+let partesSobreApi = textoSobreParaPartes("Sessão "Sobre o autor".
 
 A real:
-\"Eu podia tá bebendo, podia tá comendo açúcar, mas tô só fazendo um trocadilho.\"
+"Eu podia tá bebendo, podia tá comendo açúcar, mas tô só fazendo um trocadilho."
 
-O plano: 
-Criar um alterego e falar com o leitor por ele, sem nóias. Vai começar assim: 
-\"Olá, sou Hamlet, um HTML que ataca de Escritor.\"
+O plano:
+Criar um alterego e falar com o leitor por ele, sem nóias. Vai começar assim:
+"Olá, sou Hamlet, um HTML que ataca de Escritor."
 
 Obrigado por ler.
 
@@ -2820,14 +2808,14 @@ function textoSobreParaPartes(texto) {
 }
 
 function definirSobreApiOuFallback(sobreTexto) {
-  partesSobreApi = textoSobreParaPartes("Sessão \"Sobre o autor\".
+  partesSobreApi = textoSobreParaPartes("Sessão "Sobre o autor".
 
 A real:
-\"Eu podia tá bebendo, podia tá comendo açúcar, mas tô só fazendo um trocadilho.\"
+"Eu podia tá bebendo, podia tá comendo açúcar, mas tô só fazendo um trocadilho."
 
-O plano: 
-Criar um alterego e falar com o leitor por ele, sem nóias. Vai começar assim: 
-\"Olá, sou Hamlet, um HTML que ataca de Escritor.\"
+O plano:
+Criar um alterego e falar com o leitor por ele, sem nóias. Vai começar assim:
+"Olá, sou Hamlet, um HTML que ataca de Escritor."
 
 Obrigado por ler.
 
