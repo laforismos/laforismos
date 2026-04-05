@@ -1247,17 +1247,35 @@
     line-height: 1;
     user-select: none;
     pointer-events: none;
-    will-change: transform;
+    opacity: 0;
+    will-change: left, transform, opacity;
   }
 
-  .ready-track.is-bouncing {
-    animation: readyTrackBounceIn 0.42s cubic-bezier(0.22, 1, 0.36, 1);
+  .ready-track.is-sliding-in {
+    animation: readyTrackSlideToCenter 2s cubic-bezier(0.22, 1, 0.36, 1) forwards;
   }
 
-  @keyframes readyTrackBounceIn {
-    0% { transform: translate(-50%, -50%) scale(0.96); }
-    60% { transform: translate(-50%, -50%) scale(1.045); }
-    100% { transform: translate(-50%, -50%) scale(1); }
+  @keyframes readyTrackSlideToCenter {
+    0% {
+      left: 18px;
+      transform: translate(0, -50%);
+      opacity: 1;
+    }
+    82% {
+      left: 50%;
+      transform: translate(-50%, -50%);
+      opacity: 1;
+    }
+    90% {
+      left: 50%;
+      transform: translate(-50%, -50%) scale(1.035);
+      opacity: 1;
+    }
+    100% {
+      left: 50%;
+      transform: translate(-50%, -50%) scale(1);
+      opacity: 1;
+    }
   }
 </style>
 
@@ -3196,43 +3214,21 @@ carregarFrasesDaApi();</script>
     box.classList.remove("backend-waiting", "backend-ready");
   }
 
-  function resetarAnimacaoBounceDoLoader() {
+  function resetarAnimacaoDoLoaderTexto() {
     const track = document.getElementById("readyTrack");
     if (!track) return;
-    track.classList.remove("is-bouncing");
+    track.classList.remove("is-sliding-in");
+    track.style.opacity = "0";
+    track.style.left = "50%";
+    track.style.transform = "translate(-50%, -50%)";
     void track.offsetWidth;
   }
 
-  function animarTextoNoPreenchimento() {
-    const fill = document.getElementById("backendLoadingFill");
-    const marquee = document.getElementById("backendLoadingMarquee");
-    if (!fill || !marquee) return;
-
-    const shell = fill.parentElement;
-    if (!shell) return;
-
-    const shellWidth = shell.clientWidth;
-    const textWidth = marquee.offsetWidth;
-    const paddingInicial = 18;
-    const alvo = Math.max(paddingInicial, (shellWidth - textWidth) / 2);
-
-    marquee.style.left = paddingInicial + "px";
-    marquee.style.transform = "translate(0, -50%)";
-
-    requestAnimationFrame(() => {
-      requestAnimationFrame(() => {
-        const progresso = fill.clientWidth / Math.max(1, shellWidth);
-        const leftAtual = paddingInicial + ((alvo - paddingInicial) * progresso);
-        marquee.style.left = leftAtual + "px";
-      });
-    });
-  }
-
-  function animarBounceFinalDoLoader() {
+  function animarEntradaIndependenteDoLoader() {
     const track = document.getElementById("readyTrack");
     if (!track) return;
-    resetarAnimacaoBounceDoLoader();
-    track.classList.add("is-bouncing");
+    resetarAnimacaoDoLoaderTexto();
+    track.classList.add("is-sliding-in");
   }
 
   function ativarLoadingBackendInicial() {
@@ -3251,8 +3247,7 @@ carregarFrasesDaApi();</script>
       window.pararGlitchDaMaquina();
     }
     document.body.classList.remove("machine-settle");
-    resetarAnimacaoBounceDoLoader();
-    animarTextoNoPreenchimento();
+    resetarAnimacaoDoLoaderTexto();
   }
 
 
@@ -3269,7 +3264,7 @@ carregarFrasesDaApi();</script>
       window.iniciarGlitchDaMaquina();
     }
     document.body.classList.remove("machine-settle");
-    animarBounceFinalDoLoader();
+    animarEntradaIndependenteDoLoader();
   }
 
   window.ativarEstadoLoadingBox = function() {
@@ -3285,7 +3280,7 @@ carregarFrasesDaApi();</script>
     if (box) {
       box.classList.remove("is-loading", "backend-waiting", "backend-ready");
     }
-    resetarAnimacaoBounceDoLoader();
+    resetarAnimacaoDoLoaderTexto();
     if (typeof window.pararGlitchDaMaquina === "function") {
       window.pararGlitchDaMaquina();
     }
