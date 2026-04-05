@@ -1151,6 +1151,7 @@
 
 
 
+
 <style id="laforismos-loading-override">
   .box.is-loading.backend-waiting {
     background: rgba(255,255,255,0.10) !important;
@@ -1192,7 +1193,9 @@
   }
 
   .box.is-loading.backend-ready .ready-loading-layer {
-    display: block;
+    display: flex;
+    align-items: center;
+    justify-content: center;
     background: white;
   }
 
@@ -1212,11 +1215,11 @@
     animation: backendBoxFill 1.8s ease forwards;
   }
 
-  .backend-loading-marquee {
+  .backend-loading-label {
     position: absolute;
-    left: 18px;
+    left: 50%;
     top: 50%;
-    transform: translateY(-50%);
+    transform: translate(-50%, -50%);
     white-space: nowrap;
     color: black;
     font-size: 0.9rem;
@@ -1224,44 +1227,12 @@
     text-transform: lowercase;
     line-height: 1;
     user-select: none;
+    pointer-events: none;
   }
 
   @keyframes backendBoxFill {
     0% { width: 0%; }
     100% { width: 100%; }
-  }
-
-  .ready-track {
-    position: absolute;
-    left: 0;
-    top: 50%;
-    transform: translateY(-50%) translateX(0);
-    display: inline-flex;
-    align-items: center;
-    white-space: nowrap;
-    color: black;
-    font-size: 0.9rem;
-    letter-spacing: 1px;
-    text-transform: lowercase;
-    line-height: 1;
-    will-change: transform;
-  }
-
-  .ready-track span {
-    display: inline-block;
-    padding-right: 28px;
-  }
-
-  .ready-track.left-loop {
-    animation-name: readyTrackLeftLoop;
-    animation-timing-function: linear;
-    animation-iteration-count: infinite;
-    animation-duration: var(--loader-speed, 3.2s);
-  }
-
-  @keyframes readyTrackLeftLoop {
-    0% { transform: translateY(-50%) translateX(0); }
-    100% { transform: translateY(-50%) translateX(-50%); }
   }
 </style>
 
@@ -3210,15 +3181,12 @@ carregarFrasesDaApi();</script>
 
 
 
+
 <script id="laforismos-loading-script">
 (function () {
-  const LOADER_TEXT = 'carregando espasmo • carregando espasmo • carregando espasmo • carregando espasmo • clica aí • carregando espasmo • carregando espasmo • carregando espasmo • clica! • carregando espasmo • carregando espasmo • carregando espasmo • carregando espasmo • carregando espasmo • carregando espasmo • carregando espasmo • pode clicar';
-
   let primeiraFrasePendente = null;
   let aguardandoPrimeiraFrase = false;
   let apiInicialCarregada = false;
-  let loaderSpeedTimer = null;
-  let loaderKickoffTimer = null;
 
   function garantirCamadasDeLoading() {
     const overlay = document.querySelector("#box .overlay");
@@ -3230,7 +3198,7 @@ carregarFrasesDaApi();</script>
       backend.innerHTML = `
         <div class="backend-loading-shell">
           <div class="backend-loading-fill">
-            <div class="backend-loading-marquee">${LOADER_TEXT}</div>
+            <div class="backend-loading-label">carregando espasmo</div>
           </div>
         </div>
       `;
@@ -3240,12 +3208,7 @@ carregarFrasesDaApi();</script>
     if (!overlay.querySelector(".ready-loading-layer")) {
       const ready = document.createElement("div");
       ready.className = "ready-loading-layer";
-      ready.innerHTML = `
-        <div class="ready-track" id="readyTrack">
-          <span>${LOADER_TEXT}</span>
-          <span>${LOADER_TEXT}</span>
-        </div>
-      `;
+      ready.innerHTML = `<div class="backend-loading-label">carregando espasmo</div>`;
       overlay.appendChild(ready);
     }
   }
@@ -3254,31 +3217,6 @@ carregarFrasesDaApi();</script>
     const box = document.getElementById("box");
     if (!box) return;
     box.classList.remove("backend-waiting", "backend-ready");
-  }
-
-  function limparVariacaoVelocidade() {
-    if (loaderSpeedTimer) {
-      clearTimeout(loaderSpeedTimer);
-      loaderSpeedTimer = null;
-    }
-    if (loaderKickoffTimer) {
-      clearTimeout(loaderKickoffTimer);
-      loaderKickoffTimer = null;
-    }
-  }
-
-  function variarVelocidadeLoader() {
-    const track = document.getElementById("readyTrack");
-    const box = document.getElementById("box");
-    if (!track || !box?.classList.contains("backend-ready") || !box.classList.contains("is-loading")) {
-      return;
-    }
-
-    const duration = 3.2 + (Math.random() * (6.4 - 3.2)); // até 100% mais lento em alguns trechos
-    track.style.setProperty("--loader-speed", `${duration.toFixed(2)}s`);
-
-    const nextIn = 300 + Math.floor(Math.random() * 1200);
-    loaderSpeedTimer = setTimeout(variarVelocidadeLoader, nextIn);
   }
 
   function ativarLoadingBackendInicial() {
@@ -3297,29 +3235,6 @@ carregarFrasesDaApi();</script>
       window.pararGlitchDaMaquina();
     }
     document.body.classList.remove("machine-settle");
-    limparVariacaoVelocidade();
-  }
-
-  function iniciarLoopDoLoader(imediato = false) {
-    const track = document.getElementById("readyTrack");
-    if (!track) return;
-
-    track.classList.remove("left-loop");
-    track.style.setProperty("--loader-speed", "3.2s");
-    void track.offsetWidth;
-    track.classList.add("left-loop");
-
-    limparVariacaoVelocidade();
-
-    if (imediato) {
-      // força o texto a começar andando já no primeiro frame visível
-      loaderKickoffTimer = setTimeout(() => {
-        variarVelocidadeLoader();
-        loaderKickoffTimer = null;
-      }, 30);
-    } else {
-      variarVelocidadeLoader();
-    }
   }
 
   function ativarLoadingProntoParaClique() {
@@ -3335,7 +3250,6 @@ carregarFrasesDaApi();</script>
       window.iniciarGlitchDaMaquina();
     }
     document.body.classList.remove("machine-settle");
-    iniciarLoopDoLoader(true);
   }
 
   window.ativarEstadoLoadingBox = function() {
@@ -3351,7 +3265,6 @@ carregarFrasesDaApi();</script>
     if (box) {
       box.classList.remove("is-loading", "backend-waiting", "backend-ready");
     }
-    limparVariacaoVelocidade();
     if (typeof window.pararGlitchDaMaquina === "function") {
       window.pararGlitchDaMaquina();
     }
@@ -3433,7 +3346,6 @@ carregarFrasesDaApi();</script>
 
   const originalAbrirSobre = window.abrirSobre;
   window.abrirSobre = function() {
-    limparVariacaoVelocidade();
     if (typeof window.pararGlitchDaMaquina === "function") {
       window.pararGlitchDaMaquina();
     }
@@ -3447,7 +3359,6 @@ carregarFrasesDaApi();</script>
       if (typeof window.iniciarGlitchDaMaquina === "function") {
         window.iniciarGlitchDaMaquina();
       }
-      iniciarLoopDoLoader(true);
     }
   };
 
