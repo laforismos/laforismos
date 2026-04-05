@@ -1214,7 +1214,7 @@
 
   .backend-loading-marquee {
     position: absolute;
-    left: 0;
+    left: 18px;
     top: 50%;
     transform: translate(0, -50%);
     white-space: nowrap;
@@ -1225,7 +1225,12 @@
     line-height: 1;
     user-select: none;
     pointer-events: none;
+    opacity: 1;
     will-change: left, transform;
+  }
+
+  .backend-loading-marquee.is-sliding-in {
+    animation: readyTrackSlideToCenter 2s cubic-bezier(0.22, 1, 0.36, 1) forwards;
   }
 
   @keyframes backendBoxFill {
@@ -1247,12 +1252,8 @@
     line-height: 1;
     user-select: none;
     pointer-events: none;
-    opacity: 0;
+    opacity: 1;
     will-change: left, transform, opacity;
-  }
-
-  .ready-track.is-sliding-in {
-    animation: readyTrackSlideToCenter 2s cubic-bezier(0.22, 1, 0.36, 1) forwards;
   }
 
   @keyframes readyTrackSlideToCenter {
@@ -1445,12 +1446,18 @@ let ultimaCorDoSite = null;
 let ultimoIndiceCorDoSite = -1;
 
 const SUBTITULOS = [
+  "Nanocontos. Mais nano do que contos.",
   "Rede social de 1 pessoa só.",
   "Cancelada, desde o dia 1.",
   "Reclamações? Só do autor.",
   "Tá fácil, SQN, since 1982.",
-  "0,1% biográfico.",
-  "Redator de português fazendo HTML."
+  "0,1% biográfico,",
+  "Um boxinho de frases. Ou um rizoma do carilho.",
+  "/root, não. Rizoma.",
+  "Linguagem HTML e linguagem figurada, in love.",
+  "Mais de 100 mil caracteres (somando o HTML).",
+  "3 mil palavras HTML e português.",
+  "Site escrito por um redator analfabeto em html."
 ];
 
 const STORAGE_SUBTITULOS_ORDEM = "laforismos_subtitulos_ordem_v1";
@@ -2788,13 +2795,7 @@ function normalizarPartes(partes) {
 
 const FALLBACKS_SOBRE = [
   [
-    { texto: "Sobre de Felipe carregando...\n\nOlá, prazer, sou Hamlet, um HTML que ataca de Escritor.\nEstou elocubrante e inocuamente tentando achar o Word com esse \"Sobre\".\nCabisbaixo com tal experiência, clamo para que voltes outra hora aqui.\nGrátis. Digo, grato.", bold: false, italic: false, underline: false }
-  ],
-  [
-    { texto: "Ó. perdão a metalinguagem, mas...\nGuenta aí, isso é um texto de fixo – não o que o cara quer que você leia.\nAss.: Hamlet.", bold: false, italic: false, underline: false }
-  ],
-  [
-    { texto: "Ah! Foi mal. O código ainda não achou o Sobre que o cara quer.\nHamlet. O programador HTML perdido no tempo.\n\nSobre de Felipe, ainda carregando... Malz!", bold: false, italic: false, underline: false }
+    { texto: "Eu podia tá bebendo, podia tá comendo açúcar, mas tô só fazendo um trocadilho.\nFelipe Koraicho Sauma", bold: false, italic: false, underline: false }
   ]
 ];
 
@@ -3176,10 +3177,30 @@ carregarFrasesDaApi();</script>
 <script id="laforismos-loading-script">
 (function () {
   const LOADER_TEXT = 'carregando espasmo';
+  const LOADER_FONT_STACKS = [
+    'Arial, Helvetica, sans-serif',
+    '"Trebuchet MS", Arial, sans-serif',
+    'Verdana, Geneva, sans-serif',
+    'Tahoma, Geneva, sans-serif',
+    '"Segoe UI", Arial, sans-serif',
+    '"Helvetica Neue", Helvetica, Arial, sans-serif',
+    'Geneva, Arial, sans-serif',
+    '"Times New Roman", Times, serif',
+    'Georgia, serif',
+    'Garamond, "Times New Roman", serif',
+    'Baskerville, "Times New Roman", serif',
+    'Palatino, "Palatino Linotype", serif',
+    '"Courier New", Courier, monospace',
+    'Monaco, "Courier New", monospace',
+    'Menlo, Monaco, monospace',
+    '"Lucida Console", Monaco, monospace'
+  ];
 
   let primeiraFrasePendente = null;
   let aguardandoPrimeiraFrase = false;
   let apiInicialCarregada = false;
+  let loaderFontTimer = null;
+  let loaderFontIndex = 0;
 
   function garantirCamadasDeLoading() {
     const overlay = document.querySelector("#box .overlay");
@@ -3214,21 +3235,59 @@ carregarFrasesDaApi();</script>
     box.classList.remove("backend-waiting", "backend-ready");
   }
 
+  function aplicarFonteAtualDoLoader() {
+    const fonte = LOADER_FONT_STACKS[loaderFontIndex % LOADER_FONT_STACKS.length];
+    const track = document.getElementById("readyTrack");
+    const backendTrack = document.getElementById("backendLoadingMarquee");
+
+    if (track) track.style.fontFamily = fonte;
+    if (backendTrack) backendTrack.style.fontFamily = fonte;
+  }
+
+  function pararEspasmoTipografico() {
+    if (loaderFontTimer) {
+      clearInterval(loaderFontTimer);
+      loaderFontTimer = null;
+    }
+  }
+
+  function iniciarEspasmoTipografico() {
+    aplicarFonteAtualDoLoader();
+    if (loaderFontTimer) return;
+
+    loaderFontTimer = setInterval(() => {
+      loaderFontIndex = (loaderFontIndex + 1) % LOADER_FONT_STACKS.length;
+      aplicarFonteAtualDoLoader();
+    }, 120);
+  }
+
   function resetarAnimacaoDoLoaderTexto() {
     const track = document.getElementById("readyTrack");
-    if (!track) return;
-    track.classList.remove("is-sliding-in");
-    track.style.opacity = "0";
-    track.style.left = "50%";
-    track.style.transform = "translate(-50%, -50%)";
-    void track.offsetWidth;
+    const backendTrack = document.getElementById("backendLoadingMarquee");
+
+    if (track) {
+      track.classList.remove("is-sliding-in");
+      track.style.opacity = "1";
+      track.style.left = "50%";
+      track.style.transform = "translate(-50%, -50%)";
+    }
+
+    if (backendTrack) {
+      backendTrack.classList.remove("is-sliding-in");
+      backendTrack.style.left = "18px";
+      backendTrack.style.transform = "translate(0, -50%)";
+      void backendTrack.offsetWidth;
+    }
+
+    aplicarFonteAtualDoLoader();
   }
 
   function animarEntradaIndependenteDoLoader() {
-    const track = document.getElementById("readyTrack");
-    if (!track) return;
+    const backendTrack = document.getElementById("backendLoadingMarquee");
+    if (!backendTrack) return;
     resetarAnimacaoDoLoaderTexto();
-    track.classList.add("is-sliding-in");
+    iniciarEspasmoTipografico();
+    backendTrack.classList.add("is-sliding-in");
   }
 
   function ativarLoadingBackendInicial() {
@@ -3247,12 +3306,13 @@ carregarFrasesDaApi();</script>
       window.pararGlitchDaMaquina();
     }
     document.body.classList.remove("machine-settle");
-    resetarAnimacaoDoLoaderTexto();
+    animarEntradaIndependenteDoLoader();
   }
 
 
   function ativarLoadingProntoParaClique() {
     const box = document.getElementById("box");
+    const track = document.getElementById("readyTrack");
     if (!box) return;
 
     garantirCamadasDeLoading();
@@ -3260,11 +3320,18 @@ carregarFrasesDaApi();</script>
     box.classList.add("is-loading", "backend-ready");
     box.classList.remove("disable-hover");
 
+    if (track) {
+      track.style.opacity = "1";
+      track.style.left = "50%";
+      track.style.transform = "translate(-50%, -50%)";
+    }
+
+    iniciarEspasmoTipografico();
+
     if (typeof window.iniciarGlitchDaMaquina === "function") {
       window.iniciarGlitchDaMaquina();
     }
     document.body.classList.remove("machine-settle");
-    animarEntradaIndependenteDoLoader();
   }
 
   window.ativarEstadoLoadingBox = function() {
@@ -3280,6 +3347,7 @@ carregarFrasesDaApi();</script>
     if (box) {
       box.classList.remove("is-loading", "backend-waiting", "backend-ready");
     }
+    pararEspasmoTipografico();
     resetarAnimacaoDoLoaderTexto();
     if (typeof window.pararGlitchDaMaquina === "function") {
       window.pararGlitchDaMaquina();
@@ -3362,6 +3430,7 @@ carregarFrasesDaApi();</script>
 
   const originalAbrirSobre = window.abrirSobre;
   window.abrirSobre = function() {
+    pararEspasmoTipografico();
     if (typeof window.pararGlitchDaMaquina === "function") {
       window.pararGlitchDaMaquina();
     }
