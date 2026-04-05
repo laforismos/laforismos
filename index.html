@@ -598,6 +598,9 @@
       visibility: hidden;
       pointer-events: none;
       transform: translateY(-8px);
+      height: 0;
+      margin: 0;
+      overflow: hidden;
     }
 
 
@@ -618,12 +621,21 @@
       display: block;
     }
 
+    body.sobre-aberto .site-header {
+      top: 22px;
+    }
+
+    body.sobre-aberto .sobre-foto-link {
+      margin-top: 20px;
+      margin-bottom: 18px;
+    }
+
     body.sobre-aberto .sobre-foto-topo {
       opacity: 1;
       visibility: visible;
       transform: translateY(0);
       transition: opacity 0.42s ease, transform 0.42s ease, visibility 0s linear 0s;
-      margin-bottom: -4px;
+      margin-bottom: 0;
       pointer-events: auto;
     }
 
@@ -631,15 +643,15 @@
       max-width: min(90vw, 760px);
       min-height: auto;
       cursor: default;
-      background: rgba(255,255,255,0.58);
+      background: rgba(255,255,255,0.80) !important;
       backdrop-filter: blur(18px) saturate(115%);
       -webkit-backdrop-filter: blur(18px) saturate(115%);
-      border: 1px solid rgba(255,255,255,0.24);
+      border: none !important;
       box-shadow:
         0 16px 42px rgba(0,0,0,0.10),
-        inset 0 1px 0 rgba(255,255,255,0.30),
-        inset 0 0 24px rgba(255,255,255,0.10);
+        inset 0 0 18px rgba(255,255,255,0.05) !important;
       padding: 44px 34px 28px;
+      transition: none !important;
     }
 
     body.sobre-aberto .sobre-voltar-btn {
@@ -665,13 +677,17 @@
       pointer-events: none;
     }
 
+    body.sobre-aberto main {
+      padding-top: 84px;
+      gap: 14px;
+    }
+
     body.bg-verde.sobre-aberto .interacao-area .box {
-      border-color: rgba(255,255,255,0.22);
-      background: rgba(255,255,255,0.54);
+      border: none !important;
+      background: rgba(255,255,255,0.80) !important;
       box-shadow:
         0 16px 40px rgba(0,0,0,0.08),
-        inset 0 1px 0 rgba(255,255,255,0.28),
-        inset 0 0 22px rgba(255,255,255,0.08);
+        inset 0 0 18px rgba(255,255,255,0.05) !important;
     }
 
     @media (max-width: 768px) {
@@ -739,16 +755,30 @@
         line-height: 1.6;
       }
 
+      body.sobre-aberto .site-header {
+        top: 18px;
+      }
+
+      body.sobre-aberto .sobre-foto-link {
+        margin-top: 16px;
+        margin-bottom: 14px;
+      }
+
+      body.sobre-aberto .sobre-foto-topo {
+        transform: translateY(0);
+        margin-bottom: 0;
+      }
+
       body.sobre-aberto .interacao-area .box {
-        background: rgba(255,255,255,0.62);
+        background: rgba(255,255,255,0.80) !important;
         backdrop-filter: blur(14px) saturate(112%);
         -webkit-backdrop-filter: blur(14px) saturate(112%);
-        border-color: rgba(255,255,255,0.22);
+        border: none !important;
         box-shadow:
           0 14px 34px rgba(0,0,0,0.10),
-          inset 0 1px 0 rgba(255,255,255,0.26),
-          inset 0 0 18px rgba(255,255,255,0.08);
+          inset 0 0 14px rgba(255,255,255,0.05) !important;
         padding: 42px 22px 24px;
+        transition: none !important;
       }
 
       .sobre-voltar-btn {
@@ -1101,6 +1131,11 @@
 
       main {
         padding-top: 112px;
+      }
+
+      body.sobre-aberto main {
+        padding-top: 78px;
+        gap: 12px;
       }
 
       .toggle-btn {
@@ -2848,7 +2883,9 @@ function abrirSobre() {
   }
 
   if (boxEl) {
-    boxEl.classList.remove("is-loading");
+    boxEl.classList.remove("is-loading", "backend-waiting", "backend-ready", "disable-hover");
+    boxEl.style.background = "rgba(255,255,255,0.80)";
+    boxEl.style.border = "none";
   }
 
   if (fraseEl) {
@@ -2914,6 +2951,11 @@ function fecharSobre(event) {
 
   if (fraseEl) fraseEl.style.display = "block";
   if (overlayEl) overlayEl.style.display = "";
+  const boxEl = document.getElementById("box");
+  if (boxEl) {
+    boxEl.style.background = "";
+    boxEl.style.border = "";
+  }
   resetarDimensoesDoBox();
   ajustarAlturaBoxDinamicamente();
   if (document.getElementById("box")?.classList.contains("is-loading") && !document.body.classList.contains("machine-settle")) {
@@ -3408,7 +3450,9 @@ carregarFrasesDaApi();</script>
       if (typeof window.iniciarGlitchDaMaquina === "function") {
         window.iniciarGlitchDaMaquina();
       }
-      iniciarLoopDoLoader(true);
+      if (typeof window.iniciarLoopDoLoader === "function") {
+        window.iniciarLoopDoLoader(true);
+      }
     }
   };
 
