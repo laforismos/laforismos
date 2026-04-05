@@ -1214,9 +1214,9 @@
 
   .backend-loading-marquee {
     position: absolute;
-    left: 18px;
+    left: 0;
     top: 50%;
-    transform: translateY(-50%);
+    transform: translate(0, -50%);
     white-space: nowrap;
     color: black;
     font-size: 0.9rem;
@@ -1224,6 +1224,8 @@
     text-transform: lowercase;
     line-height: 1;
     user-select: none;
+    pointer-events: none;
+    will-change: left, transform;
   }
 
   @keyframes backendBoxFill {
@@ -1245,6 +1247,17 @@
     line-height: 1;
     user-select: none;
     pointer-events: none;
+    will-change: transform;
+  }
+
+  .ready-track.is-bouncing {
+    animation: readyTrackBounceIn 0.42s cubic-bezier(0.22, 1, 0.36, 1);
+  }
+
+  @keyframes readyTrackBounceIn {
+    0% { transform: translate(-50%, -50%) scale(0.96); }
+    60% { transform: translate(-50%, -50%) scale(1.045); }
+    100% { transform: translate(-50%, -50%) scale(1); }
   }
 </style>
 
@@ -3159,8 +3172,8 @@ carregarFrasesDaApi();</script>
       backend.className = "backend-loading-layer";
       backend.innerHTML = `
         <div class="backend-loading-shell">
-          <div class="backend-loading-fill">
-            <div class="backend-loading-marquee">${LOADER_TEXT}</div>
+          <div class="backend-loading-fill" id="backendLoadingFill">
+            <div class="backend-loading-marquee" id="backendLoadingMarquee">${LOADER_TEXT}</div>
           </div>
         </div>
       `;
@@ -3183,7 +3196,44 @@ carregarFrasesDaApi();</script>
     box.classList.remove("backend-waiting", "backend-ready");
   }
 
+  function resetarAnimacaoBounceDoLoader() {
+    const track = document.getElementById("readyTrack");
+    if (!track) return;
+    track.classList.remove("is-bouncing");
+    void track.offsetWidth;
+  }
 
+  function animarTextoNoPreenchimento() {
+    const fill = document.getElementById("backendLoadingFill");
+    const marquee = document.getElementById("backendLoadingMarquee");
+    if (!fill || !marquee) return;
+
+    const shell = fill.parentElement;
+    if (!shell) return;
+
+    const shellWidth = shell.clientWidth;
+    const textWidth = marquee.offsetWidth;
+    const paddingInicial = 18;
+    const alvo = Math.max(paddingInicial, (shellWidth - textWidth) / 2);
+
+    marquee.style.left = paddingInicial + "px";
+    marquee.style.transform = "translate(0, -50%)";
+
+    requestAnimationFrame(() => {
+      requestAnimationFrame(() => {
+        const progresso = fill.clientWidth / Math.max(1, shellWidth);
+        const leftAtual = paddingInicial + ((alvo - paddingInicial) * progresso);
+        marquee.style.left = leftAtual + "px";
+      });
+    });
+  }
+
+  function animarBounceFinalDoLoader() {
+    const track = document.getElementById("readyTrack");
+    if (!track) return;
+    resetarAnimacaoBounceDoLoader();
+    track.classList.add("is-bouncing");
+  }
 
   function ativarLoadingBackendInicial() {
     const box = document.getElementById("box");
@@ -3201,6 +3251,8 @@ carregarFrasesDaApi();</script>
       window.pararGlitchDaMaquina();
     }
     document.body.classList.remove("machine-settle");
+    resetarAnimacaoBounceDoLoader();
+    animarTextoNoPreenchimento();
   }
 
 
@@ -3217,6 +3269,7 @@ carregarFrasesDaApi();</script>
       window.iniciarGlitchDaMaquina();
     }
     document.body.classList.remove("machine-settle");
+    animarBounceFinalDoLoader();
   }
 
   window.ativarEstadoLoadingBox = function() {
@@ -3232,6 +3285,7 @@ carregarFrasesDaApi();</script>
     if (box) {
       box.classList.remove("is-loading", "backend-waiting", "backend-ready");
     }
+    resetarAnimacaoBounceDoLoader();
     if (typeof window.pararGlitchDaMaquina === "function") {
       window.pararGlitchDaMaquina();
     }
