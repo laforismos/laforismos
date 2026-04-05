@@ -1,28 +1,14 @@
 <!DOCTYPE html>
 <html lang="pt-BR">
 <head>
-  <!--
-    LAFORISMOS — versão comentada
-    Esta edição inclui:
-    1) tempo de leitura refinado por texto
-    2) melhoria de viewport no mobile
-    3) toggle "Obscenidades" redesenhado
-    4) toggle não interfere na frase atual, exceto ao desligar durante frase obscena
-    5) hover "carregando espasmo" só volta após o último tempo da frase
-    6) bloqueio de hover preservado corretamente até o momento de liberação
-    7) fundos aleatórios na entrada (desktop em vídeo / mobile em imagem estática)
-    8) estado inicial do box igual ao mouse over
-  -->
-  <meta charset="UTF-8">
+<meta charset="UTF-8">
   <meta name="viewport" content="width=device-width, initial-scale=1.0">
   <title>LAFORISMOS</title>
 
   <link rel="preconnect" href="https://fonts.googleapis.com">
   <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
   <link href="https://fonts.googleapis.com/css2?family=Bodoni+Moda:opsz,wght@6..96,400;500;600&display=swap" rel="stylesheet">
-
-  <!-- Google tag (gtag.js) -->
-  <script async src="https://www.googletagmanager.com/gtag/js?id=G-02B0NJF559"></script>
+<script async src="https://www.googletagmanager.com/gtag/js?id=G-02B0NJF559"></script>
   <script>
     window.dataLayer = window.dataLayer || [];
     function gtag(){dataLayer.push(arguments);}
@@ -138,7 +124,8 @@
     .sobre-voltar-btn {
       position: absolute;
       top: 14px;
-      left: 16px;
+      right: 16px;
+      left: auto;
       display: none;
       border: 0;
       background: transparent;
@@ -146,8 +133,9 @@
       margin: 0;
       color: inherit;
       font-family: Helvetica, Arial, sans-serif;
-      font-size: 1rem;
+      font-size: 0.95rem;
       line-height: 1;
+      font-weight: 400;
       cursor: pointer;
       opacity: 0.72;
       z-index: 3;
@@ -765,7 +753,8 @@
 
       .sobre-voltar-btn {
         top: 12px;
-        left: 14px;
+        right: 14px;
+        left: auto;
       }
 
       body.sobre-aberto .sobre-box-texto {
@@ -1309,7 +1298,7 @@
 
   <div class="interacao-area">
     <div class="box is-loading" id="box">
-      <button class="sobre-voltar-btn" id="sobreVoltarBtn" type="button" aria-label="Voltar" onclick="fecharSobre(event)">&lt;</button>
+      <button class="sobre-voltar-btn" id="sobreVoltarBtn" type="button" aria-label="Fechar" onclick="fecharSobre(event)">X</button>
       <div class="loading-sizer" aria-hidden="true">carregando espasmo • carregando espasmo • carregando</div>
       <div class="frase" id="frase"></div>
       <div class="sobre-box-texto" id="sobreBoxTexto" style="display:none;"></div>
@@ -1375,11 +1364,6 @@ carregando espasmo • carregando espasmo • carregando espasmo • carregando 
 const API_URL = "https://script.google.com/macros/s/AKfycbwBDi5_TcZxil7dD0IEstmFwvFj4LnzB9AjMiG-SLHx3i4PvAN8EhpHyNsGLBTgreNp/exec";
 const STORAGE_FRASES_VISTAS = "laforismos_frases_vistas_v1";
 
-/*
-  Par 1 = fundo atual
-  Par 2 = nova variação enviada
-  Aceita formatos mistos, como .mp4, .mov, .png etc.
-*/
 const BACKGROUNDS = [
   {
     video: "./VIDEOBALAO.mp4",
@@ -1447,80 +1431,58 @@ let ultimoIndiceCorDoSite = -1;
 
 const SUBTITULOS = [
   "Nanocontos. Mais nano do que contos.",
+  "O texto é ruim, mas a paleta é tesuda.",
   "Rede social de 1 pessoa só.",
   "Cancelada, desde o dia 1.",
   "Reclamações? Só do autor.",
   "Tá fácil, SQN, since 1982.",
   "0,1% biográfico,",
-  "Um boxinho de frases. Ou um rizoma do carilho.",
+  "Um box de frases. Ou um rizoma do carilho.",
   "/root, não. Rizoma.",
   "Linguagem HTML e linguagem figurada, in love.",
   "Mais de 100 mil caracteres (somando o HTML).",
-  "3 mil palavras HTML e português.",
   "Site escrito por um redator analfabeto em html."
 ];
 
-const STORAGE_SUBTITULOS_ORDEM = "laforismos_subtitulos_ordem_v1";
-const STORAGE_SUBTITULOS_INDICE = "laforismos_subtitulos_indice_v1";
+const STORAGE_SUBTITULOS_INDICE = "laforismos_subtitulos_indice_v2";
+const SUBTITULO_INTERVALO_MS = 5000;
+let subtituloRotacaoTimer = null;
 
-function embaralharSubtitulos(lista) {
-  const copia = Array.isArray(lista) ? [...lista] : [];
-  for (let i = copia.length - 1; i > 0; i -= 1) {
-    const j = Math.floor(Math.random() * (i + 1));
-    [copia[i], copia[j]] = [copia[j], copia[i]];
-  }
-  return copia;
-}
-
-function obterProximoSubtitulo() {
+function obterIndiceInicialDosSubtitulos() {
   try {
-    const ordemSalva = JSON.parse(localStorage.getItem(STORAGE_SUBTITULOS_ORDEM) || "[]");
-    let indiceAtual = Number(localStorage.getItem(STORAGE_SUBTITULOS_INDICE) || "0");
-
-    let ordem = Array.isArray(ordemSalva)
-      ? ordemSalva.filter(item => SUBTITULOS.includes(item))
-      : [];
-
-    if (ordem.length !== SUBTITULOS.length) {
-      ordem = embaralharSubtitulos(SUBTITULOS);
-      indiceAtual = 0;
-    }
-
-    if (indiceAtual >= ordem.length) {
-      const ultimoExibido = ordem[ordem.length - 1] || "";
-      let novaOrdem = embaralharSubtitulos(SUBTITULOS);
-
-      if (novaOrdem.length > 1 && novaOrdem[0] === ultimoExibido) {
-        const primeiroDiferente = novaOrdem.findIndex(item => item !== ultimoExibido);
-        if (primeiroDiferente > 0) {
-          [novaOrdem[0], novaOrdem[primeiroDiferente]] = [novaOrdem[primeiroDiferente], novaOrdem[0]];
-        }
-      }
-
-      ordem = novaOrdem;
-      indiceAtual = 0;
-    }
-
-    const subtitulo = ordem[indiceAtual] || SUBTITULOS[0] || "";
-
-    localStorage.setItem(STORAGE_SUBTITULOS_ORDEM, JSON.stringify(ordem));
-    localStorage.setItem(STORAGE_SUBTITULOS_INDICE, String(indiceAtual + 1));
-
-    return subtitulo;
+    const indiceSalvo = Number(localStorage.getItem(STORAGE_SUBTITULOS_INDICE) || "0");
+    if (!Number.isFinite(indiceSalvo) || indiceSalvo < 0) return 0;
+    return indiceSalvo % Math.max(SUBTITULOS.length, 1);
   } catch (e) {
-    return SUBTITULOS[Math.floor(Math.random() * SUBTITULOS.length)] || "";
+    return 0;
   }
 }
 
-function aplicarSubtituloAleatorio() {
+function salvarIndiceDosSubtitulos(indice) {
+  try {
+    localStorage.setItem(STORAGE_SUBTITULOS_INDICE, String(indice % Math.max(SUBTITULOS.length, 1)));
+  } catch (e) {}
+}
+
+function aplicarSubtituloEmSequencia() {
   const el = document.getElementById("subtituloSite");
-  if (!el) return;
-  const subtitulo = obterProximoSubtitulo();
-  if (subtitulo) {
-    el.textContent = subtitulo;
-  }
-}
+  if (!el || !SUBTITULOS.length) return;
 
+  let indiceAtual = obterIndiceInicialDosSubtitulos();
+  el.textContent = SUBTITULOS[indiceAtual] || "";
+
+  if (subtituloRotacaoTimer) {
+    clearInterval(subtituloRotacaoTimer);
+  }
+
+  subtituloRotacaoTimer = setInterval(() => {
+    indiceAtual = (indiceAtual + 1) % SUBTITULOS.length;
+    el.textContent = SUBTITULOS[indiceAtual] || "";
+    salvarIndiceDosSubtitulos(indiceAtual);
+  }, SUBTITULO_INTERVALO_MS);
+
+  salvarIndiceDosSubtitulos(indiceAtual);
+}
 
 const INDICES_FONTE_BRANCA = new Set([
   1, 5, 7, 8, 11, 13, 17, 18, 19, 22, 24, 28, 29, 31, 33, 36, 37
@@ -2795,10 +2757,12 @@ function normalizarPartes(partes) {
 
 const FALLBACKS_SOBRE = [
   [
-    { texto: "Eu podia tá bebendo, podia tá comendo açúcar, mas tô só fazendo um trocadilho.\nFelipe Koraicho Sauma", bold: false, italic: false, underline: false }
+    { texto: "Sobre sobras, sobresaltos, sobrenomes, sobremesas e sobrevivência.", bold: true, italic: false, underline: false },
+    { texto: "\n\nNão vou falar mais de mim do que o próprio site. Um dia, se tudo der certo, ainda acho uma vítima pra assinar um prefácio.\n\nO plano por ora é criar um alterego: vai se chamar Hamlet, o escritor que se apaixonou pelo Html. E vai dar mensagens de erro floreadas: ", bold: false, italic: false, underline: false },
+    { texto: "\"Eu e a Janela. Estou elocubrante e inocuamente buscando um texto dinâmico pra adentrar neste espaço, mas sinto-me insuficiente\"", bold: false, italic: true, underline: false },
+    { texto: "\n\nEu podia tá bebendo, podia tá comendo açúcar. Mas tô só fazendo um trocadilho. \n\nObrigado por ler, muito prazer.\n\nFelipe Koraicho Sauma\nCTO e Escritor do Box de Frases", bold: false, italic: false, underline: false }
   ]
 ];
-
 const STORAGE_SOBRE_FALLBACK_INDICE = "laforismos_sobre_fallback_indice_v1";
 let partesSobreAtuais = FALLBACKS_SOBRE[0];
 let partesSobreApi = null;
@@ -3147,7 +3111,7 @@ document.addEventListener("keydown", (event) => {
   }
 });
 
-aplicarSubtituloAleatorio();
+aplicarSubtituloEmSequencia();
 aplicarBackgroundAleatorio();
 sincronizarToggle();
 inicializarInteracaoToggle();
