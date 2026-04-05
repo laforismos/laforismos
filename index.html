@@ -1431,12 +1431,18 @@ let ultimaCorDoSite = null;
 let ultimoIndiceCorDoSite = -1;
 
 const SUBTITULOS = [
+  "Nanocontos. Mais nano do que contos.",
   "Rede social de 1 pessoa só.",
   "Cancelada, desde o dia 1.",
   "Reclamações? Só do autor.",
   "Tá fácil, SQN, since 1982.",
-  "0,1% biográfico.",
-  "Redator de português fazendo HTML."
+  "0,1% biográfico,",
+  "Um boxinho de frases. Ou um rizoma do carilho.",
+  "/root, não. Rizoma.",
+  "Linguagem HTML e linguagem figurada, in love.",
+  "Mais de 100 mil caracteres (somando o HTML.)",
+  "3 mil palavras (tirando o HTML, umas 200 marromeno.)",
+  "Site escrito por um redator analfabeto em html."
 ];
 
 const STORAGE_SUBTITULOS_ORDEM = "laforismos_subtitulos_ordem_v1";
@@ -2774,23 +2780,44 @@ function normalizarPartes(partes) {
 
 const FALLBACKS_SOBRE = [
   [
-    { texto: "Sobre de Felipe carregando...\n\nOlá, prazer, sou Hamlet, um HTML que ataca de Escritor.\nEstou elocubrante e inocuamente tentando achar o Word com esse \"Sobre\".\nCabisbaixo com tal experiência, clamo para que voltes outra hora aqui.\nGrátis. Digo, grato.", bold: false, italic: false, underline: false }
-  ],
-  [
-    { texto: "Ó. perdão a metalinguagem, mas...\nGuenta aí, isso é um texto de fixo – não o que o cara quer que você leia.\nAss.: Hamlet.", bold: false, italic: false, underline: false }
-  ],
-  [
-    { texto: "Ah! Foi mal. O código ainda não achou o Sobre que o cara quer.\nHamlet. O programador HTML perdido no tempo.\n\nSobre de Felipe, ainda carregando... Malz!", bold: false, italic: false, underline: false }
+    { texto: "Sessão \"Sobre o autor\".
+
+A real:
+\"Eu podia tá bebendo, podia tá comendo açúcar, mas tô só fazendo um trocadilho.\"
+
+O plano: 
+Criar um alterego e falar com o leitor por ele, sem nóias. Vai começar assim: 
+\"Olá, sou Hamlet, um HTML que ataca de Escritor.\"
+
+Obrigado por ler.
+
+Prazer!
+
+Felipe Koraicho Sauma", bold: false, italic: false, underline: false }
   ]
 ];
 
 const STORAGE_SOBRE_FALLBACK_INDICE = "laforismos_sobre_fallback_indice_v1";
 let partesSobreAtuais = FALLBACKS_SOBRE[0];
-let partesSobreApi = null;
+let partesSobreApi = textoSobreParaPartes("Sessão \"Sobre o autor\".
+
+A real:
+\"Eu podia tá bebendo, podia tá comendo açúcar, mas tô só fazendo um trocadilho.\"
+
+O plano: 
+Criar um alterego e falar com o leitor por ele, sem nóias. Vai começar assim: 
+\"Olá, sou Hamlet, um HTML que ataca de Escritor.\"
+
+Obrigado por ler.
+
+Prazer!
+
+Felipe Koraicho Sauma");
 let fallbackSobreAtualIndice = 0;
 let sobreAbertoComFallbackSequencial = false;
 let sobreTransicaoTravadaAte = 0;
 const BLOQUEIO_TRANSICAO_SOBRE_MS = 320;
+let sobreEstavaEmLoadingAoAbrir = false;
 
 function obterIndiceFallbackSobreAtual() {
   try {
@@ -2822,7 +2849,20 @@ function textoSobreParaPartes(texto) {
 }
 
 function definirSobreApiOuFallback(sobreTexto) {
-  partesSobreApi = textoSobreParaPartes(sobreTexto);
+  partesSobreApi = textoSobreParaPartes("Sessão \"Sobre o autor\".
+
+A real:
+\"Eu podia tá bebendo, podia tá comendo açúcar, mas tô só fazendo um trocadilho.\"
+
+O plano: 
+Criar um alterego e falar com o leitor por ele, sem nóias. Vai começar assim: 
+\"Olá, sou Hamlet, um HTML que ataca de Escritor.\"
+
+Obrigado por ler.
+
+Prazer!
+
+Felipe Koraicho Sauma");
   partesSobreAtuais = partesSobreApi || FALLBACKS_SOBRE[0];
   sobreAbertoComFallbackSequencial = false;
   renderizarSobre();
@@ -2857,6 +2897,7 @@ function abrirSobre() {
   const ehMobile = window.matchMedia("(max-width: 768px)").matches;
   const htmlEl = document.documentElement;
   const boxEl = document.getElementById("box");
+  sobreEstavaEmLoadingAoAbrir = !!boxEl?.classList.contains("is-loading");
   const fraseEl = document.getElementById("frase");
   const sobreEl = document.getElementById("sobreBoxTexto");
   const overlayEl = document.querySelector(".overlay");
@@ -2889,7 +2930,6 @@ function abrirSobre() {
 
   resetarDimensoesDoBox();
   ajustarAlturaBoxDinamicamente();
-  iniciarGlitchDaMaquina();
 }
 
 function fecharSobre(event) {
@@ -2933,13 +2973,24 @@ function fecharSobre(event) {
 
   sobreAbertoComFallbackSequencial = false;
 
+  const boxEl = document.getElementById("box");
   if (fraseEl) fraseEl.style.display = "block";
   if (overlayEl) overlayEl.style.display = "";
+
+  if (sobreEstavaEmLoadingAoAbrir && boxEl) {
+    boxEl.classList.add("is-loading");
+  }
+
   resetarDimensoesDoBox();
   ajustarAlturaBoxDinamicamente();
-  if (document.getElementById("box")?.classList.contains("is-loading") && !document.body.classList.contains("machine-settle")) {
-    iniciarGlitchDaMaquina();
+
+  if (sobreEstavaEmLoadingAoAbrir && boxEl && !document.body.classList.contains("machine-settle")) {
+    if (typeof iniciarGlitchDaMaquina === "function") {
+      iniciarGlitchDaMaquina();
+    }
   }
+
+  sobreEstavaEmLoadingAoAbrir = false;
 }
 
 function inicializarAtalhosDoSobre() {
