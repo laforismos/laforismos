@@ -217,17 +217,19 @@
     }
 
     .track {
+      width: 100%;
       display: flex;
+      justify-content: center;
+      align-items: center;
       white-space: nowrap;
-      animation: scroll 8s linear infinite;
       font-size: 0.9rem;
       letter-spacing: 1px;
       text-transform: lowercase;
+      text-align: center;
     }
 
-    @keyframes scroll {
-      from { transform: translateX(0); }
-      to { transform: translateX(-50%); }
+    .track span + span {
+      display: none;
     }
 
     .loading-sizer {
@@ -292,9 +294,6 @@
       opacity: 0;
     }
 
-    .box:hover .track {
-      animation-duration: 6.4s;
-    }
 
     .filtro-obceno {
       display: flex;
@@ -1238,11 +1237,11 @@
     animation: backendBoxFill 1.8s ease forwards;
   }
 
-  .backend-loading-marquee {
+   .backend-loading-marquee {
     position: absolute;
-    left: 18px;
+    left: 50%;
     top: 50%;
-    transform: translate(0, -50%);
+    transform: translate(-50%, -50%);
     white-space: nowrap;
     color: black;
     font-size: 0.9rem;
@@ -1252,11 +1251,11 @@
     user-select: none;
     pointer-events: none;
     opacity: 1;
-    will-change: left, transform;
+    will-change: font-family;
   }
 
   .backend-loading-marquee.is-sliding-in {
-    animation: readyTrackSlideToCenter 2s cubic-bezier(0.22, 1, 0.36, 1) forwards;
+    animation: none;
   }
 
   @keyframes backendBoxFill {
@@ -1264,7 +1263,7 @@
     100% { width: 100%; }
   }
 
-  .ready-track {
+   .ready-track {
     position: absolute;
     left: 50%;
     top: 50%;
@@ -1279,30 +1278,7 @@
     user-select: none;
     pointer-events: none;
     opacity: 1;
-    will-change: left, transform, opacity;
-  }
-
-  @keyframes readyTrackSlideToCenter {
-    0% {
-      left: 18px;
-      transform: translate(0, -50%);
-      opacity: 1;
-    }
-    82% {
-      left: 50%;
-      transform: translate(-50%, -50%);
-      opacity: 1;
-    }
-    90% {
-      left: 50%;
-      transform: translate(-50%, -50%) scale(1.035);
-      opacity: 1;
-    }
-    100% {
-      left: 50%;
-      transform: translate(-50%, -50%) scale(1);
-      opacity: 1;
-    }
+    will-change: font-family;
   }
 </style>
 
@@ -3298,8 +3274,8 @@ carregarFrasesDaApi();</script>
 
     if (backendTrack) {
       backendTrack.classList.remove("is-sliding-in");
-      backendTrack.style.left = "18px";
-      backendTrack.style.transform = "translate(0, -50%)";
+      backendTrack.style.left = "50%";
+      backendTrack.style.transform = "translate(-50%, -50%)";
       void backendTrack.offsetWidth;
     }
 
@@ -3311,7 +3287,6 @@ carregarFrasesDaApi();</script>
     if (!backendTrack) return;
     resetarAnimacaoDoLoaderTexto();
     iniciarEspasmoTipografico();
-    backendTrack.classList.add("is-sliding-in");
   }
 
   function ativarLoadingBackendInicial() {
