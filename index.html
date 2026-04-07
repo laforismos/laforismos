@@ -270,11 +270,20 @@
       display: block;
     }
 
-    .box:hover .overlay {
-      opacity: 1;
+    .box.hover-preview:hover {
+      background: white;
+      backdrop-filter: none;
+      box-shadow: none;
+      border-color: var(--dynamic-box-border-color);
     }
 
-    .box:hover .frase {
+    .box.hover-preview:hover .overlay {
+      opacity: 1;
+      background: white;
+      pointer-events: none;
+    }
+
+    .box.hover-preview:hover .frase {
       opacity: 0;
     }
 
@@ -1189,13 +1198,15 @@
     box-shadow: none !important;
   }
 
-  .box.is-loading .overlay {
+  .box.is-loading .overlay,
+  .box.hover-preview:hover .overlay {
     opacity: 1 !important;
     pointer-events: none !important;
     background: transparent !important;
   }
 
-  .box.is-loading .frase {
+  .box.is-loading .frase,
+  .box.hover-preview:hover .frase {
     opacity: 0 !important;
     pointer-events: none !important;
   }
@@ -1216,7 +1227,12 @@
     display: block;
   }
 
-  .box.is-loading.backend-ready .ready-loading-layer {
+  .box.hover-preview:hover .backend-loading-layer {
+    display: none;
+  }
+
+  .box.is-loading.backend-ready .ready-loading-layer,
+  .box.hover-preview:hover .ready-loading-layer {
     display: block;
     background: white;
   }
@@ -1317,14 +1333,7 @@
       <div class="sobre-box-texto" id="sobreBoxTexto" style="display:none;"></div>
 
       <div class="overlay">
-        <div class="track">
-          <span>
-carregando espasmo • carregando espasmo • carregando espasmo • carregando espasmo • clica • carregando espasmo • carregando espasmo • carregando espasmo • carregando espasmo • carregando espasmo •
-          </span>
-          <span>
-carregando espasmo • carregando espasmo • carregando espasmo • carregando espasmo • clica aqui • carregando espasmo • carregando espasmo • carregando espasmo • não vai clicar? • carregando espasmo •
-          </span>
-        </div>
+        <div class="track" aria-hidden="true"></div>
       </div>
     </div>
 
@@ -1552,6 +1561,7 @@ let sobreAberto = false;
 let fraseAtual = null;
 let etapaAtual = 1;
 let hoverTravadoAteUltimoTempo = false;
+let prontoParaProximaTroca = false;
 let videoTimeUpdateHandler = null;
 let videoLoadedMetadataHandler = null;
 
@@ -1570,7 +1580,8 @@ Object.defineProperties(window, {
   sobreAberto: { get: () => sobreAberto, set: (v) => { sobreAberto = v; } },
   fraseAtual: { get: () => fraseAtual, set: (v) => { fraseAtual = v; } },
   etapaAtual: { get: () => etapaAtual, set: (v) => { etapaAtual = v; } },
-  aguardandoCliqueParaTroca: { get: () => aguardandoCliqueParaTroca, set: (v) => { aguardandoCliqueParaTroca = v; } }
+  aguardandoCliqueParaTroca: { get: () => aguardandoCliqueParaTroca, set: (v) => { aguardandoCliqueParaTroca = v; } },
+  prontoParaProximaTroca: { get: () => prontoParaProximaTroca, set: (v) => { prontoParaProximaTroca = v; } }
 });
 
 let machineSettleTimer = null;
@@ -1864,6 +1875,7 @@ function entrarModoCarregandoTroca() {
 
   resetarDimensoesDoBox();
   congelarTamanhoAtualDoBox();
+  desativarHoverPreviewParaProxima();
   aguardandoCliqueParaTroca = true;
   hoverTravadoAteUltimoTempo = false;
   clicado = true;
@@ -1882,6 +1894,7 @@ function sairModoCarregandoTroca() {
   if (!box) return;
 
   aguardandoCliqueParaTroca = false;
+  desativarHoverPreviewParaProxima();
   desativarEstadoLoadingBox();
   resetarDimensoesDoBox();
 }
@@ -2371,11 +2384,29 @@ function calcularTempoLeitura(texto) {
   return Math.max(tempoMin, Math.min(tempo, tempoMax));
 }
 
+function ativarHoverPreviewParaProxima() {
+  const box = document.getElementById("box");
+  if (!box) return;
+  prontoParaProximaTroca = true;
+  aguardandoCliqueParaTroca = false;
+  box.classList.add("hover-preview");
+}
+
+function desativarHoverPreviewParaProxima() {
+  const box = document.getElementById("box");
+  if (!box) return;
+  prontoParaProximaTroca = false;
+  box.classList.remove("hover-preview");
+}
+
 function travarHoverConformeTexto(texto) {
   const box = document.getElementById("box");
+  if (!box) return;
 
   clicado = true;
   hoverTravadoAteUltimoTempo = false;
+  aguardandoCliqueParaTroca = false;
+  desativarHoverPreviewParaProxima();
   box.classList.add("disable-hover");
 
   if (hoverTimer) clearTimeout(hoverTimer);
@@ -2386,14 +2417,18 @@ function travarHoverConformeTexto(texto) {
     box.classList.remove("disable-hover");
     clicado = false;
     hoverTravadoAteUltimoTempo = false;
+    ativarHoverPreviewParaProxima();
     hoverTimer = null;
   }, tempoLeitura);
 }
 
 function travarHoverSemTempo() {
   const box = document.getElementById("box");
+  if (!box) return;
   clicado = true;
   hoverTravadoAteUltimoTempo = true;
+  aguardandoCliqueParaTroca = false;
+  desativarHoverPreviewParaProxima();
   box.classList.add("disable-hover");
   if (hoverTimer) {
     clearTimeout(hoverTimer);
@@ -2451,6 +2486,11 @@ function proximaFrase() {
   if (sobreAberto) return;
 
   if (aguardandoCliqueParaTroca) {
+    irParaProximaFrase();
+    return;
+  }
+
+  if (prontoParaProximaTroca) {
     irParaProximaFrase();
     return;
   }
@@ -3177,23 +3217,99 @@ carregarFrasesDaApi();</script>
 <script id="laforismos-loading-script">
 (function () {
   const LOADER_TEXT = 'carregando espasmo';
-  const LOADER_FONT_STACKS = [
-    'Arial, Helvetica, sans-serif',
-    '"Trebuchet MS", Arial, sans-serif',
-    'Verdana, Geneva, sans-serif',
-    'Tahoma, Geneva, sans-serif',
-    '"Segoe UI", Arial, sans-serif',
-    '"Helvetica Neue", Helvetica, Arial, sans-serif',
-    'Geneva, Arial, sans-serif',
-    '"Times New Roman", Times, serif',
-    'Georgia, serif',
-    'Garamond, "Times New Roman", serif',
-    'Baskerville, "Times New Roman", serif',
-    'Palatino, "Palatino Linotype", serif',
-    '"Courier New", Courier, monospace',
-    'Monaco, "Courier New", monospace',
-    'Menlo, Monaco, monospace',
-    '"Lucida Console", Monaco, monospace'
+  const LOADER_FONT_STYLES = [
+    { weight: '400', style: 'normal' },
+    { weight: '400', style: 'normal' },
+    { weight: '400', style: 'normal' },
+    { weight: '400', style: 'italic' },
+    { weight: '400', style: 'italic' },
+    { weight: '700', style: 'normal' },
+    { weight: '700', style: 'italic' }
+  ];
+
+  const LOADER_FONT_VARIANTS = [
+    {
+      family: 'Arial, Helvetica, sans-serif',
+      size: '0.90rem',
+      spacing: '0.95px',
+      stretch: 'scaleX(1)',
+      stylePool: [
+        { fontStyle: 'normal', fontWeight: '400' },
+        { fontStyle: 'italic', fontWeight: '400' },
+        { fontStyle: 'normal', fontWeight: '500' }
+      ]
+    },
+    {
+      family: '"Helvetica Neue", Helvetica, Arial, sans-serif',
+      size: '0.89rem',
+      spacing: '0.9px',
+      stretch: 'scaleX(0.99)',
+      stylePool: [
+        { fontStyle: 'normal', fontWeight: '400' },
+        { fontStyle: 'italic', fontWeight: '400' }
+      ]
+    },
+    {
+      family: '"Trebuchet MS", Arial, sans-serif',
+      size: '0.88rem',
+      spacing: '0.92px',
+      stretch: 'scaleX(0.985)',
+      stylePool: [
+        { fontStyle: 'normal', fontWeight: '400' },
+        { fontStyle: 'italic', fontWeight: '400' }
+      ]
+    },
+    {
+      family: 'Georgia, serif',
+      size: '0.93rem',
+      spacing: '0.82px',
+      stretch: 'scaleX(0.975)',
+      stylePool: [
+        { fontStyle: 'normal', fontWeight: '400' },
+        { fontStyle: 'italic', fontWeight: '400' }
+      ]
+    },
+    {
+      family: 'Garamond, "Times New Roman", serif',
+      size: '0.97rem',
+      spacing: '0.72px',
+      stretch: 'scaleX(0.96)',
+      stylePool: [
+        { fontStyle: 'normal', fontWeight: '400' },
+        { fontStyle: 'italic', fontWeight: '400' }
+      ]
+    },
+    {
+      family: 'Palatino, "Palatino Linotype", serif',
+      size: '0.94rem',
+      spacing: '0.76px',
+      stretch: 'scaleX(0.97)',
+      stylePool: [
+        { fontStyle: 'normal', fontWeight: '400' },
+        { fontStyle: 'italic', fontWeight: '400' }
+      ]
+    },
+    {
+      family: '"Times New Roman", Times, serif',
+      size: '0.95rem',
+      spacing: '0.74px',
+      stretch: 'scaleX(0.965)',
+      stylePool: [
+        { fontStyle: 'normal', fontWeight: '400' },
+        { fontStyle: 'italic', fontWeight: '400' },
+        { fontStyle: 'normal', fontWeight: '500' }
+      ]
+    },
+    {
+      family: '"Courier New", Courier, monospace',
+      size: '0.86rem',
+      spacing: '0.78px',
+      stretch: 'scaleX(0.94)',
+      stylePool: [
+        { fontStyle: 'normal', fontWeight: '400' },
+        { fontStyle: 'italic', fontWeight: '400' }
+      ]
+    }
   ];
 
   let primeiraFrasePendente = null;
@@ -3235,13 +3351,27 @@ carregarFrasesDaApi();</script>
     box.classList.remove("backend-waiting", "backend-ready");
   }
 
+  function aplicarVisualTipograficoDoLoader(el, variante, estiloAtual) {
+    if (!el || !variante || !estiloAtual) return;
+    el.style.fontFamily = variante.family;
+    el.style.fontSize = variante.size;
+    el.style.letterSpacing = variante.spacing;
+    el.style.fontStyle = estiloAtual.fontStyle;
+    el.style.fontWeight = estiloAtual.fontWeight;
+    el.style.transform = `translate(-50%, -50%) ${variante.stretch}`;
+  }
+
   function aplicarFonteAtualDoLoader() {
-    const fonte = LOADER_FONT_STACKS[loaderFontIndex % LOADER_FONT_STACKS.length];
+    const variante = LOADER_FONT_VARIANTS[loaderFontIndex % LOADER_FONT_VARIANTS.length];
+    const stylePool = Array.isArray(variante?.stylePool) && variante.stylePool.length
+      ? variante.stylePool
+      : [{ fontStyle: 'normal', fontWeight: '400' }];
+    const estiloAtual = stylePool[Math.floor(Math.random() * stylePool.length)];
     const track = document.getElementById("readyTrack");
     const backendTrack = document.getElementById("backendLoadingMarquee");
 
-    if (track) track.style.fontFamily = fonte;
-    if (backendTrack) backendTrack.style.fontFamily = fonte;
+    aplicarVisualTipograficoDoLoader(track, variante, estiloAtual);
+    aplicarVisualTipograficoDoLoader(backendTrack, variante, estiloAtual);
   }
 
   function pararEspasmoTipografico() {
@@ -3256,10 +3386,13 @@ carregarFrasesDaApi();</script>
     if (loaderFontTimer) return;
 
     loaderFontTimer = setInterval(() => {
-      loaderFontIndex = (loaderFontIndex + 1) % LOADER_FONT_STACKS.length;
+      loaderFontIndex = (loaderFontIndex + 1) % LOADER_FONT_VARIANTS.length;
       aplicarFonteAtualDoLoader();
     }, 120);
   }
+
+  window.iniciarEspasmoTipografico = iniciarEspasmoTipografico;
+  window.pararEspasmoTipografico = pararEspasmoTipografico;
 
   function resetarAnimacaoDoLoaderTexto() {
     const track = document.getElementById("readyTrack");
@@ -3419,6 +3552,24 @@ carregarFrasesDaApi();</script>
       event.stopPropagation();
       dispararPrimeiraFrasePendente();
     }, true);
+  }
+
+
+  if (boxEl && !boxEl.dataset.loaderHoverHooked) {
+    boxEl.dataset.loaderHoverHooked = "1";
+
+    boxEl.addEventListener("mouseenter", function() {
+      if (boxEl.classList.contains("hover-preview") && !boxEl.classList.contains("is-loading")) {
+        iniciarEspasmoTipografico();
+      }
+    });
+
+    boxEl.addEventListener("mouseleave", function() {
+      if (boxEl.classList.contains("hover-preview") && !boxEl.classList.contains("is-loading")) {
+        pararEspasmoTipografico();
+        resetarAnimacaoDoLoaderTexto();
+      }
+    });
   }
 
   const originalEntrarModoCarregandoTroca = window.entrarModoCarregandoTroca;
