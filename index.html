@@ -142,7 +142,7 @@
       cursor: default;
       opacity: 0;
       transform: translateY(4px);
-      pointer-events: none;
+      pointer-events: auto;
       transition: opacity 0.26s ease, transform 0.26s ease;
       z-index: 3;
       user-select: none;
@@ -464,6 +464,79 @@
       position: relative;
       z-index: 3;
       border-radius: 999px;
+    }
+
+    .maquina-icones-slot {
+      position: absolute;
+      left: 50%;
+      bottom: calc(100% + 24px);
+      transform: translateX(-50%);
+      display: inline-flex;
+      align-items: center;
+      justify-content: center;
+      gap: 9px;
+      padding: 5px 8px;
+      border: 1px solid rgba(255,255,255,0.28);
+      background: rgba(0,0,0,0.18);
+      backdrop-filter: blur(4px);
+      -webkit-backdrop-filter: blur(4px);
+      border-radius: 999px;
+      box-shadow: 0 8px 18px rgba(0,0,0,0.10);
+      pointer-events: none;
+      user-select: none;
+      z-index: 4;
+      transition: opacity 0.38s ease, transform 0.52s cubic-bezier(0.16, 0.84, 0.22, 1);
+      cursor: pointer;
+    }
+
+    .maquina-icone-reel {
+      position: relative;
+      width: 22px;
+      height: 22px;
+      overflow: hidden;
+      border-radius: 999px;
+      background: rgba(255,255,255,0.06);
+      box-shadow: inset 0 0 0 1px rgba(255,255,255,0.18);
+    }
+
+    .maquina-icone-track {
+      position: absolute;
+      top: 0;
+      left: 0;
+      width: 100%;
+      will-change: transform;
+    }
+
+    .maquina-icone-item {
+      width: 22px;
+      height: 22px;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+    }
+
+    .maquina-icone-item img {
+      width: 15px;
+      height: 15px;
+      display: block;
+      object-fit: contain;
+      opacity: 0.96;
+      filter: brightness(0) invert(1);
+    }
+
+    .maquina-icone-track.is-spinning {
+      animation: maquinaIconeSpin 0.30s linear infinite;
+    }
+
+    @keyframes maquinaIconeSpin {
+      from { transform: translateY(0); }
+      to { transform: translateY(-130px); }
+    }
+
+    body.sobre-aberto .maquina-icones-slot {
+      opacity: 0;
+      visibility: hidden;
+      transform: translateX(-50%) translateY(-6px);
     }
 
     
@@ -819,6 +892,23 @@
       .maquina-wrap {
         width: 94px;
         margin: 12px auto 12px;
+      }
+
+      .maquina-icones-slot {
+        bottom: calc(100% + 10px);
+        gap: 6px;
+        padding: 4px 6px;
+      }
+
+      .maquina-icone-reel,
+      .maquina-icone-item {
+        width: 16px;
+        height: 16px;
+      }
+
+      .maquina-icone-item img {
+        width: 10px;
+        height: 10px;
       }
 
       .imagem-entre-sub-e-box {
@@ -1435,6 +1525,11 @@
   </a>
 
   <div class="maquina-wrap" id="maquinaTrigger" aria-hidden="true">
+    <div class="maquina-icones-slot" id="maquinaIconesSlot" aria-hidden="true">
+      <div class="maquina-icone-reel"><div class="maquina-icone-track" data-reel-index="0"></div></div>
+      <div class="maquina-icone-reel"><div class="maquina-icone-track" data-reel-index="1"></div></div>
+      <div class="maquina-icone-reel"><div class="maquina-icone-track" data-reel-index="2"></div></div>
+    </div>
     <img
       class="imagem-entre-sub-e-box"
       src="./maquina-de-escrever_BLACK.png"
@@ -3021,6 +3116,7 @@ function abrirSobre() {
   document.body.classList.add("sobre-aberto");
   document.body.classList.remove("machine-initial");
   pararGlitchDaMaquina();
+  pausarIconesDaMaquina();
 
   const ehMobile = window.matchMedia("(max-width: 768px)").matches;
   const htmlEl = document.documentElement;
@@ -3118,6 +3214,7 @@ function fecharSobre(event) {
   if (document.getElementById("box")?.classList.contains("is-loading") && !document.body.classList.contains("machine-settle")) {
     iniciarGlitchDaMaquina();
   }
+  iniciarIconesDaMaquina();
 }
 
 function inicializarAtalhosDoSobre() {
@@ -3325,15 +3422,267 @@ window.addEventListener("resize", () => {
   ajustarAlturaBoxDinamicamente();
 });
 
+const MAQUINA_ICONES = [
+  "./heart.png",
+  "./money.png",
+  "./skull.png",
+  "./bigorna.png",
+  "./pena.png"
+];
+
+const MAQUINA_REEL_ITEM_SIZE = 22;
+const MAQUINA_REEL_ITEM_SIZE_MOBILE = 20;
+const MAQUINA_REEL_REPEAT = 4;
+let maquinaIconesInicializados = false;
+let maquinaIconesSpinning = false;
+let maquinaIconesTimeout = null;
+let maquinaIconesCombinacaoAtual = [0, 1, 2];
+let maquinaIconesModoCliqueInicial = true;
+
+function obterTamanhoAtualDoReel() {
+  return window.matchMedia("(max-width: 768px)").matches
+    ? MAQUINA_REEL_ITEM_SIZE_MOBILE
+    : MAQUINA_REEL_ITEM_SIZE;
+}
+
+function obterTranslateYAtual(el) {
+  const transform = window.getComputedStyle(el).transform;
+  if (!transform || transform === "none") return 0;
+  try {
+    const matrix = new DOMMatrixReadOnly(transform);
+    return matrix.m42;
+  } catch (e) {
+    const match = transform.match(/matrix\([^,]+,[^,]+,[^,]+,[^,]+,[^,]+,\s*([^\)]+)\)/);
+    return match ? Number(match[1]) || 0 : 0;
+  }
+}
+
+function preencherTracksDosIcones() {
+  const tracks = document.querySelectorAll(".maquina-icone-track");
+  tracks.forEach((track) => {
+    const itens = [];
+    for (let volta = 0; volta < MAQUINA_REEL_REPEAT; volta += 1) {
+      MAQUINA_ICONES.forEach((src, index) => {
+        itens.push(`
+          <div class="maquina-icone-item" data-icon-index="${index}">
+            <img src="${src}" alt="" aria-hidden="true">
+          </div>
+        `);
+      });
+    }
+    track.innerHTML = itens.join("");
+    track.style.transition = "none";
+    track.style.animation = "none";
+    track.classList.remove("is-spinning");
+  });
+}
+
+function normalizarTrackDoIcone(track, targetIndex) {
+  const tamanho = obterTamanhoAtualDoReel();
+  const offsetNormalizado = -((MAQUINA_ICONES.length + targetIndex) * tamanho);
+  track.style.transition = "none";
+  track.style.animation = "none";
+  track.classList.remove("is-spinning");
+  track.style.transform = `translateY(${offsetNormalizado}px)`;
+}
+
+function aplicarCombinacaoEstaticaDosIcones(combinacao = maquinaIconesCombinacaoAtual) {
+  const tracks = Array.from(document.querySelectorAll(".maquina-icone-track"));
+  tracks.forEach((track, index) => {
+    normalizarTrackDoIcone(track, combinacao[index] ?? 0);
+  });
+}
+
+function gerarCombinacaoAleatoriaDosIcones() {
+  return Array.from({ length: 3 }, () => Math.floor(Math.random() * MAQUINA_ICONES.length));
+}
+
+function inicializarIconesDaMaquina() {
+  if (!maquinaIconesInicializados) {
+    preencherTracksDosIcones();
+    maquinaIconesCombinacaoAtual = gerarCombinacaoAleatoriaDosIcones();
+    aplicarCombinacaoEstaticaDosIcones(maquinaIconesCombinacaoAtual);
+    maquinaIconesInicializados = true;
+    return;
+  }
+
+  aplicarCombinacaoEstaticaDosIcones(maquinaIconesCombinacaoAtual);
+}
+
+function pausarIconesDaMaquina() {
+  if (maquinaIconesTimeout) {
+    clearTimeout(maquinaIconesTimeout);
+    maquinaIconesTimeout = null;
+  }
+  maquinaIconesSpinning = false;
+
+  document.querySelectorAll(".maquina-icone-track").forEach((track, index) => {
+    const yAtual = obterTranslateYAtual(track);
+    track.classList.remove("is-spinning");
+    track.style.animation = "none";
+    track.style.transition = "none";
+    track.style.transform = `translateY(${yAtual}px)`;
+    normalizarTrackDoIcone(track, maquinaIconesCombinacaoAtual[index] ?? 0);
+  });
+}
+
+function colocarTracksParaGirar() {
+  const tracks = Array.from(document.querySelectorAll(".maquina-icone-track"));
+  tracks.forEach((track) => {
+    const yAtual = obterTranslateYAtual(track);
+    track.style.transition = "none";
+    track.style.transform = `translateY(${yAtual}px)`;
+    void track.offsetWidth;
+    track.style.animation = "";
+    track.classList.add("is-spinning");
+  });
+  return tracks;
+}
+
+function pararReelEmIcone(track, targetIndex, delayMs = 0, duracaoMs = 1320) {
+  window.setTimeout(() => {
+    const tamanho = obterTamanhoAtualDoReel();
+    const currentY = obterTranslateYAtual(track);
+    track.classList.remove("is-spinning");
+    track.style.animation = "none";
+    track.style.transition = "none";
+    track.style.transform = `translateY(${currentY}px)`;
+
+    const ciclo = MAQUINA_ICONES.length * tamanho;
+    const ajusteBase = ((currentY % ciclo) + ciclo) % ciclo;
+    const currentNormalizado = -ajusteBase;
+    const destinoNoCiclo = -(targetIndex * tamanho);
+    let delta = destinoNoCiclo - currentNormalizado;
+    if (delta > 0) delta -= ciclo;
+    delta -= ciclo;
+    const voltasExtras = ciclo * 0.58;
+    const destinoFinal = currentY + delta - voltasExtras;
+
+    requestAnimationFrame(() => {
+      track.style.transition = `transform ${duracaoMs}ms cubic-bezier(0.16, 0.84, 0.22, 1)`;
+      track.style.transform = `translateY(${destinoFinal}px)`;
+    });
+
+    window.setTimeout(() => {
+      normalizarTrackDoIcone(track, targetIndex);
+    }, duracaoMs + 90);
+  }, delayMs);
+}
+
+function iniciarGiroContinuoDosIcones() {
+  if (!maquinaIconesInicializados) {
+    inicializarIconesDaMaquina();
+  }
+
+  if (maquinaIconesTimeout) {
+    clearTimeout(maquinaIconesTimeout);
+    maquinaIconesTimeout = null;
+  }
+
+  const tracks = colocarTracksParaGirar();
+  if (!tracks.length) return false;
+
+  maquinaIconesSpinning = true;
+  return true;
+}
+
+function consolidarSorteioDosIcones() {
+  if (!maquinaIconesSpinning) return;
+
+  if (maquinaIconesTimeout) {
+    clearTimeout(maquinaIconesTimeout);
+    maquinaIconesTimeout = null;
+  }
+
+  const tracks = Array.from(document.querySelectorAll(".maquina-icone-track"));
+  if (!tracks.length) {
+    maquinaIconesSpinning = false;
+    return;
+  }
+
+  const novaCombinacao = gerarCombinacaoAleatoriaDosIcones();
+
+  tracks.forEach((track, index) => {
+    pararReelEmIcone(track, novaCombinacao[index], index * 120, 1260 + (index * 120));
+  });
+
+  const tempoFinal = 1260 + ((tracks.length - 1) * 120) + 180;
+  window.setTimeout(() => {
+    maquinaIconesCombinacaoAtual = [...novaCombinacao];
+    maquinaIconesSpinning = false;
+    aplicarCombinacaoEstaticaDosIcones(maquinaIconesCombinacaoAtual);
+  }, tempoFinal);
+}
+
+function agendarConsolidacaoDosIcones(delayMs = 3000) {
+  if (maquinaIconesTimeout) {
+    clearTimeout(maquinaIconesTimeout);
+  }
+
+  maquinaIconesTimeout = window.setTimeout(() => {
+    maquinaIconesTimeout = null;
+    consolidarSorteioDosIcones();
+  }, Math.max(0, delayMs));
+}
+
+function alternarSorteioDosIconesPorClique() {
+  if (sobreAberto) return;
+  if (!maquinaIconesInicializados) {
+    inicializarIconesDaMaquina();
+  }
+
+  if (maquinaIconesModoCliqueInicial && maquinaIconesSpinning) {
+    maquinaIconesModoCliqueInicial = false;
+    consolidarSorteioDosIcones();
+    return;
+  }
+
+  if (!maquinaIconesSpinning) {
+    maquinaIconesModoCliqueInicial = false;
+    const iniciou = iniciarGiroContinuoDosIcones();
+    if (!iniciou) return;
+    agendarConsolidacaoDosIcones(3000);
+    return;
+  }
+
+  agendarConsolidacaoDosIcones(3000);
+}
+
+window.iniciarIconesDaMaquina = inicializarIconesDaMaquina;
+window.pausarIconesDaMaquina = pausarIconesDaMaquina;
+window.sortearIconesDaMaquina = alternarSorteioDosIconesPorClique;
+window.iniciarGiroContinuoDosIcones = iniciarGiroContinuoDosIcones;
+window.consolidarSorteioDosIcones = consolidarSorteioDosIcones;
+
+window.addEventListener("resize", () => {
+  if (!maquinaIconesInicializados) return;
+  preencherTracksDosIcones();
+  aplicarCombinacaoEstaticaDosIcones(maquinaIconesCombinacaoAtual);
+});
+
 const maquinaTrigger = document.getElementById("maquinaTrigger");
 if (maquinaTrigger) {
   maquinaTrigger.addEventListener("click", (event) => {
     if (sobreAberto) return;
+    if (event.target.closest("#maquinaIconesSlot")) return;
     event.preventDefault();
     event.stopPropagation();
     proximaFrase();
   });
 }
+
+const maquinaIconesSlot = document.getElementById("maquinaIconesSlot");
+if (maquinaIconesSlot) {
+  maquinaIconesSlot.addEventListener("click", (event) => {
+    if (sobreAberto) return;
+    event.preventDefault();
+    event.stopPropagation();
+    alternarSorteioDosIconesPorClique();
+  });
+}
+
+iniciarIconesDaMaquina();
+iniciarGiroContinuoDosIcones();
 
 
 function inicializarBotaoFecharSobre() {
