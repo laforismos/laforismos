@@ -482,7 +482,8 @@
       -webkit-backdrop-filter: blur(4px);
       border-radius: 999px;
       box-shadow: 0 8px 18px rgba(0,0,0,0.10);
-      pointer-events: none;
+      pointer-events: auto;
+      touch-action: manipulation;
       user-select: none;
       z-index: 4;
       transition: opacity 0.38s ease, transform 0.52s cubic-bezier(0.16, 0.84, 0.22, 1);
@@ -3437,7 +3438,6 @@ let maquinaIconesInicializados = false;
 let maquinaIconesSpinning = false;
 let maquinaIconesTimeout = null;
 let maquinaIconesCombinacaoAtual = [0, 1, 2];
-let maquinaIconesModoCliqueInicial = true;
 
 function obterTamanhoAtualDoReel() {
   return window.matchMedia("(max-width: 768px)").matches
@@ -3631,14 +3631,7 @@ function alternarSorteioDosIconesPorClique() {
     inicializarIconesDaMaquina();
   }
 
-  if (maquinaIconesModoCliqueInicial && maquinaIconesSpinning) {
-    maquinaIconesModoCliqueInicial = false;
-    consolidarSorteioDosIcones();
-    return;
-  }
-
   if (!maquinaIconesSpinning) {
-    maquinaIconesModoCliqueInicial = false;
     const iniciou = iniciarGiroContinuoDosIcones();
     if (!iniciou) return;
     agendarConsolidacaoDosIcones(3000);
@@ -3673,6 +3666,14 @@ if (maquinaTrigger) {
 
 const maquinaIconesSlot = document.getElementById("maquinaIconesSlot");
 if (maquinaIconesSlot) {
+  const bloquearPropagacaoDoSorteio = (event) => {
+    event.stopPropagation();
+  };
+
+  maquinaIconesSlot.addEventListener("pointerdown", bloquearPropagacaoDoSorteio, true);
+  maquinaIconesSlot.addEventListener("mousedown", bloquearPropagacaoDoSorteio, true);
+  maquinaIconesSlot.addEventListener("touchstart", bloquearPropagacaoDoSorteio, { passive: true, capture: true });
+
   maquinaIconesSlot.addEventListener("click", (event) => {
     if (sobreAberto) return;
     event.preventDefault();
@@ -3683,6 +3684,7 @@ if (maquinaIconesSlot) {
 
 iniciarIconesDaMaquina();
 iniciarGiroContinuoDosIcones();
+agendarConsolidacaoDosIcones(4000);
 
 
 function inicializarBotaoFecharSobre() {
