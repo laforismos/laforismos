@@ -131,14 +131,15 @@
       background: transparent;
       padding: 0;
       margin: 0;
-      color: inherit;
+      color: rgba(26,26,26,0.92);
       font-family: Helvetica, Arial, sans-serif;
       font-size: 0.95rem;
       line-height: 1;
       font-weight: 400;
       cursor: pointer;
       opacity: 0.72;
-      z-index: 3;
+      z-index: 20;
+      pointer-events: auto;
     }
 
     .sobre-voltar-btn:hover {
@@ -651,13 +652,13 @@
       max-width: min(90vw, 760px);
       min-height: auto;
       cursor: default;
-      background: rgba(255,255,255,0.80) !important;
+      background-color: rgba(255,255,255,0.22) !important;
       backdrop-filter: blur(18px) saturate(115%);
       -webkit-backdrop-filter: blur(18px) saturate(115%);
-      border: none !important;
+      border: 1px solid rgba(255,255,255,0.42) !important;
       box-shadow:
         0 16px 42px rgba(0,0,0,0.10),
-        inset 0 0 18px rgba(255,255,255,0.05) !important;
+        inset 0 0 18px rgba(255,255,255,0.08) !important;
       padding: 44px 34px 28px;
       transition: none !important;
     }
@@ -691,11 +692,11 @@
     }
 
     body.bg-verde.sobre-aberto .interacao-area .box {
-      border: none !important;
-      background: rgba(255,255,255,0.80) !important;
+      border: 1px solid rgba(255,255,255,0.42) !important;
+      background-color: rgba(255,255,255,0.22) !important;
       box-shadow:
         0 16px 40px rgba(0,0,0,0.08),
-        inset 0 0 18px rgba(255,255,255,0.05) !important;
+        inset 0 0 18px rgba(255,255,255,0.08) !important;
     }
 
     @media (max-width: 768px) {
@@ -778,14 +779,13 @@
       }
 
       body.sobre-aberto .interacao-area .box {
-        background: rgba(255,255,255,0.80) !important;
-        background-color: rgba(255,255,255,0.80) !important;
-        backdrop-filter: none !important;
-        -webkit-backdrop-filter: none !important;
-        border: none !important;
+        background-color: rgba(255,255,255,0.18) !important;
+        backdrop-filter: blur(14px) saturate(112%) !important;
+        -webkit-backdrop-filter: blur(14px) saturate(112%) !important;
+        border: 1px solid rgba(255,255,255,0.38) !important;
         box-shadow:
           0 14px 34px rgba(0,0,0,0.10),
-          inset 0 0 14px rgba(255,255,255,0.05) !important;
+          inset 0 0 14px rgba(255,255,255,0.08) !important;
         padding: 42px 22px 24px;
         transition: none !important;
       }
@@ -2895,8 +2895,9 @@ function abrirSobre() {
 
   if (boxEl) {
     boxEl.classList.remove("is-loading", "backend-waiting", "backend-ready", "disable-hover");
-    boxEl.style.background = "rgba(255,255,255,0.80)";
-    boxEl.style.border = "none";
+    boxEl.style.background = "";
+    boxEl.style.backgroundColor = "";
+    boxEl.style.border = "";
   }
 
   if (fraseEl) {
@@ -3217,99 +3218,23 @@ carregarFrasesDaApi();</script>
 <script id="laforismos-loading-script">
 (function () {
   const LOADER_TEXT = 'carregando espasmo';
-  const LOADER_FONT_STYLES = [
-    { weight: '400', style: 'normal' },
-    { weight: '400', style: 'normal' },
-    { weight: '400', style: 'normal' },
-    { weight: '400', style: 'italic' },
-    { weight: '400', style: 'italic' },
-    { weight: '700', style: 'normal' },
-    { weight: '700', style: 'italic' }
-  ];
-
-  const LOADER_FONT_VARIANTS = [
-    {
-      family: 'Arial, Helvetica, sans-serif',
-      size: '0.90rem',
-      spacing: '0.95px',
-      stretch: 'scaleX(1)',
-      stylePool: [
-        { fontStyle: 'normal', fontWeight: '400' },
-        { fontStyle: 'italic', fontWeight: '400' },
-        { fontStyle: 'normal', fontWeight: '500' }
-      ]
-    },
-    {
-      family: '"Helvetica Neue", Helvetica, Arial, sans-serif',
-      size: '0.89rem',
-      spacing: '0.9px',
-      stretch: 'scaleX(0.99)',
-      stylePool: [
-        { fontStyle: 'normal', fontWeight: '400' },
-        { fontStyle: 'italic', fontWeight: '400' }
-      ]
-    },
-    {
-      family: '"Trebuchet MS", Arial, sans-serif',
-      size: '0.88rem',
-      spacing: '0.92px',
-      stretch: 'scaleX(0.985)',
-      stylePool: [
-        { fontStyle: 'normal', fontWeight: '400' },
-        { fontStyle: 'italic', fontWeight: '400' }
-      ]
-    },
-    {
-      family: 'Georgia, serif',
-      size: '0.93rem',
-      spacing: '0.82px',
-      stretch: 'scaleX(0.975)',
-      stylePool: [
-        { fontStyle: 'normal', fontWeight: '400' },
-        { fontStyle: 'italic', fontWeight: '400' }
-      ]
-    },
-    {
-      family: 'Garamond, "Times New Roman", serif',
-      size: '0.97rem',
-      spacing: '0.72px',
-      stretch: 'scaleX(0.96)',
-      stylePool: [
-        { fontStyle: 'normal', fontWeight: '400' },
-        { fontStyle: 'italic', fontWeight: '400' }
-      ]
-    },
-    {
-      family: 'Palatino, "Palatino Linotype", serif',
-      size: '0.94rem',
-      spacing: '0.76px',
-      stretch: 'scaleX(0.97)',
-      stylePool: [
-        { fontStyle: 'normal', fontWeight: '400' },
-        { fontStyle: 'italic', fontWeight: '400' }
-      ]
-    },
-    {
-      family: '"Times New Roman", Times, serif',
-      size: '0.95rem',
-      spacing: '0.74px',
-      stretch: 'scaleX(0.965)',
-      stylePool: [
-        { fontStyle: 'normal', fontWeight: '400' },
-        { fontStyle: 'italic', fontWeight: '400' },
-        { fontStyle: 'normal', fontWeight: '500' }
-      ]
-    },
-    {
-      family: '"Courier New", Courier, monospace',
-      size: '0.86rem',
-      spacing: '0.78px',
-      stretch: 'scaleX(0.94)',
-      stylePool: [
-        { fontStyle: 'normal', fontWeight: '400' },
-        { fontStyle: 'italic', fontWeight: '400' }
-      ]
-    }
+  const LOADER_FONT_STACKS = [
+    'Arial, Helvetica, sans-serif',
+    '"Trebuchet MS", Arial, sans-serif',
+    'Verdana, Geneva, sans-serif',
+    'Tahoma, Geneva, sans-serif',
+    '"Segoe UI", Arial, sans-serif',
+    '"Helvetica Neue", Helvetica, Arial, sans-serif',
+    'Geneva, Arial, sans-serif',
+    '"Times New Roman", Times, serif',
+    'Georgia, serif',
+    'Garamond, "Times New Roman", serif',
+    'Baskerville, "Times New Roman", serif',
+    'Palatino, "Palatino Linotype", serif',
+    '"Courier New", Courier, monospace',
+    'Monaco, "Courier New", monospace',
+    'Menlo, Monaco, monospace',
+    '"Lucida Console", Monaco, monospace'
   ];
 
   let primeiraFrasePendente = null;
@@ -3351,27 +3276,13 @@ carregarFrasesDaApi();</script>
     box.classList.remove("backend-waiting", "backend-ready");
   }
 
-  function aplicarVisualTipograficoDoLoader(el, variante, estiloAtual) {
-    if (!el || !variante || !estiloAtual) return;
-    el.style.fontFamily = variante.family;
-    el.style.fontSize = variante.size;
-    el.style.letterSpacing = variante.spacing;
-    el.style.fontStyle = estiloAtual.fontStyle;
-    el.style.fontWeight = estiloAtual.fontWeight;
-    el.style.transform = `translate(-50%, -50%) ${variante.stretch}`;
-  }
-
   function aplicarFonteAtualDoLoader() {
-    const variante = LOADER_FONT_VARIANTS[loaderFontIndex % LOADER_FONT_VARIANTS.length];
-    const stylePool = Array.isArray(variante?.stylePool) && variante.stylePool.length
-      ? variante.stylePool
-      : [{ fontStyle: 'normal', fontWeight: '400' }];
-    const estiloAtual = stylePool[Math.floor(Math.random() * stylePool.length)];
+    const fonte = LOADER_FONT_STACKS[loaderFontIndex % LOADER_FONT_STACKS.length];
     const track = document.getElementById("readyTrack");
     const backendTrack = document.getElementById("backendLoadingMarquee");
 
-    aplicarVisualTipograficoDoLoader(track, variante, estiloAtual);
-    aplicarVisualTipograficoDoLoader(backendTrack, variante, estiloAtual);
+    if (track) track.style.fontFamily = fonte;
+    if (backendTrack) backendTrack.style.fontFamily = fonte;
   }
 
   function pararEspasmoTipografico() {
@@ -3386,7 +3297,7 @@ carregarFrasesDaApi();</script>
     if (loaderFontTimer) return;
 
     loaderFontTimer = setInterval(() => {
-      loaderFontIndex = (loaderFontIndex + 1) % LOADER_FONT_VARIANTS.length;
+      loaderFontIndex = (loaderFontIndex + 1) % LOADER_FONT_STACKS.length;
       aplicarFonteAtualDoLoader();
     }, 120);
   }
