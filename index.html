@@ -3271,11 +3271,21 @@ function inicializarInteracaoBox() {
   let ignorarProximoClick = false;
   let toqueInicioX = 0;
   let toqueInicioY = 0;
+  let ultimoGestoMobileTs = 0;
 
   const limiarSwipe = 18;
+  const janelaAntiDuploDisparoMs = 450;
 
   function ehMobile() {
     return window.matchMedia("(max-width: 768px)").matches;
+  }
+
+  function registrarGestoMobile() {
+    ultimoGestoMobileTs = Date.now();
+  }
+
+  function houveGestoMobileRecente() {
+    return (Date.now() - ultimoGestoMobileTs) < janelaAntiDuploDisparoMs;
   }
 
   function processarDeslizamento(deltaX, deltaY) {
@@ -3283,6 +3293,7 @@ function inicializarInteracaoBox() {
 
     if (ehMobile() && distancia >= limiarSwipe) {
       ignorarProximoClick = true;
+      registrarGestoMobile();
       proximaFrase();
       return true;
     }
@@ -3299,7 +3310,7 @@ function inicializarInteracaoBox() {
     }
     if (event.target.closest(".toggle-btn")) return;
 
-    if (ignorarProximoClick) {
+    if (ignorarProximoClick || (ehMobile() && houveGestoMobileRecente())) {
       event.preventDefault();
       ignorarProximoClick = false;
       return;
@@ -3312,6 +3323,8 @@ function inicializarInteracaoBox() {
     if (event.target.closest(".sobre-voltar-btn")) return;
     if (sobreAberto) return;
     if (event.target.closest(".toggle-btn")) return;
+    if (ehMobile() && event.pointerType === "touch") return;
+
     pointerIdAtivo = event.pointerId;
     inicioX = event.clientX;
     inicioY = event.clientY;
@@ -3322,6 +3335,7 @@ function inicializarInteracaoBox() {
   });
 
   box.addEventListener("pointerup", (event) => {
+    if (ehMobile() && event.pointerType === "touch") return;
     if (event.pointerId !== pointerIdAtivo) return;
 
     const deltaX = event.clientX - inicioX;
@@ -3339,7 +3353,6 @@ function inicializarInteracaoBox() {
   });
 
   box.addEventListener("touchstart", (event) => {
-    if (event.target.closest(".sobre-voltar-btn")) return;
     if (event.target.closest(".sobre-voltar-btn")) return;
     if (sobreAberto) return;
     if (!ehMobile()) return;
@@ -3659,14 +3672,44 @@ window.addEventListener("resize", () => {
 });
 
 const maquinaTrigger = document.getElementById("maquinaTrigger");
+let ultimoToqueMaquinaTs = 0;
+const JANELA_ANTI_DUPLO_TOQUE_MAQUINA_MS = 450;
+
+function registrarToqueNaMaquina() {
+  ultimoToqueMaquinaTs = Date.now();
+}
+
+function toqueNaMaquinaFoiRecente() {
+  return (Date.now() - ultimoToqueMaquinaTs) < JANELA_ANTI_DUPLO_TOQUE_MAQUINA_MS;
+}
+
 if (maquinaTrigger) {
-  maquinaTrigger.addEventListener("click", (event) => {
+  const acionarCliqueNaMaquina = (event, origem = "click") => {
     if (sobreAberto) return;
     if (event.target.closest("#maquinaIconesSlot")) return;
+
+    if (origem === "click" && toqueNaMaquinaFoiRecente()) {
+      event.preventDefault();
+      event.stopPropagation();
+      return;
+    }
+
+    if (origem !== "click") {
+      registrarToqueNaMaquina();
+    }
+
     event.preventDefault();
     event.stopPropagation();
     proximaFrase();
+  };
+
+  maquinaTrigger.addEventListener("click", (event) => {
+    acionarCliqueNaMaquina(event, "click");
   });
+
+  maquinaTrigger.addEventListener("touchend", (event) => {
+    acionarCliqueNaMaquina(event, "touchend");
+  }, { passive: false });
 }
 
 const maquinaIconesSlot = document.getElementById("maquinaIconesSlot");
@@ -3675,16 +3718,35 @@ if (maquinaIconesSlot) {
     event.stopPropagation();
   };
 
+  const acionarSorteioNoMobile = (event, origem = "click") => {
+    if (sobreAberto) return;
+
+    if (origem === "click" && toqueNaMaquinaFoiRecente()) {
+      event.preventDefault();
+      event.stopPropagation();
+      return;
+    }
+
+    if (origem !== "click") {
+      registrarToqueNaMaquina();
+    }
+
+    event.preventDefault();
+    event.stopPropagation();
+    alternarSorteioDosIconesPorClique();
+  };
+
   maquinaIconesSlot.addEventListener("pointerdown", bloquearPropagacaoDoSorteio, true);
   maquinaIconesSlot.addEventListener("mousedown", bloquearPropagacaoDoSorteio, true);
   maquinaIconesSlot.addEventListener("touchstart", bloquearPropagacaoDoSorteio, { passive: true, capture: true });
 
   maquinaIconesSlot.addEventListener("click", (event) => {
-    if (sobreAberto) return;
-    event.preventDefault();
-    event.stopPropagation();
-    alternarSorteioDosIconesPorClique();
+    acionarSorteioNoMobile(event, "click");
   });
+
+  maquinaIconesSlot.addEventListener("touchend", (event) => {
+    acionarSorteioNoMobile(event, "touchend");
+  }, { passive: false, capture: true });
 }
 
 iniciarIconesDaMaquina();
