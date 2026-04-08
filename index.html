@@ -482,12 +482,11 @@
       -webkit-backdrop-filter: blur(4px);
       border-radius: 999px;
       box-shadow: 0 8px 18px rgba(0,0,0,0.10);
-      pointer-events: auto;
+      pointer-events: none;
       user-select: none;
       z-index: 4;
       transition: opacity 0.38s ease, transform 0.52s cubic-bezier(0.16, 0.84, 0.22, 1);
       cursor: pointer;
-      touch-action: manipulation;
     }
 
     .maquina-icone-reel {
@@ -3432,7 +3431,7 @@ const MAQUINA_ICONES = [
 ];
 
 const MAQUINA_REEL_ITEM_SIZE = 22;
-const MAQUINA_REEL_ITEM_SIZE_MOBILE = 20;
+const MAQUINA_REEL_ITEM_SIZE_MOBILE = 16;
 const MAQUINA_REEL_REPEAT = 4;
 let maquinaIconesInicializados = false;
 let maquinaIconesSpinning = false;
