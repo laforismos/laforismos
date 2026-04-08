@@ -121,6 +121,50 @@
       box-shadow: inset 0 0 12px rgba(255,255,255,0.08);
     }
 
+    .box-proximo-tempo-btn {
+      position: absolute;
+      right: 14px;
+      bottom: 12px;
+      display: inline-flex;
+      align-items: center;
+      justify-content: center;
+      min-width: auto;
+      height: auto;
+      padding: 0;
+      border: 0;
+      background: transparent;
+      color: inherit;
+      font-family: Helvetica, Arial, sans-serif;
+      font-size: 0.9rem;
+      line-height: 1;
+      font-weight: 400;
+      letter-spacing: 0.16em;
+      cursor: default;
+      opacity: 0;
+      transform: translateY(4px);
+      pointer-events: none;
+      transition: opacity 0.26s ease, transform 0.26s ease;
+      z-index: 3;
+      user-select: none;
+    }
+
+    .box-proximo-tempo-btn.is-visible {
+      opacity: 0.42;
+      transform: translateY(0);
+      pointer-events: none;
+    }
+
+    .box-proximo-tempo-btn:hover {
+      opacity: 0.42;
+    }
+
+    body.sobre-aberto .box-proximo-tempo-btn,
+    .box.is-loading .box-proximo-tempo-btn {
+      opacity: 0 !important;
+      transform: translateY(4px) !important;
+      pointer-events: none !important;
+    }
+
     .sobre-voltar-btn {
       position: absolute;
       top: 14px;
@@ -131,15 +175,14 @@
       background: transparent;
       padding: 0;
       margin: 0;
-      color: rgba(26,26,26,0.92);
+      color: inherit;
       font-family: Helvetica, Arial, sans-serif;
       font-size: 0.95rem;
       line-height: 1;
       font-weight: 400;
       cursor: pointer;
       opacity: 0.72;
-      z-index: 20;
-      pointer-events: auto;
+      z-index: 3;
     }
 
     .sobre-voltar-btn:hover {
@@ -160,6 +203,10 @@
       text-align: center;
       letter-spacing: 0.01em;
       line-height: 1.5;
+      overflow-wrap: normal;
+      word-break: normal;
+      hyphens: none;
+      text-wrap: pretty;
     }
 
     .sobre-box-texto {
@@ -173,6 +220,10 @@
       text-align: center;
       max-width: 700px;
       margin: 0 auto;
+      overflow-wrap: normal;
+      word-break: normal;
+      hyphens: none;
+      text-wrap: pretty;
     }
 
     .sobre-box-texto strong {
@@ -276,6 +327,54 @@
       backdrop-filter: none;
       box-shadow: none;
       border-color: var(--dynamic-box-border-color);
+      transform: scale(1.012);
+    }
+
+    .box {
+      transition: transform 0.22s ease, background 0.22s ease, border-color 0.22s ease, box-shadow 0.22s ease;
+    }
+
+    body.intro-click-mode:not(.sobre-aberto) .interacao-area .box {
+      border-color: rgba(255,255,255,0.94);
+      box-shadow:
+        inset 0 0 12px rgba(255,255,255,0.08),
+        0 0 0 0 rgba(255,255,255,0.28);
+      animation: introClickPulse 1.9s ease-in-out infinite;
+    }
+
+    body.intro-click-mode:not(.sobre-aberto) .interacao-area .box:hover {
+      transform: scale(1.015);
+    }
+
+    body.intro-click-mode:not(.sobre-aberto) .maquina-wrap {
+      animation: maquinaHintPulse 1.9s ease-in-out infinite;
+    }
+
+    @keyframes introClickPulse {
+      0% {
+        transform: scale(1);
+        box-shadow:
+          inset 0 0 12px rgba(255,255,255,0.08),
+          0 0 0 0 rgba(255,255,255,0.28);
+      }
+      50% {
+        transform: scale(1.012);
+        box-shadow:
+          inset 0 0 12px rgba(255,255,255,0.08),
+          0 0 0 14px rgba(255,255,255,0);
+      }
+      100% {
+        transform: scale(1);
+        box-shadow:
+          inset 0 0 12px rgba(255,255,255,0.08),
+          0 0 0 0 rgba(255,255,255,0);
+      }
+    }
+
+    @keyframes maquinaHintPulse {
+      0% { transform: translateY(0); opacity: 1; }
+      50% { transform: translateY(-2px); opacity: 0.92; }
+      100% { transform: translateY(0); opacity: 1; }
     }
 
     .box.hover-preview:hover .overlay {
@@ -302,6 +401,18 @@
 
     .box.is-loading.disable-hover:hover .frase {
       opacity: 0;
+    }
+
+    @media (prefers-reduced-motion: reduce) {
+      body.intro-click-mode:not(.sobre-aberto) .interacao-area .box,
+      body.intro-click-mode:not(.sobre-aberto) .maquina-wrap {
+        animation: none;
+      }
+
+      .box.hover-preview:hover,
+      body.intro-click-mode:not(.sobre-aberto) .interacao-area .box:hover {
+        transform: none;
+      }
     }
 
 
@@ -652,13 +763,13 @@
       max-width: min(90vw, 760px);
       min-height: auto;
       cursor: default;
-      background-color: rgba(255,255,255,0.22) !important;
+      background: rgba(255,255,255,0.80) !important;
       backdrop-filter: blur(18px) saturate(115%);
       -webkit-backdrop-filter: blur(18px) saturate(115%);
-      border: 1px solid rgba(255,255,255,0.42) !important;
+      border: none !important;
       box-shadow:
         0 16px 42px rgba(0,0,0,0.10),
-        inset 0 0 18px rgba(255,255,255,0.08) !important;
+        inset 0 0 18px rgba(255,255,255,0.05) !important;
       padding: 44px 34px 28px;
       transition: none !important;
     }
@@ -692,11 +803,11 @@
     }
 
     body.bg-verde.sobre-aberto .interacao-area .box {
-      border: 1px solid rgba(255,255,255,0.42) !important;
-      background-color: rgba(255,255,255,0.22) !important;
+      border: none !important;
+      background: rgba(255,255,255,0.80) !important;
       box-shadow:
         0 16px 40px rgba(0,0,0,0.08),
-        inset 0 0 18px rgba(255,255,255,0.08) !important;
+        inset 0 0 18px rgba(255,255,255,0.05) !important;
     }
 
     @media (max-width: 768px) {
@@ -779,13 +890,14 @@
       }
 
       body.sobre-aberto .interacao-area .box {
-        background-color: rgba(255,255,255,0.18) !important;
-        backdrop-filter: blur(14px) saturate(112%) !important;
-        -webkit-backdrop-filter: blur(14px) saturate(112%) !important;
-        border: 1px solid rgba(255,255,255,0.38) !important;
+        background: rgba(255,255,255,0.80) !important;
+        background-color: rgba(255,255,255,0.80) !important;
+        backdrop-filter: none !important;
+        -webkit-backdrop-filter: none !important;
+        border: none !important;
         box-shadow:
           0 14px 34px rgba(0,0,0,0.10),
-          inset 0 0 14px rgba(255,255,255,0.08) !important;
+          inset 0 0 14px rgba(255,255,255,0.05) !important;
         padding: 42px 22px 24px;
         transition: none !important;
       }
@@ -794,6 +906,11 @@
         top: 12px;
         right: 14px;
         left: auto;
+      }
+
+      .box-proximo-tempo-btn {
+        right: 10px;
+        bottom: 8px;
       }
 
       body.sobre-aberto .sobre-box-texto {
@@ -1328,6 +1445,7 @@
   <div class="interacao-area">
     <div class="box is-loading" id="box">
       <button class="sobre-voltar-btn" id="sobreVoltarBtn" type="button" aria-label="Fechar" onclick="fecharSobre(event)">X</button>
+      <button class="box-proximo-tempo-btn" id="boxProximoTempoBtn" type="button" aria-hidden="true" tabindex="-1">···</button>
       <div class="loading-sizer" aria-hidden="true">carregando espasmo • carregando espasmo • carregando</div>
       <div class="frase" id="frase"></div>
       <div class="sobre-box-texto" id="sobreBoxTexto" style="display:none;"></div>
@@ -1564,6 +1682,14 @@ let hoverTravadoAteUltimoTempo = false;
 let prontoParaProximaTroca = false;
 let videoTimeUpdateHandler = null;
 let videoLoadedMetadataHandler = null;
+
+function ativarModoInicialDeClique() {
+  document.body.classList.add("intro-click-mode");
+}
+
+function desativarModoInicialDeClique() {
+  document.body.classList.remove("intro-click-mode");
+}
 
 
 
@@ -1887,6 +2013,7 @@ function entrarModoCarregandoTroca() {
 
   box.classList.add("disable-hover");
   ativarEstadoLoadingBox();
+  atualizarBotaoProximoTempo(null, 1);
 }
 
 function sairModoCarregandoTroca() {
@@ -2198,6 +2325,18 @@ function obterTextoDaEtapa(partes, etapaDesejada = 1) {
     .trim();
 }
 
+function atualizarBotaoProximoTempo(fraseObj = fraseAtual, etapa = etapaAtual) {
+  const btn = document.getElementById("boxProximoTempoBtn");
+  if (!btn) return;
+
+  const temProximaEtapa = !!obterProximaEtapaDisponivel(fraseObj?.partes || [], etapa);
+  const deveMostrar = !sobreAberto && !document.getElementById("box")?.classList.contains("is-loading") && temProximaEtapa;
+
+  btn.classList.toggle("is-visible", deveMostrar);
+  btn.setAttribute("aria-hidden", deveMostrar ? "false" : "true");
+  btn.tabIndex = -1;
+}
+
 function aplicarClasseDialogo(texto) {
   const el = document.getElementById("frase");
 
@@ -2224,6 +2363,7 @@ function mostrarFraseObjeto(fraseObj, etapa = 1) {
 
     fraseAtual = fraseObj;
     etapaAtual = etapa;
+    atualizarBotaoProximoTempo(fraseObj, etapa);
 
     if (fraseObj?.id != null) {
       idsExibidos.add(fraseObj.id);
@@ -2259,6 +2399,7 @@ function mostrarMensagem(texto) {
 
   fraseAtual = null;
   etapaAtual = 1;
+  atualizarBotaoProximoTempo(null, 1);
 }
 
 function atualizarFrasesFiltradas() {
@@ -2484,6 +2625,8 @@ function irParaProximaFrase() {
 
 function proximaFrase() {
   if (sobreAberto) return;
+
+  desativarModoInicialDeClique();
 
   if (aguardandoCliqueParaTroca) {
     irParaProximaFrase();
@@ -2895,9 +3038,8 @@ function abrirSobre() {
 
   if (boxEl) {
     boxEl.classList.remove("is-loading", "backend-waiting", "backend-ready", "disable-hover");
-    boxEl.style.background = "";
-    boxEl.style.backgroundColor = "";
-    boxEl.style.border = "";
+    boxEl.style.background = "rgba(255,255,255,0.80)";
+    boxEl.style.border = "none";
   }
 
   if (fraseEl) {
@@ -2917,6 +3059,7 @@ function abrirSobre() {
 
   resetarDimensoesDoBox();
   ajustarAlturaBoxDinamicamente();
+  atualizarBotaoProximoTempo(null, 1);
   iniciarGlitchDaMaquina();
 }
 
@@ -2971,6 +3114,7 @@ function fecharSobre(event) {
   }
   resetarDimensoesDoBox();
   ajustarAlturaBoxDinamicamente();
+  atualizarBotaoProximoTempo(fraseAtual, etapaAtual);
   if (document.getElementById("box")?.classList.contains("is-loading") && !document.body.classList.contains("machine-settle")) {
     iniciarGlitchDaMaquina();
   }
@@ -3209,6 +3353,22 @@ function inicializarBotaoFecharSobre() {
 }
 
 inicializarBotaoFecharSobre();
+
+(function inicializarBotaoProximoTempo() {
+  const btn = document.getElementById("boxProximoTempoBtn");
+  if (!btn || btn.dataset.nextTempoHooked === "1") return;
+  btn.dataset.nextTempoHooked = "1";
+
+  const acionarProximoTempo = (event) => {
+    event.preventDefault();
+    event.stopPropagation();
+  };
+
+  btn.addEventListener("click", acionarProximoTempo, true);
+  btn.addEventListener("pointerup", acionarProximoTempo, true);
+  btn.addEventListener("touchend", acionarProximoTempo, { passive: false, capture: true });
+})();
+
 carregarFrasesDaApi();</script>
 
 
@@ -3218,6 +3378,33 @@ carregarFrasesDaApi();</script>
 <script id="laforismos-loading-script">
 (function () {
   const LOADER_TEXT = 'carregando espasmo';
+  const INITIAL_HINT_TEXTS = [
+    'pode clicar',
+    'clique no box',
+    'toca no box'
+  ];
+  const FOLLOWUP_HINT_SEQUENCES = {
+    1: [
+      'carregando espasmo',
+      'carregando espasmo',
+      'vai, clica aí'
+    ],
+    2: [
+      'carregando espasmo',
+      'carregando espasmo',
+      'num vai clicar?'
+    ],
+    3: [
+      'carregando espasmo',
+      'carregando espasmo',
+      'você entendeu, né: vai clicando aqui'
+    ]
+  };
+  const FOLLOWUP_HINT_INTERVAL_MS = {
+    1: 2200,
+    2: 2200,
+    3: 3400
+  };
   const LOADER_FONT_STACKS = [
     'Arial, Helvetica, sans-serif',
     '"Trebuchet MS", Arial, sans-serif',
@@ -3242,6 +3429,117 @@ carregarFrasesDaApi();</script>
   let apiInicialCarregada = false;
   let loaderFontTimer = null;
   let loaderFontIndex = 0;
+  let introHintTimer = null;
+  let introHintIndex = 0;
+  let followupHintTimer = null;
+  let followupHintIndex = 0;
+
+  function obterTotalDeFrasesExibidas() {
+    return window.idsExibidos?.size || 0;
+  }
+
+  function obterEtapaAtualDeReforco() {
+    const totalExibidas = obterTotalDeFrasesExibidas();
+    if (totalExibidas >= 1 && totalExibidas <= 3) {
+      return totalExibidas;
+    }
+    return 0;
+  }
+
+  function deveUsarHintsDeReforco() {
+    return !aguardandoPrimeiraFrase && obterEtapaAtualDeReforco() > 0;
+  }
+
+  function obterSequenciaAtualDeReforco() {
+    return FOLLOWUP_HINT_SEQUENCES[obterEtapaAtualDeReforco()] || [LOADER_TEXT];
+  }
+
+  function obterTextoDoLoaderAtual() {
+    if (aguardandoPrimeiraFrase) {
+      return INITIAL_HINT_TEXTS[introHintIndex % INITIAL_HINT_TEXTS.length];
+    }
+    if (deveUsarHintsDeReforco()) {
+      const sequenciaAtual = obterSequenciaAtualDeReforco();
+      return sequenciaAtual[followupHintIndex % sequenciaAtual.length];
+    }
+    return LOADER_TEXT;
+  }
+
+  function atualizarTextoDoLoader() {
+    const texto = obterTextoDoLoaderAtual();
+    const track = document.getElementById("readyTrack");
+    const backendTrack = document.getElementById("backendLoadingMarquee");
+    if (track) track.textContent = texto;
+    if (backendTrack) backendTrack.textContent = texto;
+  }
+
+  function pararHintsIniciaisDeClique() {
+    if (introHintTimer) {
+      clearInterval(introHintTimer);
+      introHintTimer = null;
+    }
+    introHintIndex = 0;
+    atualizarTextoDoLoader();
+  }
+
+  function pararHintsDeReforco() {
+    if (followupHintTimer) {
+      clearInterval(followupHintTimer);
+      followupHintTimer = null;
+    }
+    followupHintIndex = 0;
+    atualizarTextoDoLoader();
+  }
+
+  function iniciarHintsDeReforco() {
+    if (!deveUsarHintsDeReforco()) {
+      pararHintsDeReforco();
+      return;
+    }
+
+    atualizarTextoDoLoader();
+
+    if (followupHintTimer) return;
+
+    const etapaAtual = obterEtapaAtualDeReforco();
+    const intervaloAtual = FOLLOWUP_HINT_INTERVAL_MS[etapaAtual] || 2200;
+
+    followupHintTimer = setInterval(() => {
+      if (!deveUsarHintsDeReforco()) {
+        pararHintsDeReforco();
+        return;
+      }
+      const sequenciaAtual = obterSequenciaAtualDeReforco();
+      followupHintIndex = (followupHintIndex + 1) % sequenciaAtual.length;
+      atualizarTextoDoLoader();
+    }, intervaloAtual);
+  }
+
+  function iniciarHintsIniciaisDeClique() {
+    if (!aguardandoPrimeiraFrase) {
+      pararHintsIniciaisDeClique();
+      return;
+    }
+
+    pararHintsDeReforco();
+
+    if (typeof window.ativarModoInicialDeClique === "function") {
+      window.ativarModoInicialDeClique();
+    }
+
+    atualizarTextoDoLoader();
+
+    if (introHintTimer) return;
+
+    introHintTimer = setInterval(() => {
+      if (!aguardandoPrimeiraFrase) {
+        pararHintsIniciaisDeClique();
+        return;
+      }
+      introHintIndex = (introHintIndex + 1) % INITIAL_HINT_TEXTS.length;
+      atualizarTextoDoLoader();
+    }, 1450);
+  }
 
   function garantirCamadasDeLoading() {
     const overlay = document.querySelector("#box .overlay");
@@ -3268,6 +3566,8 @@ carregarFrasesDaApi();</script>
       `;
       overlay.appendChild(ready);
     }
+
+    atualizarTextoDoLoader();
   }
 
   function limparClassesDeLoading() {
@@ -3344,6 +3644,7 @@ carregarFrasesDaApi();</script>
     box.classList.remove("disable-hover");
     frase.innerHTML = "";
     frase.classList.remove("dialogo");
+    atualizarTextoDoLoader();
 
     if (typeof window.pararGlitchDaMaquina === "function") {
       window.pararGlitchDaMaquina();
@@ -3369,6 +3670,17 @@ carregarFrasesDaApi();</script>
       track.style.transform = "translate(-50%, -50%)";
     }
 
+    if (aguardandoPrimeiraFrase) {
+      pararHintsDeReforco();
+      iniciarHintsIniciaisDeClique();
+    } else if (deveUsarHintsDeReforco()) {
+      followupHintIndex = 0;
+      iniciarHintsDeReforco();
+    } else {
+      pararHintsDeReforco();
+      atualizarTextoDoLoader();
+    }
+
     iniciarEspasmoTipografico();
 
     if (typeof window.iniciarGlitchDaMaquina === "function") {
@@ -3390,6 +3702,8 @@ carregarFrasesDaApi();</script>
     if (box) {
       box.classList.remove("is-loading", "backend-waiting", "backend-ready");
     }
+    pararHintsIniciaisDeClique();
+    pararHintsDeReforco();
     pararEspasmoTipografico();
     resetarAnimacaoDoLoaderTexto();
     if (typeof window.pararGlitchDaMaquina === "function") {
@@ -3408,6 +3722,8 @@ carregarFrasesDaApi();</script>
     if (window.fila.length > 0) {
       primeiraFrasePendente = window.fila.shift();
       aguardandoPrimeiraFrase = true;
+      introHintIndex = 0;
+      iniciarHintsIniciaisDeClique();
       ativarLoadingProntoParaClique();
       window.logEstadoFila("aguardando primeiro clique");
     } else {
@@ -3423,6 +3739,11 @@ carregarFrasesDaApi();</script>
     if (!aguardandoPrimeiraFrase || !primeiraFrasePendente || window.sobreAberto) return false;
 
     aguardandoPrimeiraFrase = false;
+    pararHintsIniciaisDeClique();
+    followupHintIndex = 0;
+    if (typeof window.desativarModoInicialDeClique === "function") {
+      window.desativarModoInicialDeClique();
+    }
     const primeira = primeiraFrasePendente;
     primeiraFrasePendente = null;
     window.mostrarFraseObjeto(primeira, 1);
@@ -3492,6 +3813,11 @@ carregarFrasesDaApi();</script>
   const originalAbrirSobre = window.abrirSobre;
   window.abrirSobre = function() {
     pararEspasmoTipografico();
+    pararHintsIniciaisDeClique();
+    pararHintsDeReforco();
+    if (typeof window.desativarModoInicialDeClique === "function") {
+      window.desativarModoInicialDeClique();
+    }
     if (typeof window.pararGlitchDaMaquina === "function") {
       window.pararGlitchDaMaquina();
     }
