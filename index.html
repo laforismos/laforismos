@@ -2110,6 +2110,11 @@ function entrarModoCarregandoTroca() {
   box.classList.add("disable-hover");
   ativarEstadoLoadingBox();
   atualizarBotaoProximoTempo(null, 1);
+
+  if (typeof iniciarGiroContinuoDosIcones === "function") {
+    iniciarGiroContinuoDosIcones();
+    agendarConsolidacaoDosIcones(4000);
+  }
 }
 
 function sairModoCarregandoTroca() {
