@@ -466,6 +466,11 @@
       position: relative;
       z-index: 3;
       border-radius: 999px;
+      pointer-events: none;
+    }
+
+    body.sobre-aberto .sobre-foto-link {
+      pointer-events: auto;
     }
 
     .maquina-icones-slot {
@@ -2022,6 +2027,29 @@ function desativarMetalinguagemVisual() {
   if (!metalinguagemAtiva) return;
   metalinguagemAtiva = false;
   document.body.classList.remove("metalinguagem-ativo");
+}
+
+function inicializarCliqueNoCarimboMetalinguagem() {
+  const carimbo = document.querySelector(".metalinguagem-carimbo");
+  if (!carimbo || carimbo.dataset.metaClickHooked === "1") return;
+
+  carimbo.dataset.metaClickHooked = "1";
+
+  const voltarAoCarregandoEspasmo = (event) => {
+    event.preventDefault();
+    event.stopPropagation();
+
+    if (!metalinguagemAtiva || sobreAberto) return;
+
+    desativarMetalinguagemVisual();
+
+    if (typeof entrarModoCarregandoTroca === "function") {
+      entrarModoCarregandoTroca();
+    }
+  };
+
+  carimbo.addEventListener("click", voltarAoCarregandoEspasmo, true);
+  carimbo.addEventListener("touchend", voltarAoCarregandoEspasmo, { passive: false, capture: true });
 }
 
 
@@ -3689,6 +3717,7 @@ aplicarBackgroundAleatorio();
 sincronizarToggle();
 inicializarInteracaoToggle();
 inicializarInteracaoBox();
+inicializarCliqueNoCarimboMetalinguagem();
 definirSobreApiOuFallback("");
 window.addEventListener("resize", () => {
   resetarDimensoesDoBox();
@@ -3954,6 +3983,17 @@ if (maquinaTrigger) {
 
     event.preventDefault();
     event.stopPropagation();
+
+    const nenhumaFraseExibidaAinda = (window.idsExibidos?.size || 0) === 0;
+    const boxAindaEmLoading = !!document.getElementById("box")?.classList.contains("is-loading");
+
+    if (nenhumaFraseExibidaAinda && boxAindaEmLoading) {
+      if (typeof alternarSorteioDosIconesPorClique === "function") {
+        alternarSorteioDosIconesPorClique();
+      }
+      return;
+    }
+
     proximaFrase();
   };
 
@@ -4051,32 +4091,37 @@ carregarFrasesDaApi();</script>
 (function () {
   const LOADER_TEXT = 'carregando espasmo';
   const INITIAL_HINT_TEXTS = [
-    'pode clicar',
-    'clique no box',
-    'toca no box'
+    'carregando espasmo',
+    'clique aqui nesta caixa de texto',
+    'carregando espasmo',
+    'vai, clica!'
   ];
   const FOLLOWUP_HINT_SEQUENCES = {
     1: [
       'carregando espasmo',
+      'clique aqui nesta caixa de texto',
       'carregando espasmo',
-      'vai, clica aí'
+      'vai, clica!'
     ],
     2: [
       'carregando espasmo',
+      'clica aqui. sem medo.',
       'carregando espasmo',
-      'num vai clicar?'
+      'não vai clicar não?'
     ],
     3: [
       'carregando espasmo',
+      'tudo pronto, clica aqui',
       'carregando espasmo',
-      'você entendeu, né: vai clicando aqui'
+      'você entendeu, vai clicando.'
     ]
   };
   const FOLLOWUP_HINT_INTERVAL_MS = {
-    1: 2200,
-    2: 2200,
-    3: 3400
+    1: [3000, 3000, 3000, 2000],
+    2: [4000, 3000, 3000, 2000],
+    3: [4000, 2000, 4000, 3000]
   };
+  const INITIAL_HINT_INTERVALS_MS = [3000, 3000, 3000, 2000];
   const LOADER_FONT_STACKS = [
     'Arial, Helvetica, sans-serif',
     '"Trebuchet MS", Arial, sans-serif',
@@ -4123,6 +4168,14 @@ carregarFrasesDaApi();</script>
   }
 
   function obterSequenciaAtualDeReforco() {
+    const slotAindaGirando =
+      typeof maquinaIconesSpinning !== 'undefined' &&
+      !!maquinaIconesSpinning;
+
+    if (slotAindaGirando) {
+      return [LOADER_TEXT];
+    }
+
     return FOLLOWUP_HINT_SEQUENCES[obterEtapaAtualDeReforco()] || [LOADER_TEXT];
   }
 
@@ -4147,7 +4200,7 @@ carregarFrasesDaApi();</script>
 
   function pararHintsIniciaisDeClique() {
     if (introHintTimer) {
-      clearInterval(introHintTimer);
+      clearTimeout(introHintTimer);
       introHintTimer = null;
     }
     introHintIndex = 0;
@@ -4156,7 +4209,7 @@ carregarFrasesDaApi();</script>
 
   function pararHintsDeReforco() {
     if (followupHintTimer) {
-      clearInterval(followupHintTimer);
+      clearTimeout(followupHintTimer);
       followupHintTimer = null;
     }
     followupHintIndex = 0;
@@ -4173,18 +4226,31 @@ carregarFrasesDaApi();</script>
 
     if (followupHintTimer) return;
 
-    const etapaAtual = obterEtapaAtualDeReforco();
-    const intervaloAtual = FOLLOWUP_HINT_INTERVAL_MS[etapaAtual] || 2200;
-
-    followupHintTimer = setInterval(() => {
+    const agendarProximoHintDeReforco = () => {
       if (!deveUsarHintsDeReforco()) {
         pararHintsDeReforco();
         return;
       }
-      const sequenciaAtual = obterSequenciaAtualDeReforco();
-      followupHintIndex = (followupHintIndex + 1) % sequenciaAtual.length;
-      atualizarTextoDoLoader();
-    }, intervaloAtual);
+
+      const etapaAtual = obterEtapaAtualDeReforco();
+      const intervalos = FOLLOWUP_HINT_INTERVAL_MS[etapaAtual] || [3000];
+      const delay = intervalos[followupHintIndex % intervalos.length] || 3000;
+
+      followupHintTimer = window.setTimeout(() => {
+        if (!deveUsarHintsDeReforco()) {
+          pararHintsDeReforco();
+          return;
+        }
+
+        const sequenciaAtual = obterSequenciaAtualDeReforco();
+        followupHintIndex = (followupHintIndex + 1) % sequenciaAtual.length;
+        atualizarTextoDoLoader();
+        followupHintTimer = null;
+        agendarProximoHintDeReforco();
+      }, delay);
+    };
+
+    agendarProximoHintDeReforco();
   }
 
   function iniciarHintsIniciaisDeClique() {
@@ -4203,14 +4269,27 @@ carregarFrasesDaApi();</script>
 
     if (introHintTimer) return;
 
-    introHintTimer = setInterval(() => {
+    const agendarProximoHintInicial = () => {
       if (!aguardandoPrimeiraFrase) {
         pararHintsIniciaisDeClique();
         return;
       }
-      introHintIndex = (introHintIndex + 1) % INITIAL_HINT_TEXTS.length;
-      atualizarTextoDoLoader();
-    }, 1450);
+
+      const delay = INITIAL_HINT_INTERVALS_MS[introHintIndex % INITIAL_HINT_INTERVALS_MS.length] || 3000;
+
+      introHintTimer = window.setTimeout(() => {
+        if (!aguardandoPrimeiraFrase) {
+          pararHintsIniciaisDeClique();
+          return;
+        }
+        introHintIndex = (introHintIndex + 1) % INITIAL_HINT_TEXTS.length;
+        atualizarTextoDoLoader();
+        introHintTimer = null;
+        agendarProximoHintInicial();
+      }, delay);
+    };
+
+    agendarProximoHintInicial();
   }
 
   function garantirCamadasDeLoading() {
