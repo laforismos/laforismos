@@ -853,9 +853,32 @@
     }
 
     @media (max-width: 768px) {
+      .maquina-wrap {
+        position: relative;
+        overflow: visible;
+      }
+
       .metalinguagem-carimbo {
         width: 138px;
-        bottom: -4px;
+        bottom: -34px;
+        left: 50%;
+        transform: translateX(-50%) scale(0.92);
+        z-index: 8;
+      }
+
+      body.metalinguagem-ativo .maquina-wrap {
+        opacity: 1 !important;
+        visibility: visible !important;
+        overflow: visible !important;
+        height: auto !important;
+        margin: 12px auto 12px !important;
+      }
+
+      body.metalinguagem-ativo .metalinguagem-carimbo {
+        opacity: 0.85 !important;
+        visibility: visible !important;
+        display: block !important;
+        transform: translateX(-50%) scale(1) !important;
       }
 
       body.metalinguagem-ativo .imagem-entre-sub-e-box {
