@@ -23,6 +23,7 @@
       --mobile-overlay-opacity: 0.18;
       --site-text-color: white;
       --dynamic-box-border-color: rgba(255,255,255,0.6);
+      --stamp-filter: brightness(0) invert(1);
       margin: 0;
       font-family: Helvetica, Arial, sans-serif;
       color: var(--site-text-color);
@@ -799,6 +800,82 @@
 
 
 
+    .metalinguagem-carimbo {
+      position: absolute;
+      left: 50%;
+      bottom: -8px;
+      width: 172px;
+      height: auto;
+      transform: translateX(-50%) scale(0.92);
+      opacity: 0;
+      visibility: hidden;
+      pointer-events: none;
+      z-index: 6;
+      display: block;
+      filter: var(--stamp-filter, brightness(0) saturate(100%));
+      transition: opacity 0.34s ease, transform 0.34s ease, visibility 0s linear 0.34s;
+    }
+
+    body.metalinguagem-ativo .metalinguagem-carimbo {
+      opacity: 0.85;
+      visibility: visible;
+      transform: translateX(-50%) scale(1);
+      transition: opacity 0.34s ease, transform 0.34s ease, visibility 0s linear 0s;
+    }
+
+    body.metalinguagem-ativo .imagem-entre-sub-e-box,
+    body.metalinguagem-ativo .maquina-icones-slot,
+    body.metalinguagem-ativo .filtro-obceno-principal,
+    body.metalinguagem-ativo .filtro-apenas-novas {
+      opacity: 0 !important;
+      pointer-events: none !important;
+      visibility: hidden !important;
+      transition:
+        opacity 0.42s ease,
+        transform 0.62s cubic-bezier(0.16, 0.84, 0.22, 1),
+        visibility 0s linear 0.42s !important;
+    }
+
+    body.metalinguagem-ativo .imagem-entre-sub-e-box {
+      transform: translate(-42vw, -8vh) rotate(-18deg) scale(0.72) !important;
+    }
+
+    body.metalinguagem-ativo .maquina-icones-slot {
+      transform: translateX(calc(-50% + 38vw)) translateY(-12vh) rotate(16deg) scale(0.7) !important;
+    }
+
+    body.metalinguagem-ativo .filtro-obceno-principal {
+      transform: translateX(-34vw) translateY(8vh) rotate(-10deg) scale(0.82) !important;
+    }
+
+    body.metalinguagem-ativo .filtro-apenas-novas {
+      transform: translateX(34vw) translateY(10vh) rotate(10deg) scale(0.82) !important;
+    }
+
+    @media (max-width: 768px) {
+      .metalinguagem-carimbo {
+        width: 138px;
+        bottom: -4px;
+      }
+
+      body.metalinguagem-ativo .imagem-entre-sub-e-box {
+        transform: translate(-48vw, -10vh) rotate(-16deg) scale(0.66) !important;
+      }
+
+      body.metalinguagem-ativo .maquina-icones-slot {
+        transform: translateX(calc(-50% + 42vw)) translateY(-14vh) rotate(14deg) scale(0.62) !important;
+      }
+
+      body.metalinguagem-ativo .filtro-obceno-principal {
+        transform: translateX(-46vw) translateY(12vh) rotate(-10deg) scale(0.76) !important;
+      }
+
+      body.metalinguagem-ativo .filtro-apenas-novas {
+        transform: translateX(46vw) translateY(14vh) rotate(10deg) scale(0.76) !important;
+      }
+    }
+
+
 
 .sobre-foto-topo {
       width: 106px;
@@ -1536,6 +1613,12 @@
       src="./maquina-de-escrever_BLACK.png"
       alt="Ícone de máquina de escrever"
     >
+    <img
+      class="metalinguagem-carimbo"
+      src="./metalinguagem.png"
+      alt=""
+      aria-hidden="true"
+    >
   </div>
 
   <div class="interacao-area">
@@ -1742,6 +1825,7 @@ function aplicarEstiloDaCorAtual(index) {
   const fonteBranca = INDICES_FONTE_BRANCA.has(index);
   document.body.style.setProperty("--site-text-color", fonteBranca ? "white" : "rgba(64, 64, 64, 1)");
   document.body.style.setProperty("--dynamic-box-border-color", fonteBranca ? "rgba(255,255,255,0.6)" : "transparent");
+  document.body.style.setProperty("--stamp-filter", fonteBranca ? "brightness(0) invert(1)" : "brightness(0) saturate(100%) opacity(0.92)");
 }
 
 function aplicarNovaCorDoSite() {
@@ -1776,6 +1860,7 @@ let fraseAtual = null;
 let etapaAtual = 1;
 let hoverTravadoAteUltimoTempo = false;
 let prontoParaProximaTroca = false;
+let metalinguagemAtiva = false;
 let videoTimeUpdateHandler = null;
 let videoLoadedMetadataHandler = null;
 
@@ -1785,6 +1870,18 @@ function ativarModoInicialDeClique() {
 
 function desativarModoInicialDeClique() {
   document.body.classList.remove("intro-click-mode");
+}
+
+function ativarMetalinguagemVisual() {
+  if (metalinguagemAtiva) return;
+  metalinguagemAtiva = true;
+  document.body.classList.add("metalinguagem-ativo");
+}
+
+function desativarMetalinguagemVisual() {
+  if (!metalinguagemAtiva) return;
+  metalinguagemAtiva = false;
+  document.body.classList.remove("metalinguagem-ativo");
 }
 
 
@@ -2092,6 +2189,7 @@ function congelarTamanhoAtualDoBox() {
 function entrarModoCarregandoTroca() {
   const box = document.getElementById("box");
   document.body.classList.remove("machine-settle");
+  desativarMetalinguagemVisual();
   iniciarGlitchDaMaquina();
   if (!box) return;
 
@@ -2472,12 +2570,21 @@ function mostrarFraseObjeto(fraseObj, etapa = 1) {
 
     marcarFraseComoVista(fraseObj);
 
+    const etapaFinalDaFrase = maiorEtapa(fraseObj?.partes || []);
+
     debugFrases("frase exibida", {
       id: fraseObj?.id ?? null,
       etapa,
-      maiorEtapa: maiorEtapa(fraseObj?.partes || []),
-      texto: textoVisivel
+      maiorEtapa: etapaFinalDaFrase,
+      texto: textoVisivel,
+      metalinguagem: !!fraseObj?.metalinguagem
     });
+
+    if (fraseObj?.metalinguagem && etapa >= etapaFinalDaFrase) {
+      ativarMetalinguagemVisual();
+    } else {
+      desativarMetalinguagemVisual();
+    }
 
     el.style.opacity = 1;
     acionarAssentamentoDaMaquina();
@@ -2488,6 +2595,7 @@ function mostrarFraseObjeto(fraseObj, etapa = 1) {
 
 function mostrarMensagem(texto) {
   const el = document.getElementById("frase");
+  desativarMetalinguagemVisual();
   el.style.opacity = 0;
 
   setTimeout(() => {
@@ -3119,6 +3227,7 @@ function renderizarSobre() {
 }
 function abrirSobre() {
   sobreAberto = true;
+  desativarMetalinguagemVisual();
   document.body.classList.add("sobre-aberto");
   document.body.classList.remove("machine-initial");
   pararGlitchDaMaquina();
@@ -3399,7 +3508,12 @@ async function carregarFrasesDaApi() {
       .map((item, index) => ({
         id: index + 1,
         partes: normalizarPartes(item.partes),
-        obceno: normalizarBoolean(item.obceno)
+        obceno: normalizarBoolean(item.obceno),
+        metalinguagem: normalizarBoolean(
+          item?.metalinguagem ??
+          item?.metaLinguagem ??
+          item?.meta_linguagem
+        )
       }));
 
     definirSobreApiOuFallback(data.sobreTexto);
