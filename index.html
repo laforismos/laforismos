@@ -4,6 +4,7 @@
 <meta charset="UTF-8">
   <meta name="viewport" content="width=device-width, initial-scale=1.0">
   <title>LAFORISMOS</title>
+  <link id="dynamic-favicon" rel="icon" type="image/png" href="">
 
   <link rel="preconnect" href="https://fonts.googleapis.com">
   <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
@@ -1745,6 +1746,141 @@ const MOBILE_BG_COLORS = [
   "#ff3d81"  // 37
 ];
 
+const FAVICON_ICON_PATHS = ["./money.png", "./skull.png", "./heart.png"];
+let faviconIconeAtual = null;
+const faviconImageCache = new Map();
+const TITULOS_DA_ABA = [
+  "Laforismos: rizoma do carilho.",
+  "La-forismos e aqui-dentrismos.",
+  "Prefácio: vim do pré-fácil.",
+  "Prefácio: quase do pré-fax.",
+  "Cuidado, metalinguagem.",
+  "A vírgula entrou em coma.",
+  "Ponto gago é reticências.",
+  "Cara, que tédio. Caracteres."
+];
+let tituloDaAbaAtual = null;
+let filaTitulosDaAba = [];
+
+function embaralharTitulosDaAba(array) {
+  const copia = Array.isArray(array) ? [...array] : [];
+  for (let i = copia.length - 1; i > 0; i -= 1) {
+    const j = Math.floor(Math.random() * (i + 1));
+    [copia[i], copia[j]] = [copia[j], copia[i]];
+  }
+  return copia;
+}
+
+function proximoTituloDaAbaSemRepeticao() {
+  if (!Array.isArray(TITULOS_DA_ABA) || TITULOS_DA_ABA.length === 0) {
+    tituloDaAbaAtual = "LAFORISMOS";
+    return tituloDaAbaAtual;
+  }
+
+  if (!filaTitulosDaAba.length) {
+    filaTitulosDaAba = embaralharTitulosDaAba(TITULOS_DA_ABA);
+
+    if (tituloDaAbaAtual && TITULOS_DA_ABA.length > 1 && filaTitulosDaAba[0] === tituloDaAbaAtual) {
+      const ultimo = filaTitulosDaAba.pop();
+      filaTitulosDaAba.unshift(ultimo);
+    }
+  }
+
+  tituloDaAbaAtual = filaTitulosDaAba.shift() || TITULOS_DA_ABA[0];
+  return tituloDaAbaAtual;
+}
+
+function atualizarTituloDaAbaDinamico() {
+  document.title = proximoTituloDaAbaSemRepeticao();
+}
+
+function garantirLinkDoFavicon() {
+  let link = document.getElementById("dynamic-favicon");
+
+  if (!link) {
+    link = document.createElement("link");
+    link.id = "dynamic-favicon";
+    link.rel = "icon";
+    link.type = "image/png";
+    document.head.appendChild(link);
+  }
+
+  return link;
+}
+
+function escolherIconeAleatorioDoFavicon() {
+  if (!Array.isArray(FAVICON_ICON_PATHS) || FAVICON_ICON_PATHS.length === 0) {
+    return null;
+  }
+
+  if (FAVICON_ICON_PATHS.length === 1) {
+    return FAVICON_ICON_PATHS[0];
+  }
+
+  let proximo = FAVICON_ICON_PATHS[Math.floor(Math.random() * FAVICON_ICON_PATHS.length)];
+
+  while (proximo === faviconIconeAtual) {
+    proximo = FAVICON_ICON_PATHS[Math.floor(Math.random() * FAVICON_ICON_PATHS.length)];
+  }
+
+  faviconIconeAtual = proximo;
+  return proximo;
+}
+
+function carregarImagemParaFavicon(src) {
+  if (!src) return Promise.reject(new Error("Ícone do favicon ausente."));
+
+  if (faviconImageCache.has(src)) {
+    return faviconImageCache.get(src);
+  }
+
+  const promessa = new Promise((resolve, reject) => {
+    const img = new Image();
+    img.onload = () => resolve(img);
+    img.onerror = () => reject(new Error("Falha ao carregar " + src));
+    img.src = src;
+  });
+
+  faviconImageCache.set(src, promessa);
+  return promessa;
+}
+
+async function atualizarFaviconDinamico(corHex) {
+  try {
+    const src = escolherIconeAleatorioDoFavicon();
+    const img = await carregarImagemParaFavicon(src);
+    const canvas = document.createElement("canvas");
+    const size = 64;
+
+    canvas.width = size;
+    canvas.height = size;
+
+    const ctx = canvas.getContext("2d");
+    if (!ctx) return;
+
+    ctx.clearRect(0, 0, size, size);
+
+    const imgW = img.naturalWidth || img.width || size;
+    const imgH = img.naturalHeight || img.height || size;
+    const scale = Math.min(size / imgW, size / imgH);
+    const drawW = imgW * scale;
+    const drawH = imgH * scale;
+    const offsetX = (size - drawW) / 2;
+    const offsetY = (size - drawH) / 2;
+
+    ctx.drawImage(img, offsetX, offsetY, drawW, drawH);
+    ctx.globalCompositeOperation = "source-in";
+    ctx.fillStyle = corHex || "#000000";
+    ctx.fillRect(0, 0, size, size);
+    ctx.globalCompositeOperation = "source-over";
+
+    const link = garantirLinkDoFavicon();
+    link.href = canvas.toDataURL("image/png");
+  } catch (error) {
+    console.warn("[LAFORISMOS FAVICON]", error);
+  }
+}
+
 let ultimaCorDoSite = null;
 let ultimoIndiceCorDoSite = -1;
 
@@ -1834,12 +1970,16 @@ function aplicarNovaCorDoSite() {
   ultimoIndiceCorDoSite = escolha.index;
   document.body.style.setProperty("--site-bg-color", escolha.color);
   aplicarEstiloDaCorAtual(escolha.index);
+  atualizarFaviconDinamico(escolha.color);
+  atualizarTituloDaAbaDinamico();
 }
 
 function aplicarCorInicialDoSite() {
   if (ultimaCorDoSite) {
     document.body.style.setProperty("--site-bg-color", ultimaCorDoSite);
     aplicarEstiloDaCorAtual(ultimoIndiceCorDoSite);
+    atualizarFaviconDinamico(ultimaCorDoSite);
+    atualizarTituloDaAbaDinamico();
     return;
   }
 
