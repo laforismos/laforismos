@@ -10,7 +10,7 @@
   <link rel="canonical" href="https://laforismos.com.br/">
   <meta property="og:title" content="Laforismos">
   <meta property="og:description" content="Palavras inquietas que saíram por aí.">
-  <meta property="og:image" content="https://raw.githubusercontent.com/laforismos/laforismos/a7e160c686d054a377805c91099e8a6f416d7832/Miniatura-SITE.png">
+  <meta property="og:image" content="https://raw.githubusercontent.com/laforismos/laforismos/4e504831eb1b31a915d5ec53ada32b33bbce0625/Miniatura-SITE.png">
   <meta property="og:url" content="https://laforismos.com.br/">
   <meta property="og:type" content="website">
   <meta property="og:locale" content="pt_BR">
@@ -18,7 +18,7 @@
   <meta name="twitter:card" content="summary_large_image">
   <meta name="twitter:title" content="Laforismos">
   <meta name="twitter:description" content="Palavras inquietas que saíram por aí.">
-  <meta name="twitter:image" content="https://raw.githubusercontent.com/laforismos/laforismos/a7e160c686d054a377805c91099e8a6f416d7832/Miniatura-SITE.png">
+  <meta name="twitter:image" content="https://raw.githubusercontent.com/laforismos/laforismos/4e504831eb1b31a915d5ec53ada32b33bbce0625/Miniatura-SITE.png">
 
 
   <link rel="preconnect" href="https://fonts.googleapis.com">
@@ -138,6 +138,36 @@
       box-shadow: inset 0 0 12px rgba(255,255,255,0.08);
     }
 
+    .box-marca-dagua {
+      position: absolute;
+      right: 14px;
+      bottom: 12px;
+      display: inline-flex;
+      align-items: center;
+      justify-content: flex-end;
+      max-width: calc(100% - 28px);
+      padding: 0;
+      color: inherit;
+      font-family: Helvetica, Arial, sans-serif;
+      font-size: 0.9rem;
+      line-height: 1;
+      font-weight: 400;
+      font-style: italic;
+      letter-spacing: 0.01em;
+      opacity: 0;
+      transform: translateY(4px);
+      pointer-events: none;
+      transition: opacity 0.26s ease, transform 0.26s ease;
+      z-index: 3;
+      user-select: none;
+      white-space: nowrap;
+    }
+
+    .box-marca-dagua.is-visible {
+      opacity: 0.42;
+      transform: translateY(0);
+    }
+
     .box-proximo-tempo-btn {
       position: absolute;
       right: 14px;
@@ -176,7 +206,9 @@
     }
 
     body.sobre-aberto .box-proximo-tempo-btn,
-    .box.is-loading .box-proximo-tempo-btn {
+    .box.is-loading .box-proximo-tempo-btn,
+    body.sobre-aberto .box-marca-dagua,
+    .box.is-loading .box-marca-dagua {
       opacity: 0 !important;
       transform: translateY(4px) !important;
       pointer-events: none !important;
@@ -1097,9 +1129,15 @@
         left: auto;
       }
 
-      .box-proximo-tempo-btn {
+      .box-proximo-tempo-btn,
+      .box-marca-dagua {
         right: 10px;
         bottom: 8px;
+      }
+
+      .box-marca-dagua {
+        max-width: calc(100% - 20px);
+        font-size: 0.82rem;
       }
 
       body.sobre-aberto .sobre-box-texto {
@@ -1645,6 +1683,7 @@
   <div class="interacao-area">
     <div class="box is-loading" id="box">
       <button class="sobre-voltar-btn" id="sobreVoltarBtn" type="button" aria-label="Fechar" onclick="fecharSobre(event)">X</button>
+      <span class="box-marca-dagua" id="boxMarcaDagua" aria-hidden="true">Laforismos.com.br</span>
       <button class="box-proximo-tempo-btn" id="boxProximoTempoBtn" type="button" aria-hidden="true" tabindex="-1">···</button>
       <div class="loading-sizer" aria-hidden="true">carregando espasmo • carregando espasmo • carregando</div>
       <div class="frase" id="frase"></div>
@@ -2391,6 +2430,7 @@ function entrarModoCarregandoTroca() {
   box.classList.add("disable-hover");
   ativarEstadoLoadingBox();
   atualizarBotaoProximoTempo(null, 1);
+  atualizarMarcaDagua(null, 1);
 
   if (typeof iniciarGiroContinuoDosIcones === "function") {
     iniciarGiroContinuoDosIcones();
@@ -2719,6 +2759,20 @@ function atualizarBotaoProximoTempo(fraseObj = fraseAtual, etapa = etapaAtual) {
   btn.tabIndex = -1;
 }
 
+function atualizarMarcaDagua(fraseObj = fraseAtual, etapa = etapaAtual) {
+  const marca = document.getElementById("boxMarcaDagua");
+  const box = document.getElementById("box");
+  if (!marca) return;
+
+  const maiorTempoDaFrase = maiorEtapa(fraseObj?.partes || []);
+  const fraseTemConteudo = !!obterTextoVisivel(fraseObj?.partes || [], etapa);
+  const fraseCompleta = fraseTemConteudo && etapa >= maiorTempoDaFrase;
+  const deveMostrar = !sobreAberto && !box?.classList.contains("is-loading") && fraseCompleta;
+
+  marca.classList.toggle("is-visible", deveMostrar);
+  marca.setAttribute("aria-hidden", deveMostrar ? "false" : "true");
+}
+
 function aplicarClasseDialogo(texto) {
   const el = document.getElementById("frase");
 
@@ -2746,6 +2800,7 @@ function mostrarFraseObjeto(fraseObj, etapa = 1) {
     fraseAtual = fraseObj;
     etapaAtual = etapa;
     atualizarBotaoProximoTempo(fraseObj, etapa);
+    atualizarMarcaDagua(fraseObj, etapa);
 
     if (fraseObj?.id != null) {
       idsExibidos.add(fraseObj.id);
@@ -2792,6 +2847,7 @@ function mostrarMensagem(texto) {
   fraseAtual = null;
   etapaAtual = 1;
   atualizarBotaoProximoTempo(null, 1);
+  atualizarMarcaDagua(null, 1);
 }
 
 function atualizarFrasesFiltradas() {
@@ -3454,6 +3510,7 @@ function abrirSobre() {
   resetarDimensoesDoBox();
   ajustarAlturaBoxDinamicamente();
   atualizarBotaoProximoTempo(null, 1);
+  atualizarMarcaDagua(null, 1);
   iniciarGlitchDaMaquina();
 }
 
@@ -3509,6 +3566,7 @@ function fecharSobre(event) {
   resetarDimensoesDoBox();
   ajustarAlturaBoxDinamicamente();
   atualizarBotaoProximoTempo(fraseAtual, etapaAtual);
+  atualizarMarcaDagua(fraseAtual, etapaAtual);
   if (document.getElementById("box")?.classList.contains("is-loading") && !document.body.classList.contains("machine-settle")) {
     iniciarGlitchDaMaquina();
   }
