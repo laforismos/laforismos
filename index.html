@@ -140,22 +140,22 @@
 
     .box-marca-dagua {
       position: absolute;
-      right: 14px;
-      bottom: 12px;
+      right: 10px;
+      bottom: 6px;
       display: inline-flex;
       align-items: center;
       justify-content: flex-end;
-      max-width: calc(100% - 28px);
+      max-width: calc(100% - 20px);
       padding: 0;
       color: inherit;
       font-family: Helvetica, Arial, sans-serif;
-      font-size: 0.9rem;
+      font-size: 0.72rem;
       line-height: 1;
       font-weight: 400;
       font-style: italic;
       letter-spacing: 0.01em;
       opacity: 0;
-      transform: translateY(4px);
+      transform: translateY(3px);
       pointer-events: none;
       transition: opacity 0.26s ease, transform 0.26s ease;
       z-index: 3;
@@ -164,8 +164,12 @@
     }
 
     .box-marca-dagua.is-visible {
-      opacity: 0.42;
+      opacity: 0.36;
       transform: translateY(0);
+    }
+
+    .box.has-marca-dagua {
+      padding-bottom: 34px;
     }
 
     .box-proximo-tempo-btn {
@@ -1129,15 +1133,20 @@
         left: auto;
       }
 
-      .box-proximo-tempo-btn,
-      .box-marca-dagua {
+      .box-proximo-tempo-btn {
         right: 10px;
         bottom: 8px;
       }
 
       .box-marca-dagua {
-        max-width: calc(100% - 20px);
-        font-size: 0.82rem;
+        right: 8px;
+        bottom: 5px;
+        max-width: calc(100% - 16px);
+        font-size: 0.68rem;
+      }
+
+      .box.has-marca-dagua {
+        padding-bottom: 32px;
       }
 
       body.sobre-aberto .sobre-box-texto {
@@ -2762,15 +2771,16 @@ function atualizarBotaoProximoTempo(fraseObj = fraseAtual, etapa = etapaAtual) {
 function atualizarMarcaDagua(fraseObj = fraseAtual, etapa = etapaAtual) {
   const marca = document.getElementById("boxMarcaDagua");
   const box = document.getElementById("box");
-  if (!marca) return;
+  if (!marca || !box) return;
 
   const maiorTempoDaFrase = maiorEtapa(fraseObj?.partes || []);
   const fraseTemConteudo = !!obterTextoVisivel(fraseObj?.partes || [], etapa);
   const fraseCompleta = fraseTemConteudo && etapa >= maiorTempoDaFrase;
-  const deveMostrar = !sobreAberto && !box?.classList.contains("is-loading") && fraseCompleta;
+  const deveMostrar = !sobreAberto && !box.classList.contains("is-loading") && fraseCompleta;
 
   marca.classList.toggle("is-visible", deveMostrar);
   marca.setAttribute("aria-hidden", deveMostrar ? "false" : "true");
+  box.classList.toggle("has-marca-dagua", deveMostrar);
 }
 
 function aplicarClasseDialogo(texto) {
