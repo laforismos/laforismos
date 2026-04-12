@@ -191,6 +191,36 @@
       opacity: 1;
     }
 
+    .marca-dagua-box {
+      position: absolute;
+      right: 14px;
+      bottom: 10px;
+      font-family: Helvetica, Arial, sans-serif;
+      font-style: italic;
+      font-size: 0.62rem;
+      line-height: 1;
+      letter-spacing: 0.06em;
+      opacity: 0;
+      pointer-events: none;
+      transform: translateY(4px);
+      transition: opacity 0.22s ease, transform 0.22s ease;
+      z-index: 2;
+      user-select: none;
+      white-space: nowrap;
+      text-transform: none;
+    }
+
+    .box.box-marca-dagua-visivel .marca-dagua-box {
+      opacity: 0.34;
+      transform: translateY(0);
+    }
+
+    .box.is-loading .marca-dagua-box,
+    body.sobre-aberto .marca-dagua-box {
+      opacity: 0 !important;
+      transform: translateY(4px) !important;
+    }
+
     .frase {
       font-family: "Bodoni Moda", "Times New Roman", serif;
       font-optical-sizing: auto;
@@ -1087,6 +1117,12 @@
         bottom: 8px;
       }
 
+      .marca-dagua-box {
+        right: 10px;
+        bottom: 8px;
+        font-size: 0.54rem;
+      }
+
       body.sobre-aberto .sobre-box-texto {
         color: rgba(24, 24, 24, 0.92);
         pointer-events: none;
@@ -1634,6 +1670,7 @@
       <div class="loading-sizer" aria-hidden="true">carregando espasmo • carregando espasmo • carregando</div>
       <div class="frase" id="frase"></div>
       <div class="sobre-box-texto" id="sobreBoxTexto" style="display:none;"></div>
+      <div class="marca-dagua-box" id="marcaDaguaBox" aria-hidden="true">Laforismos.com.br</div>
 
       <div class="overlay">
         <div class="track" aria-hidden="true"></div>
@@ -2043,6 +2080,12 @@ function inicializarCliqueNoCarimboMetalinguagem() {
 
     desativarMetalinguagemVisual();
 
+    const box = document.getElementById("box");
+    if (box) {
+      box.classList.remove("disable-hover");
+      box.classList.add("hover-preview");
+    }
+
     if (typeof entrarModoCarregandoTroca === "function") {
       entrarModoCarregandoTroca();
     }
@@ -2328,6 +2371,7 @@ function ativarEstadoLoadingBox() {
   const box = document.getElementById("box");
   const frase = document.getElementById("frase");
   box.classList.add("is-loading");
+  box.classList.remove("box-marca-dagua-visivel");
   frase.classList.remove("dialogo");
   frase.innerHTML = "";
 }
@@ -2335,6 +2379,7 @@ function ativarEstadoLoadingBox() {
 function desativarEstadoLoadingBox() {
   const box = document.getElementById("box");
   box.classList.remove("is-loading");
+  atualizarMarcaDagua(fraseAtual, etapaAtual);
   pararGlitchDaMaquina();
 }
 
@@ -2704,6 +2749,21 @@ function atualizarBotaoProximoTempo(fraseObj = fraseAtual, etapa = etapaAtual) {
   btn.tabIndex = -1;
 }
 
+function atualizarMarcaDagua(fraseObj = fraseAtual, etapa = etapaAtual) {
+  const box = document.getElementById("box");
+  if (!box) return;
+
+  const temFrase = !!fraseObj;
+  const temProximaEtapa = !!obterProximaEtapaDisponivel(fraseObj?.partes || [], etapa);
+  const deveMostrar =
+    !sobreAberto &&
+    !box.classList.contains("is-loading") &&
+    temFrase &&
+    !temProximaEtapa;
+
+  box.classList.toggle("box-marca-dagua-visivel", deveMostrar);
+}
+
 function aplicarClasseDialogo(texto) {
   const el = document.getElementById("frase");
 
@@ -2731,6 +2791,7 @@ function mostrarFraseObjeto(fraseObj, etapa = 1) {
     fraseAtual = fraseObj;
     etapaAtual = etapa;
     atualizarBotaoProximoTempo(fraseObj, etapa);
+    atualizarMarcaDagua(fraseObj, etapa);
 
     if (fraseObj?.id != null) {
       idsExibidos.add(fraseObj.id);
@@ -2777,6 +2838,7 @@ function mostrarMensagem(texto) {
   fraseAtual = null;
   etapaAtual = 1;
   atualizarBotaoProximoTempo(null, 1);
+  atualizarMarcaDagua(null, 1);
 }
 
 function atualizarFrasesFiltradas() {
@@ -3439,6 +3501,7 @@ function abrirSobre() {
   resetarDimensoesDoBox();
   ajustarAlturaBoxDinamicamente();
   atualizarBotaoProximoTempo(null, 1);
+  atualizarMarcaDagua(null, 1);
   iniciarGlitchDaMaquina();
 }
 
@@ -3494,6 +3557,7 @@ function fecharSobre(event) {
   resetarDimensoesDoBox();
   ajustarAlturaBoxDinamicamente();
   atualizarBotaoProximoTempo(fraseAtual, etapaAtual);
+  atualizarMarcaDagua(fraseAtual, etapaAtual);
   if (document.getElementById("box")?.classList.contains("is-loading") && !document.body.classList.contains("machine-settle")) {
     iniciarGlitchDaMaquina();
   }
