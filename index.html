@@ -2,6 +2,9 @@
 <html lang="pt-BR">
 <head>
 <meta charset="UTF-8">
+  <meta http-equiv="Content-Security-Policy" content="default-src 'self'; script-src 'self' 'unsafe-inline' https://www.googletagmanager.com; style-src 'self' 'unsafe-inline' https://fonts.googleapis.com; img-src 'self' data: https://raw.githubusercontent.com; font-src 'self' https://fonts.gstatic.com; connect-src 'self' https://script.google.com https://script.googleusercontent.com https://www.google-analytics.com https://region1.google-analytics.com; media-src 'self' blob:; object-src 'none'; base-uri 'self'; form-action 'self' mailto:; upgrade-insecure-requests">
+  <meta name="referrer" content="strict-origin-when-cross-origin">
+  <meta http-equiv="X-Frame-Options" content="DENY">
   <meta name="description" content="Palavras inquietas que saíram por aí.">
   <meta name="viewport" content="width=device-width, initial-scale=1.0">
   <title>Laforismos</title>
@@ -3277,16 +3280,23 @@ function feMail() {
   window.location.href = "mailto:felipe.sauma@gmail.com";
 }
 
+function abrirLinkSeguro(url) {
+  const novaJanela = window.open(url, "_blank", "noopener,noreferrer");
+  if (novaJanela) {
+    novaJanela.opener = null;
+  }
+}
+
 function lk() {
-  window.open("https://www.linkedin.com/in/felipesauma_creative/", "_blank");
+  abrirLinkSeguro("https://www.linkedin.com/in/felipesauma_creative/");
 }
 
 function ig() {
-  window.open("https://www.instagram.com/felipesauma/", "_blank");
+  abrirLinkSeguro("https://www.instagram.com/felipesauma/");
 }
 
 function wrk() {
-  window.open("https://felipesauma.com.br", "_blank");
+  abrirLinkSeguro("https://felipesauma.com.br");
 }
 
 function normalizarBoolean(valor) {
