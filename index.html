@@ -2264,6 +2264,7 @@ body.ebook-offer-open .site-header,
 
 <body>
 
+
 <main>
   <div class="site-header">
     <a class="site-header-link" href="./" aria-label="Ir para a home">
@@ -2395,6 +2396,7 @@ const Laforismos = window.Laforismos || {};
 window.Laforismos = Laforismos;
 
 const BACKGROUNDS = [];
+
 
 const MOBILE_BG_COLORS = [
   "#ff2ce9", // 01
@@ -3533,14 +3535,12 @@ function aplicarBackgroundVisualEstático(bg) {
 }
 
 function aplicarBackgroundAleatorio(semRepetirAtual = false) {
-  const body = document.body;
   backgroundEmUso = null;
-  body.classList.remove("bg-verde");
+  document.body.classList.remove("bg-verde");
   aplicarCorInicialDoSite();
 }
 
 function ativarEstadoLoadingBox() {
-
   const box = document.getElementById("box");
   const frase = document.getElementById("frase");
   box.classList.add("is-loading");
@@ -5001,7 +5001,7 @@ document.addEventListener("keydown", (event) => {
 });
 
 aplicarSubtituloEmSequencia();
-aplicarCorInicialDoSite();
+aplicarBackgroundAleatorio();
 sincronizarToggle();
 inicializarInteracaoToggle();
 inicializarInteracaoBox();
