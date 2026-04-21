@@ -1378,24 +1378,50 @@ body.bg-verde.sobre-aberto .interacao-area .box {
       z-index: 1;
     }
 
-    footer span {
+    footer span,
+    .footer-nav-separator {
+      margin: 0;
+    }
+
+    .footer-nav {
+      display: inline-block;
+      margin-top: 2px;
+      white-space: nowrap;
+      line-height: 1.15;
+    }
+
+    .footer-nav-link {
+      display: inline;
       cursor: pointer;
-      margin: 0 6px;
       text-decoration: underline;
+      text-underline-offset: 0.08em;
+      white-space: nowrap;
+      vertical-align: baseline;
+    }
+
+    .footer-nav-separator {
+      display: inline;
+      opacity: 0.78;
+      user-select: none;
+      white-space: nowrap;
+      vertical-align: baseline;
     }
 
     .site-header,
-    .footer-sobre-trigger,
-    .footer-links {
+    .footer-nav {
       transition: transform 0.42s ease, opacity 0.42s ease;
     }
 
-    .footer-links {
-      margin-top: 2px;
+    .footer-copyright {
+      margin-top: 8px;
+      font-size: 0.58rem;
+      line-height: 1.2;
+      opacity: 0.72;
+      text-align: center;
+      letter-spacing: 0.01em;
     }
 
-    body.sobre-aberto .footer-sobre-trigger,
-    body.sobre-aberto .footer-links {
+    body.sobre-aberto .footer-nav {
       opacity: 1;
       transform: none;
     }
@@ -2361,10 +2387,8 @@ body.ebook-offer-open .site-header,
 </main>
 
 <footer>
-  <div class="sobre-trigger footer-sobre-trigger" data-action="toggle-sobre-footer">Sobre (e sob) o site</div>
-  <div class="footer-links">
-    <span class="footer-ebook-link" data-action="abrir-ebook-rodape">E!Book.</span>
-  </div>
+  <div class="footer-nav"><span class="sobre-trigger footer-sobre-trigger footer-nav-link" data-action="toggle-sobre-footer">Sobre (e sob)</span> <span class="footer-nav-separator" aria-hidden="true">|</span> <span class="footer-ebook-link footer-nav-link" data-action="abrir-ebook-rodape">E! Book</span></div>
+  <div class="footer-copyright">© 2026 LAFORISMOS. Todos os direitos reservados.</div>
 </footer>
 
 <script>
