@@ -2264,10 +2264,6 @@ body.ebook-offer-open .site-header,
 
 <body>
 
-<video autoplay muted loop playsinline preload="metadata" id="bg-video" aria-hidden="true">
-  <source id="bg-video-source">
-</video>
-
 <main>
   <div class="site-header">
     <a class="site-header-link" href="./" aria-label="Ir para a home">
@@ -2398,22 +2394,7 @@ const STORAGE_FRASES_VISTAS = "laforismos_frases_vistas_v1";
 const Laforismos = window.Laforismos || {};
 window.Laforismos = Laforismos;
 
-const BACKGROUNDS = [
-  {
-    video: "./BG_ROSA.mov",
-    videoType: "video/quicktime",
-    mobile: "./BG_ROSA_MOBILE.png"
-  },
-  {
-    video: "./BG_verde.mov",
-    videoType: "video/quicktime",
-    mobile: "./BG_VERDELIMAO.png",
-    startTime: 15,
-    endTime: 45,
-    isGreen: true
-  }
-];
-
+const BACKGROUNDS = [];
 
 const MOBILE_BG_COLORS = [
   "#ff2ce9", // 01
@@ -3537,63 +3518,29 @@ function embaralhar(array, extraSeed = 0) {
 }
 
 function escolherBackgroundAleatorio(semRepetirAtual = false) {
-  if (!Array.isArray(BACKGROUNDS) || BACKGROUNDS.length === 0) return null;
-
-  if (!semRepetirAtual || BACKGROUNDS.length === 1) {
-    const indice = Math.floor(Math.random() * BACKGROUNDS.length);
-    ultimoBackgroundIndex = indice;
-    return BACKGROUNDS[indice];
-  }
-
-  let indice = Math.floor(Math.random() * BACKGROUNDS.length);
-
-  while (indice === ultimoBackgroundIndex) {
-    indice = Math.floor(Math.random() * BACKGROUNDS.length);
-  }
-
-  ultimoBackgroundIndex = indice;
-  return BACKGROUNDS[indice];
+  return null;
 }
 
 let backgroundEmUso = null;
 let videoErrorHandler = null;
 
 function videoPareceCompativel(bg) {
-  const video = document.createElement("video");
-  if (!bg?.videoType) return true;
-  const suporte = video.canPlayType(bg.videoType);
-  return suporte === "probably" || suporte === "maybe";
+  return false;
 }
 
 function aplicarBackgroundVisualEstático(bg) {
-  const video = document.getElementById("bg-video");
-  const source = document.getElementById("bg-video-source");
-
-  if (source) {
-    source.removeAttribute("src");
-    source.removeAttribute("type");
-  }
-
-  if (video) {
-    video.pause();
-    video.removeAttribute("src");
-    video.load();
-    video.style.display = "none";
-  }
+  return;
 }
 
 function aplicarBackgroundAleatorio(semRepetirAtual = false) {
-  const bg = escolherBackgroundAleatorio(semRepetirAtual);
-  if (!bg) return;
-
   const body = document.body;
-  backgroundEmUso = bg;
+  backgroundEmUso = null;
   body.classList.remove("bg-verde");
   aplicarCorInicialDoSite();
-  aplicarBackgroundVisualEstático(bg);
 }
 
 function ativarEstadoLoadingBox() {
+
   const box = document.getElementById("box");
   const frase = document.getElementById("frase");
   box.classList.add("is-loading");
@@ -5054,7 +5001,7 @@ document.addEventListener("keydown", (event) => {
 });
 
 aplicarSubtituloEmSequencia();
-aplicarBackgroundAleatorio();
+aplicarCorInicialDoSite();
 sincronizarToggle();
 inicializarInteracaoToggle();
 inicializarInteracaoBox();
