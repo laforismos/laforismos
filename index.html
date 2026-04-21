@@ -50,13 +50,35 @@
 
 
 
-  <style id="laforismos-styles">
+  <script>
+(function () {
+  const COLORS = [
+    "#ff18c1", "#ff185f", "#cbff18", "#33ff18", "#ff00b4", "#00fffc", "#ff5a00", "#00ffde",
+    "#42ff00", "#00ffc0", "#7e00ff", "#fd2e77", "#fd2ef6", "#2efd9e", "#e1ff16", "#4683ff",
+    "#ff9446", "#7646ff", "#ff6b6b", "#ffd93d", "#6bcb77", "#4d96ff", "#b967ff", "#ff8fab",
+    "#f15bb5", "#fee440", "#00bbf9", "#00f5d4", "#9bff00", "#ff7b00", "#ff3d81"
+  ];
+  const WHITE_TEXT_INDICES = new Set([1, 5, 7, 8, 11, 13, 17, 18, 19, 22, 24, 28, 29, 31, 33, 36, 37]);
+  const index = Math.floor(Math.random() * COLORS.length);
+  const color = COLORS[index];
+  const humanIndex = index + 1;
+  const whiteText = WHITE_TEXT_INDICES.has(humanIndex);
+  const root = document.documentElement;
+  root.style.setProperty('--initial-site-bg-color', color);
+  root.style.setProperty('--initial-site-text-color', whiteText ? 'white' : 'rgba(64, 64, 64, 1)');
+  root.style.setProperty('--initial-box-border-color', whiteText ? 'rgba(255,255,255,0.6)' : 'transparent');
+  root.style.setProperty('--initial-stamp-filter', whiteText ? 'brightness(0) invert(1)' : 'brightness(0) saturate(100%) opacity(0.92)');
+  window.__LAFORISMOS_INITIAL_BG = { color, index: humanIndex };
+})();
+</script>
+
+<style id="laforismos-styles">
 body {
-      --site-bg-color: #ff00b4;
+      --site-bg-color: var(--initial-site-bg-color, #ff00b4);
       --mobile-overlay-opacity: 0.18;
-      --site-text-color: white;
-      --dynamic-box-border-color: rgba(255,255,255,0.6);
-      --stamp-filter: brightness(0) invert(1);
+      --site-text-color: var(--initial-site-text-color, white);
+      --dynamic-box-border-color: var(--initial-box-border-color, rgba(255,255,255,0.6));
+      --stamp-filter: var(--initial-stamp-filter, brightness(0) invert(1));
       margin: 0;
       font-family: Helvetica, Arial, sans-serif;
       color: var(--site-text-color);
@@ -2264,6 +2286,9 @@ body.ebook-offer-open .site-header,
 
 <body>
 
+<video autoplay muted loop playsinline preload="metadata" id="bg-video" aria-hidden="true">
+  <source id="bg-video-source" src="./VIDEOBALAO.mp4" type="video/mp4">
+</video>
 
 <main>
   <div class="site-header">
@@ -2395,7 +2420,26 @@ const STORAGE_FRASES_VISTAS = "laforismos_frases_vistas_v1";
 const Laforismos = window.Laforismos || {};
 window.Laforismos = Laforismos;
 
-const BACKGROUNDS = [];
+const BACKGROUNDS = [
+  {
+    video: "./VIDEOBALAO.mp4",
+    videoType: "video/mp4",
+    mobile: "./balaocolor.png"
+  },
+  {
+    video: "./BG_ROSA.mov",
+    videoType: "video/quicktime",
+    mobile: "./BG_ROSA_MOBILE.png"
+  },
+  {
+    video: "./BG_verde.mov",
+    videoType: "video/quicktime",
+    mobile: "./BG_VERDELIMAO.png",
+    startTime: 15,
+    endTime: 45,
+    isGreen: true
+  }
+];
 
 
 const MOBILE_BG_COLORS = [
@@ -2573,8 +2617,8 @@ async function atualizarFaviconDinamico(corHex) {
   }
 }
 
-let ultimaCorDoSite = null;
-let ultimoIndiceCorDoSite = -1;
+let ultimaCorDoSite = window.__LAFORISMOS_INITIAL_BG?.color || null;
+let ultimoIndiceCorDoSite = window.__LAFORISMOS_INITIAL_BG?.index || -1;
 
 const SUBTITULOS = [
   "Nanocontos. Mais nano do que contos.",
@@ -3520,24 +3564,60 @@ function embaralhar(array, extraSeed = 0) {
 }
 
 function escolherBackgroundAleatorio(semRepetirAtual = false) {
-  return null;
+  if (!Array.isArray(BACKGROUNDS) || BACKGROUNDS.length === 0) return null;
+
+  if (!semRepetirAtual || BACKGROUNDS.length === 1) {
+    const indice = Math.floor(Math.random() * BACKGROUNDS.length);
+    ultimoBackgroundIndex = indice;
+    return BACKGROUNDS[indice];
+  }
+
+  let indice = Math.floor(Math.random() * BACKGROUNDS.length);
+
+  while (indice === ultimoBackgroundIndex) {
+    indice = Math.floor(Math.random() * BACKGROUNDS.length);
+  }
+
+  ultimoBackgroundIndex = indice;
+  return BACKGROUNDS[indice];
 }
 
 let backgroundEmUso = null;
 let videoErrorHandler = null;
 
 function videoPareceCompativel(bg) {
-  return false;
+  const video = document.createElement("video");
+  if (!bg?.videoType) return true;
+  const suporte = video.canPlayType(bg.videoType);
+  return suporte === "probably" || suporte === "maybe";
 }
 
 function aplicarBackgroundVisualEstático(bg) {
-  return;
+  const video = document.getElementById("bg-video");
+  const source = document.getElementById("bg-video-source");
+
+  if (source) {
+    source.removeAttribute("src");
+    source.removeAttribute("type");
+  }
+
+  if (video) {
+    video.pause();
+    video.removeAttribute("src");
+    video.load();
+    video.style.display = "none";
+  }
 }
 
 function aplicarBackgroundAleatorio(semRepetirAtual = false) {
-  backgroundEmUso = null;
-  document.body.classList.remove("bg-verde");
+  const bg = escolherBackgroundAleatorio(semRepetirAtual);
+  if (!bg) return;
+
+  const body = document.body;
+  backgroundEmUso = bg;
+  body.classList.remove("bg-verde");
   aplicarCorInicialDoSite();
+  aplicarBackgroundVisualEstático(bg);
 }
 
 function ativarEstadoLoadingBox() {
