@@ -1643,56 +1643,6 @@ body.bg-verde.sobre-aberto .interacao-area .box {
       }
     }
 
-    @media (max-width: 768px) {
-      html, body {
-        width: 100%;
-        height: 100dvh;
-        overflow: hidden !important;
-        overscroll-behavior: none;
-      }
-
-      body {
-        position: fixed;
-        inset: 0;
-        min-height: 100dvh;
-        max-height: 100dvh;
-      }
-
-      main {
-        height: calc(100dvh - 82px);
-        min-height: 0;
-        box-sizing: border-box;
-        overflow: hidden;
-        padding-top: 104px;
-        padding-bottom: 8px;
-        gap: 14px;
-      }
-
-      .interacao-area {
-        flex: 1 1 auto;
-        min-height: 0;
-        width: 100%;
-        overflow: hidden;
-      }
-
-      footer {
-        flex: 0 0 auto;
-        padding: 8px 20px 10px;
-      }
-
-      .filtro-obceno {
-        margin-top: 16px;
-      }
-
-      .filtro-apenas-novas {
-        margin-top: 6px;
-      }
-
-      .footer-copyright {
-        margin-top: 6px;
-      }
-    }
-
 .box.is-loading.backend-waiting {
     background: rgba(255,255,255,0.10) !important;
     backdrop-filter: none;
@@ -2311,6 +2261,196 @@ body.ebook-offer-open .site-header,
     pointer-events: none;
   }
   </style>
+
+
+<style id="laforismos-mobile-lock-and-loader-fixes">
+  .interacao-area .box.is-loading,
+  .interacao-area .box.hover-preview:hover {
+    width: max-content;
+    max-width: min(90vw, 760px);
+  }
+
+  .ready-track,
+  .backend-loading-marquee,
+  .track {
+    width: min(calc(100% - 32px), max-content);
+    max-width: calc(100% - 32px);
+    margin: 0 auto;
+    text-align: center;
+    white-space: normal !important;
+    overflow-wrap: anywhere;
+    word-break: break-word;
+    text-wrap: balance;
+    line-height: 1.18;
+    padding: 0 4px;
+    box-sizing: border-box;
+  }
+
+  .box.loader-text-compact .ready-track,
+  .box.loader-text-compact .backend-loading-marquee,
+  .box.loader-text-compact .track {
+    font-size: 0.82rem !important;
+    line-height: 1.14 !important;
+    letter-spacing: 0.02em !important;
+  }
+
+  @media (max-width: 768px) {
+    html,
+    body {
+      width: 100%;
+      max-width: 100%;
+      height: 100dvh;
+      min-height: 100dvh;
+      overflow: hidden !important;
+      overscroll-behavior: none;
+      background: var(--site-bg-color) !important;
+    }
+
+    body {
+      position: fixed;
+      inset: 0;
+      display: flex;
+      flex-direction: column;
+      background: var(--site-bg-color) !important;
+      -webkit-overflow-scrolling: auto;
+    }
+
+    body::before {
+      display: none !important;
+      content: none !important;
+    }
+
+    main {
+      flex: 1 1 auto;
+      min-height: 100dvh;
+      max-height: 100dvh;
+      height: 100dvh;
+      box-sizing: border-box;
+      overflow: hidden;
+      justify-content: flex-start;
+      gap: 14px;
+      padding:
+        calc(env(safe-area-inset-top, 0px) + 102px)
+        16px
+        calc(env(safe-area-inset-bottom, 0px) + 18px);
+    }
+
+    .site-header {
+      top: calc(env(safe-area-inset-top, 0px) + 18px);
+    }
+
+    .interacao-area {
+      flex: 1 1 auto;
+      min-height: 0;
+      width: 100%;
+      justify-content: flex-start;
+      gap: 0;
+    }
+
+    .maquina-wrap {
+      width: 88px;
+      margin: 8px auto 6px;
+    }
+
+    .imagem-entre-sub-e-box {
+      width: 88px;
+      margin: 8px auto 6px;
+    }
+
+    .maquina-icones-slot {
+      bottom: calc(100% + 8px);
+    }
+
+    .box {
+      width: min(82vw, 760px);
+      max-width: min(82vw, 760px);
+      min-height: clamp(110px, 16vh, 170px);
+      height: auto !important;
+      margin-bottom: 12px;
+      padding: 16px 16px 32px;
+      box-sizing: border-box;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      overflow: hidden;
+    }
+
+    .box.is-loading,
+    .box.hover-preview:hover {
+      width: min(calc(100vw - 32px), 82vw);
+      max-width: min(calc(100vw - 32px), 82vw);
+    }
+
+    .frase,
+    .sobre-box-texto {
+      width: 100%;
+      max-width: 100%;
+      box-sizing: border-box;
+      font-size: clamp(0.98rem, 3.9vw, 1.55rem);
+      line-height: 1.26;
+      overflow-wrap: anywhere;
+      word-break: break-word;
+      text-wrap: pretty;
+    }
+
+    .frase.dialogo {
+      padding-left: 8px;
+      padding-right: 8px;
+    }
+
+    .overlay,
+    .backend-loading-layer,
+    .ready-loading-layer {
+      inset: 0;
+      width: 100%;
+      height: 100%;
+    }
+
+    .ready-track,
+    .backend-loading-marquee,
+    .track {
+      left: 50%;
+      top: 50%;
+      transform: translate(-50%, -50%);
+      width: calc(100% - 24px);
+      max-width: calc(100% - 24px);
+      font-size: clamp(0.74rem, 3.2vw, 0.9rem) !important;
+      line-height: 1.14 !important;
+      letter-spacing: 0.01em !important;
+      text-wrap: balance;
+    }
+
+    .loading-sizer {
+      width: calc(100% - 24px);
+      max-width: calc(100% - 24px);
+      white-space: normal;
+      line-height: 1.14;
+      overflow-wrap: anywhere;
+      word-break: break-word;
+    }
+
+    .filtro-obceno {
+      margin-top: 12px;
+      gap: 6px;
+    }
+
+    .filtro-apenas-novas {
+      margin-top: 6px;
+    }
+
+    footer {
+      padding-top: 10px;
+      padding-bottom: calc(env(safe-area-inset-bottom, 0px) + 10px);
+      font-size: 0.74rem;
+    }
+
+    .footer-copyright {
+      margin-top: 6px;
+      font-size: 0.5rem;
+      line-height: 1.15;
+    }
+  }
+</style>
 
 </head>
 
@@ -6006,6 +6146,95 @@ window.pararEspasmoTipografico = Laforismos.pararEspasmoTipografico;
   aplicarBackgroundAleatorio();
   garantirCamadasDeLoading();
   ativarLoadingBackendInicial();
+})();
+</script>
+
+
+<script id="laforismos-loader-box-fit-script">
+(function () {
+  const box = document.getElementById('box');
+  if (!box) return;
+
+  function getLoaderText() {
+    const ready = document.getElementById('readyTrack');
+    const backend = document.getElementById('backendLoadingMarquee');
+    const fallback = document.querySelector('#box .track');
+    return (ready?.textContent || backend?.textContent || fallback?.textContent || '').trim();
+  }
+
+  function getStyleSource() {
+    return document.getElementById('readyTrack')
+      || document.getElementById('backendLoadingMarquee')
+      || document.querySelector('#box .track')
+      || box;
+  }
+
+  function measureSingleLine(text, source) {
+    if (!text) return 0;
+    const probe = document.createElement('span');
+    const computed = window.getComputedStyle(source);
+    probe.textContent = text;
+    probe.style.position = 'fixed';
+    probe.style.left = '-99999px';
+    probe.style.top = '-99999px';
+    probe.style.visibility = 'hidden';
+    probe.style.pointerEvents = 'none';
+    probe.style.whiteSpace = 'nowrap';
+    probe.style.fontFamily = computed.fontFamily;
+    probe.style.fontSize = computed.fontSize;
+    probe.style.fontStyle = computed.fontStyle;
+    probe.style.fontWeight = computed.fontWeight;
+    probe.style.letterSpacing = computed.letterSpacing;
+    probe.style.textTransform = computed.textTransform;
+    probe.style.lineHeight = computed.lineHeight;
+    document.body.appendChild(probe);
+    const width = probe.getBoundingClientRect().width;
+    probe.remove();
+    return width;
+  }
+
+  function isLoaderActive() {
+    return box.classList.contains('is-loading') || document.body.classList.contains('intro-click-mode');
+  }
+
+  function fitLoaderBox() {
+    const text = getLoaderText();
+    const source = getStyleSource();
+    const viewportWidth = window.innerWidth || document.documentElement.clientWidth || 0;
+    const isMobile = viewportWidth <= 768;
+    const maxAllowed = Math.min(isMobile ? viewportWidth - 32 : viewportWidth * 0.9, 760);
+    const minAllowed = isMobile ? Math.min(320, maxAllowed) : 0;
+    const measured = measureSingleLine(text, source);
+    const desired = Math.max(minAllowed, Math.min(maxAllowed, Math.ceil(measured + (isMobile ? 34 : 56))));
+
+    if (isLoaderActive() && text) {
+      box.style.width = desired + 'px';
+      box.style.maxWidth = maxAllowed + 'px';
+      box.classList.toggle('loader-text-compact', measured + 56 > maxAllowed);
+    } else {
+      box.style.width = '';
+      box.style.maxWidth = '';
+      box.classList.remove('loader-text-compact');
+    }
+  }
+
+  const observer = new MutationObserver(() => {
+    window.requestAnimationFrame(fitLoaderBox);
+  });
+
+  observer.observe(box, { attributes: true, attributeFilter: ['class'] });
+  observer.observe(document.body, { attributes: true, attributeFilter: ['class'] });
+  observer.observe(document.documentElement, { attributes: true, attributeFilter: ['class'] });
+
+  const textObserverTarget = document.body;
+  observer.observe(textObserverTarget, { childList: true, subtree: true, characterData: true });
+
+  window.addEventListener('resize', () => window.requestAnimationFrame(fitLoaderBox), { passive: true });
+  window.addEventListener('orientationchange', () => window.requestAnimationFrame(fitLoaderBox), { passive: true });
+  window.addEventListener('load', () => window.requestAnimationFrame(fitLoaderBox), { passive: true });
+
+  setTimeout(fitLoaderBox, 80);
+  setTimeout(fitLoaderBox, 400);
 })();
 </script>
 
