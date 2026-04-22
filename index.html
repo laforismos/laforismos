@@ -1610,6 +1610,12 @@ body.bg-verde.sobre-aberto .interacao-area .box {
         gap: 12px;
       }
 
+      body.sobre-aberto.sobre-mobile-scroll main {
+        min-height: auto;
+        overflow: visible;
+        padding-bottom: calc(env(safe-area-inset-bottom, 0px) + 18px);
+      }
+
       .toggle-btn {
         width: 92px;
         height: 34px;
@@ -2306,6 +2312,16 @@ body.ebook-offer-open .site-header,
       background: var(--site-bg-color) !important;
     }
 
+    html.sobre-mobile-scroll,
+    body.sobre-aberto.sobre-mobile-scroll {
+      height: auto !important;
+      min-height: 100dvh;
+      overflow-x: hidden !important;
+      overflow-y: auto !important;
+      overscroll-behavior-y: auto;
+      -webkit-overflow-scrolling: touch;
+    }
+
     body {
       position: fixed;
       inset: 0;
@@ -2313,6 +2329,12 @@ body.ebook-offer-open .site-header,
       flex-direction: column;
       background: var(--site-bg-color) !important;
       -webkit-overflow-scrolling: auto;
+    }
+
+    body.sobre-aberto.sobre-mobile-scroll {
+      position: static !important;
+      inset: auto !important;
+      display: block;
     }
 
     body::before {
@@ -6316,5 +6338,29 @@ window.pararEspasmoTipografico = Laforismos.pararEspasmoTipografico;
 })();
 </script>
 
+<script>
+(function () {
+  const mobileMedia = window.matchMedia('(max-width: 768px)');
+
+  function syncSobreMobileScroll() {
+    const shouldScroll = mobileMedia.matches && document.body.classList.contains('sobre-aberto');
+    document.documentElement.classList.toggle('sobre-mobile-scroll', shouldScroll);
+    document.body.classList.toggle('sobre-mobile-scroll', shouldScroll);
+  }
+
+  const observer = new MutationObserver(syncSobreMobileScroll);
+  observer.observe(document.body, { attributes: true, attributeFilter: ['class'] });
+
+  if (typeof mobileMedia.addEventListener === 'function') {
+    mobileMedia.addEventListener('change', syncSobreMobileScroll);
+  } else if (typeof mobileMedia.addListener === 'function') {
+    mobileMedia.addListener(syncSobreMobileScroll);
+  }
+
+  window.addEventListener('orientationchange', syncSobreMobileScroll);
+  window.addEventListener('resize', syncSobreMobileScroll);
+  syncSobreMobileScroll();
+})();
+</script>
 </body>
 </html>
