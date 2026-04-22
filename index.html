@@ -2322,17 +2322,17 @@ body.ebook-offer-open .site-header,
 
     main {
       flex: 1 1 auto;
-      min-height: 100dvh;
-      max-height: 100dvh;
-      height: 100dvh;
+      min-height: 0;
+      height: auto;
+      max-height: none;
       box-sizing: border-box;
       overflow: hidden;
       justify-content: flex-start;
-      gap: 14px;
+      gap: 12px;
       padding:
         calc(env(safe-area-inset-top, 0px) + 102px)
         16px
-        calc(env(safe-area-inset-bottom, 0px) + 18px);
+        8px;
     }
 
     .site-header {
@@ -2439,9 +2439,21 @@ body.ebook-offer-open .site-header,
     }
 
     footer {
-      padding-top: 10px;
-      padding-bottom: calc(env(safe-area-inset-bottom, 0px) + 10px);
+      flex: 0 0 auto;
+      width: 100%;
+      box-sizing: border-box;
+      padding: 8px 16px calc(env(safe-area-inset-bottom, 0px) + 10px);
       font-size: 0.74rem;
+      text-align: center;
+    }
+
+    .footer-nav {
+      display: inline-flex;
+      align-items: center;
+      justify-content: center;
+      gap: 0.42rem;
+      max-width: 100%;
+      white-space: nowrap;
     }
 
     .footer-copyright {
