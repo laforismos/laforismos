@@ -8,6 +8,8 @@
   <meta http-equiv="X-Frame-Options" content="DENY">
   <meta name="description" content="Nanocontos improváveis, inviáveis e irritantes. Um livro vivo em busca de leitores desavisados.">
   <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <meta name="theme-color" content="#ff00b4">
+  <meta name="apple-mobile-web-app-status-bar-style" content="default">
   <title>Laforismos</title>
   <link id="dynamic-favicon" rel="icon" type="image/png" href="">
 
@@ -51,7 +53,12 @@
 
 
   <style id="laforismos-styles">
-body {
+html {
+      background: #ff00b4;
+      background-color: #ff00b4;
+    }
+
+    body {
       --site-bg-color: #ff00b4;
       --mobile-overlay-opacity: 0.18;
       --site-text-color: white;
@@ -2941,6 +2948,19 @@ function escolherCorAleatoriaSemRepeticao() {
   };
 }
 
+function atualizarThemeColor(color) {
+  const cor = color || "#ff00b4";
+  document.documentElement.style.background = cor;
+  document.documentElement.style.backgroundColor = cor;
+  document.body.style.background = cor;
+  document.body.style.backgroundColor = cor;
+
+  const metaThemeColor = document.querySelector('meta[name="theme-color"]');
+  if (metaThemeColor) {
+    metaThemeColor.setAttribute("content", cor);
+  }
+}
+
 function aplicarEstiloDaCorAtual(index) {
   const fonteBranca = INDICES_FONTE_BRANCA.has(index);
   document.body.style.setProperty("--site-text-color", fonteBranca ? "white" : "rgba(64, 64, 64, 1)");
@@ -2952,7 +2972,9 @@ function aplicarNovaCorDoSite() {
   const escolha = escolherCorAleatoriaSemRepeticao();
   ultimaCorDoSite = escolha.color;
   ultimoIndiceCorDoSite = escolha.index;
+  document.documentElement.style.setProperty("--site-bg-color", escolha.color);
   document.body.style.setProperty("--site-bg-color", escolha.color);
+  atualizarThemeColor(escolha.color);
   aplicarEstiloDaCorAtual(escolha.index);
   atualizarFaviconDinamico(escolha.color);
   atualizarTituloDaAbaDinamico();
@@ -2960,7 +2982,9 @@ function aplicarNovaCorDoSite() {
 
 function aplicarCorInicialDoSite() {
   if (ultimaCorDoSite) {
+    document.documentElement.style.setProperty("--site-bg-color", ultimaCorDoSite);
     document.body.style.setProperty("--site-bg-color", ultimaCorDoSite);
+    atualizarThemeColor(ultimaCorDoSite);
     aplicarEstiloDaCorAtual(ultimoIndiceCorDoSite);
     atualizarFaviconDinamico(ultimaCorDoSite);
     atualizarTituloDaAbaDinamico();
