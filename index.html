@@ -8,6 +8,29 @@
   <meta http-equiv="X-Frame-Options" content="DENY">
   <meta name="description" content="Nanocontos improváveis, inviáveis e irritantes. Um livro vivo em busca de leitores desavisados.">
   <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <script>
+    (function () {
+      try {
+        var STORAGE_KEY = "laforismos_prepaint_bg_v1";
+        var COLORS = [
+          "#ff2ce9","#0fff7a","#90ff00","#78fffd","#ffa178","#18e7ff","#ff18c1","#ff185f",
+          "#cbff18","#33ff18","#ff00b4","#00fffc","#ff5a00","#00ffde","#42ff00","#00ffc0",
+          "#7e00ff","#fd2e77","#fd2ef6","#2efd9e","#e1ff16","#4683ff"
+        ];
+        var saved = null;
+        try { saved = JSON.parse(sessionStorage.getItem(STORAGE_KEY) || "null"); } catch (e) {}
+        var pick = saved && saved.color && saved.index ? saved : null;
+        if (!pick) {
+          var idx = Math.floor(Math.random() * COLORS.length);
+          pick = { color: COLORS[idx], index: idx + 1 };
+          try { sessionStorage.setItem(STORAGE_KEY, JSON.stringify(pick)); } catch (e) {}
+        }
+        window.__LAFORISMOS_PREPAINT_BG__ = pick;
+        document.documentElement.style.setProperty("--site-bg-color", pick.color);
+        document.documentElement.style.backgroundColor = pick.color;
+      } catch (e) {}
+    })();
+  </script>
   <title>Laforismos</title>
   <link id="dynamic-favicon" rel="icon" type="image/png" href="">
 
@@ -51,8 +74,13 @@
 
 
   <style id="laforismos-styles">
-body {
-      --site-bg-color: #ff00b4;
+html {
+      --site-bg-color: #78fffd;
+      background-color: var(--site-bg-color);
+      background-image: none !important;
+    }
+
+    body {
       --mobile-overlay-opacity: 0.18;
       --site-text-color: white;
       --dynamic-box-border-color: rgba(255,255,255,0.6);
@@ -66,7 +94,8 @@ body {
       min-height: 100dvh;
       overflow-x: hidden;
       overflow-y: auto;
-      background: var(--site-bg-color);
+      background-color: var(--site-bg-color);
+      background-image: none !important;
     }
     #bg-video { display: none !important; }
 
@@ -2309,7 +2338,8 @@ body.ebook-offer-open .site-header,
       min-height: 100dvh;
       overflow: hidden !important;
       overscroll-behavior: none;
-      background: var(--site-bg-color) !important;
+      background-color: var(--site-bg-color) !important;
+      background-image: none !important;
     }
 
     html.sobre-mobile-scroll,
@@ -2327,7 +2357,8 @@ body.ebook-offer-open .site-header,
       inset: 0;
       display: flex;
       flex-direction: column;
-      background: var(--site-bg-color) !important;
+      background-color: var(--site-bg-color) !important;
+      background-image: none !important;
       -webkit-overflow-scrolling: auto;
     }
 
@@ -2340,6 +2371,21 @@ body.ebook-offer-open .site-header,
     body::before {
       display: none !important;
       content: none !important;
+    }
+
+    html::before,
+    html::after,
+    body::after {
+      display: none !important;
+      content: none !important;
+    }
+
+    @supports (-webkit-touch-callout: none) {
+      html,
+      body {
+        background-color: var(--site-bg-color) !important;
+        background-image: none !important;
+      }
     }
 
     main {
@@ -3112,8 +3158,20 @@ async function atualizarFaviconDinamico(corHex) {
   }
 }
 
-let ultimaCorDoSite = null;
-let ultimoIndiceCorDoSite = -1;
+const PREPAINT_BG_STATE = (() => {
+  try {
+    if (window.__LAFORISMOS_PREPAINT_BG__ && window.__LAFORISMOS_PREPAINT_BG__.color) {
+      return window.__LAFORISMOS_PREPAINT_BG__;
+    }
+    const bruto = sessionStorage.getItem("laforismos_prepaint_bg_v1");
+    return bruto ? JSON.parse(bruto) : null;
+  } catch (error) {
+    return null;
+  }
+})();
+
+let ultimaCorDoSite = PREPAINT_BG_STATE?.color || null;
+let ultimoIndiceCorDoSite = Number.isFinite(PREPAINT_BG_STATE?.index) ? PREPAINT_BG_STATE.index : -1;
 
 const SUBTITULOS = [
   "Nanocontos. Mais nano do que contos.",
@@ -3195,10 +3253,19 @@ function aplicarEstiloDaCorAtual(index) {
   document.body.style.setProperty("--stamp-filter", fonteBranca ? "brightness(0) invert(1)" : "brightness(0) saturate(100%) opacity(0.92)");
 }
 
+function persistirCorPrepaint(escolha) {
+  try {
+    sessionStorage.setItem("laforismos_prepaint_bg_v1", JSON.stringify(escolha));
+  } catch (error) {}
+}
+
 function aplicarNovaCorDoSite() {
   const escolha = escolherCorAleatoriaSemRepeticao();
   ultimaCorDoSite = escolha.color;
   ultimoIndiceCorDoSite = escolha.index;
+  persistirCorPrepaint(escolha);
+  document.documentElement.style.setProperty("--site-bg-color", escolha.color);
+  document.documentElement.style.backgroundColor = escolha.color;
   document.body.style.setProperty("--site-bg-color", escolha.color);
   if (window.LaforismoPopup && typeof LaforismoPopup.syncColor === "function") { LaforismoPopup.syncColor(); }
   aplicarEstiloDaCorAtual(escolha.index);
@@ -3208,7 +3275,10 @@ function aplicarNovaCorDoSite() {
 
 function aplicarCorInicialDoSite() {
   if (ultimaCorDoSite) {
+    document.documentElement.style.setProperty("--site-bg-color", ultimaCorDoSite);
+    document.documentElement.style.backgroundColor = ultimaCorDoSite;
     document.body.style.setProperty("--site-bg-color", ultimaCorDoSite);
+    persistirCorPrepaint({ color: ultimaCorDoSite, index: ultimoIndiceCorDoSite });
     if (window.LaforismoPopup && typeof LaforismoPopup.syncColor === "function") { LaforismoPopup.syncColor(); }
     aplicarEstiloDaCorAtual(ultimoIndiceCorDoSite);
     atualizarFaviconDinamico(ultimaCorDoSite);
