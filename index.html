@@ -8,37 +8,6 @@
   <meta http-equiv="X-Frame-Options" content="DENY">
   <meta name="description" content="Nanocontos improváveis, inviáveis e irritantes. Um livro vivo em busca de leitores desavisados.">
   <meta name="viewport" content="width=device-width, initial-scale=1.0">
-  <meta name="theme-color" content="#78fffd" id="theme-color-meta">
-  <script>
-    (function () {
-      try {
-        var STORAGE_KEY = "laforismos_prepaint_bg_v1";
-        var COLORS = [
-          "#ff2ce9","#0fff7a","#90ff00","#78fffd","#ffa178","#18e7ff","#ff18c1","#ff185f",
-          "#cbff18","#33ff18","#ff00b4","#00fffc","#ff5a00","#00ffde","#42ff00","#00ffc0",
-          "#7e00ff","#fd2e77","#fd2ef6","#2efd9e","#e1ff16","#4683ff"
-        ];
-        var saved = null;
-        try { saved = JSON.parse(sessionStorage.getItem(STORAGE_KEY) || "null"); } catch (e) {}
-        var pick = saved && saved.color && saved.index ? saved : null;
-        if (!pick) {
-          var idx = Math.floor(Math.random() * COLORS.length);
-          pick = { color: COLORS[idx], index: idx + 1 };
-          try { sessionStorage.setItem(STORAGE_KEY, JSON.stringify(pick)); } catch (e) {}
-        }
-        window.__LAFORISMOS_PREPAINT_BG__ = pick;
-        document.documentElement.style.setProperty("--site-bg-color", pick.color);
-        document.documentElement.style.backgroundColor = pick.color;
-        var themeMeta = document.querySelector('meta[name="theme-color"]');
-        if (!themeMeta) {
-          themeMeta = document.createElement('meta');
-          themeMeta.setAttribute('name', 'theme-color');
-          document.head.appendChild(themeMeta);
-        }
-        themeMeta.setAttribute('content', pick.color);
-      } catch (e) {}
-    })();
-  </script>
   <title>Laforismos</title>
   <link id="dynamic-favicon" rel="icon" type="image/png" href="">
 
@@ -83,12 +52,12 @@
 
   <style id="laforismos-styles">
 html {
-      --site-bg-color: #78fffd;
+      --site-bg-color: #ff00b4;
       background-color: var(--site-bg-color);
       background-image: none !important;
     }
 
-    body {
+body {
       --mobile-overlay-opacity: 0.18;
       --site-text-color: white;
       --dynamic-box-border-color: rgba(255,255,255,0.6);
@@ -103,17 +72,6 @@ html {
       overflow-x: hidden;
       overflow-y: auto;
       background-color: transparent;
-      background-image: none !important;
-      isolation: isolate;
-    }
-
-    #site-bg-fill {
-      position: fixed;
-      inset: 0;
-      background-color: var(--site-bg-color);
-      background-image: none !important;
-      pointer-events: none;
-      z-index: 0;
     }
     #bg-video { display: none !important; }
 
@@ -1572,7 +1530,7 @@ body.bg-verde.sobre-aberto .interacao-area .box {
 
     @media (max-width: 768px) {
       body {
-        background: transparent;
+        background-color: transparent;
         min-height: 100dvh;
       }
 
@@ -2356,8 +2314,6 @@ body.ebook-offer-open .site-header,
       min-height: 100dvh;
       overflow: hidden !important;
       overscroll-behavior: none;
-      background-color: transparent !important;
-      background-image: none !important;
     }
 
     html.sobre-mobile-scroll,
@@ -2376,7 +2332,6 @@ body.ebook-offer-open .site-header,
       display: flex;
       flex-direction: column;
       background-color: transparent !important;
-      background-image: none !important;
       -webkit-overflow-scrolling: auto;
     }
 
@@ -2389,21 +2344,6 @@ body.ebook-offer-open .site-header,
     body::before {
       display: none !important;
       content: none !important;
-    }
-
-    html::before,
-    html::after,
-    body::after {
-      display: none !important;
-      content: none !important;
-    }
-
-    @supports (-webkit-touch-callout: none) {
-      html,
-      body {
-        background-color: transparent !important;
-        background-image: none !important;
-      }
     }
 
     main {
@@ -2866,20 +2806,6 @@ body.ebook-offer-open .site-header,
 </head>
 
 <body>
-<div id="site-bg-fill" aria-hidden="true"></div>
-<script>
-  (function(){
-    try {
-      var corInicial = (window.__LAFORISMOS_PREPAINT_BG__ && window.__LAFORISMOS_PREPAINT_BG__.color) || getComputedStyle(document.documentElement).getPropertyValue("--site-bg-color").trim();
-      if (corInicial) {
-        var bgFill = document.getElementById("site-bg-fill");
-        if (bgFill) bgFill.style.backgroundColor = corInicial;
-        var themeMeta = document.querySelector('meta[name="theme-color"]');
-        if (themeMeta) themeMeta.setAttribute("content", corInicial);
-      }
-    } catch (e) {}
-  })();
-</script>
 
 
 <main>
@@ -3190,20 +3116,8 @@ async function atualizarFaviconDinamico(corHex) {
   }
 }
 
-const PREPAINT_BG_STATE = (() => {
-  try {
-    if (window.__LAFORISMOS_PREPAINT_BG__ && window.__LAFORISMOS_PREPAINT_BG__.color) {
-      return window.__LAFORISMOS_PREPAINT_BG__;
-    }
-    const bruto = sessionStorage.getItem("laforismos_prepaint_bg_v1");
-    return bruto ? JSON.parse(bruto) : null;
-  } catch (error) {
-    return null;
-  }
-})();
-
-let ultimaCorDoSite = PREPAINT_BG_STATE?.color || null;
-let ultimoIndiceCorDoSite = Number.isFinite(PREPAINT_BG_STATE?.index) ? PREPAINT_BG_STATE.index : -1;
+let ultimaCorDoSite = null;
+let ultimoIndiceCorDoSite = -1;
 
 const SUBTITULOS = [
   "Nanocontos. Mais nano do que contos.",
@@ -3285,70 +3199,12 @@ function aplicarEstiloDaCorAtual(index) {
   document.body.style.setProperty("--stamp-filter", fonteBranca ? "brightness(0) invert(1)" : "brightness(0) saturate(100%) opacity(0.92)");
 }
 
-function atualizarThemeColor(color) {
-  try {
-    const cor = String(color || '').trim();
-    if (!cor) return;
-    let meta = document.querySelector('meta[name="theme-color"]');
-    if (!meta) {
-      meta = document.createElement('meta');
-      meta.setAttribute('name', 'theme-color');
-      document.head.appendChild(meta);
-    }
-    meta.setAttribute('content', cor);
-  } catch (error) {}
-}
-
-function aplicarCorVisualDoSite(color) {
-  try {
-    const cor = String(color || '').trim();
-    if (!cor) return;
-    document.documentElement.style.setProperty('--site-bg-color', cor);
-    document.body.style.setProperty('--site-bg-color', cor);
-    document.body.style.backgroundColor = 'transparent';
-    const bgFill = document.getElementById('site-bg-fill');
-    if (bgFill) {
-      bgFill.style.backgroundColor = cor;
-    }
-  } catch (error) {}
-}
-
-function aplicarCorNoChromeDoSafari(color) {
-  try {
-    const cor = String(color || '').trim();
-    if (!cor) return;
-    document.documentElement.style.backgroundColor = cor;
-    atualizarThemeColor(cor);
-  } catch (error) {}
-}
-
-function aplicarCorNosFundosDoDocumento(color, options) {
-  try {
-    const cor = String(color || '').trim();
-    if (!cor) return;
-    const opts = options || {};
-    aplicarCorVisualDoSite(cor);
-    if (opts.atualizarChromeSafari !== false) {
-      aplicarCorNoChromeDoSafari(cor);
-    }
-  } catch (error) {}
-}
-
-function persistirCorPrepaint(escolha) {
-  try {
-    sessionStorage.setItem("laforismos_prepaint_bg_v1", JSON.stringify(escolha));
-  } catch (error) {}
-}
-
-function aplicarNovaCorDoSite(options) {
+function aplicarNovaCorDoSite() {
   const escolha = escolherCorAleatoriaSemRepeticao();
-  const opts = options || {};
   ultimaCorDoSite = escolha.color;
   ultimoIndiceCorDoSite = escolha.index;
-  persistirCorPrepaint(escolha);
-  aplicarCorNosFundosDoDocumento(escolha.color, {
-    atualizarChromeSafari: opts.atualizarChromeSafari !== false
-  });
+  document.body.style.setProperty("--site-bg-color", escolha.color);
+  document.documentElement.style.setProperty("--site-bg-color", escolha.color);
   if (window.LaforismoPopup && typeof LaforismoPopup.syncColor === "function") { LaforismoPopup.syncColor(); }
   aplicarEstiloDaCorAtual(escolha.index);
   atualizarFaviconDinamico(escolha.color);
@@ -3357,8 +3213,8 @@ function aplicarNovaCorDoSite(options) {
 
 function aplicarCorInicialDoSite() {
   if (ultimaCorDoSite) {
-    aplicarCorNosFundosDoDocumento(ultimaCorDoSite, { atualizarChromeSafari: true });
-    persistirCorPrepaint({ color: ultimaCorDoSite, index: ultimoIndiceCorDoSite });
+    document.body.style.setProperty("--site-bg-color", ultimaCorDoSite);
+    document.documentElement.style.setProperty("--site-bg-color", ultimaCorDoSite);
     if (window.LaforismoPopup && typeof LaforismoPopup.syncColor === "function") { LaforismoPopup.syncColor(); }
     aplicarEstiloDaCorAtual(ultimoIndiceCorDoSite);
     atualizarFaviconDinamico(ultimaCorDoSite);
@@ -3366,7 +3222,7 @@ function aplicarCorInicialDoSite() {
     return;
   }
 
-  aplicarNovaCorDoSite({ atualizarChromeSafari: true });
+  aplicarNovaCorDoSite();
 }
 
 let frases = [];
@@ -4938,7 +4794,7 @@ function irParaProximaFrase() {
 
   acabou = false;
   const proxima = fila.shift();
-  aplicarNovaCorDoSite({ atualizarChromeSafari: false });
+  aplicarNovaCorDoSite();
   mostrarFraseObjeto(proxima, 1);
   aplicarTravaHoverParaEstadoAtual(proxima, 1, true);
 }
