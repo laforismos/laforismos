@@ -8,6 +8,7 @@
   <meta http-equiv="X-Frame-Options" content="DENY">
   <meta name="description" content="Nanocontos improváveis, inviáveis e irritantes. Um livro vivo em busca de leitores desavisados.">
   <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <meta name="theme-color" content="#78fffd" id="theme-color-meta">
   <script>
     (function () {
       try {
@@ -28,6 +29,13 @@
         window.__LAFORISMOS_PREPAINT_BG__ = pick;
         document.documentElement.style.setProperty("--site-bg-color", pick.color);
         document.documentElement.style.backgroundColor = pick.color;
+        var themeMeta = document.querySelector('meta[name="theme-color"]');
+        if (!themeMeta) {
+          themeMeta = document.createElement('meta');
+          themeMeta.setAttribute('name', 'theme-color');
+          document.head.appendChild(themeMeta);
+        }
+        themeMeta.setAttribute('content', pick.color);
       } catch (e) {}
     })();
   </script>
@@ -2859,6 +2867,19 @@ body.ebook-offer-open .site-header,
 
 <body>
 <div id="site-bg-fill" aria-hidden="true"></div>
+<script>
+  (function(){
+    try {
+      var corInicial = (window.__LAFORISMOS_PREPAINT_BG__ && window.__LAFORISMOS_PREPAINT_BG__.color) || getComputedStyle(document.documentElement).getPropertyValue("--site-bg-color").trim();
+      if (corInicial) {
+        var bgFill = document.getElementById("site-bg-fill");
+        if (bgFill) bgFill.style.backgroundColor = corInicial;
+        var themeMeta = document.querySelector('meta[name="theme-color"]');
+        if (themeMeta) themeMeta.setAttribute("content", corInicial);
+      }
+    } catch (e) {}
+  })();
+</script>
 
 
 <main>
@@ -3264,6 +3285,36 @@ function aplicarEstiloDaCorAtual(index) {
   document.body.style.setProperty("--stamp-filter", fonteBranca ? "brightness(0) invert(1)" : "brightness(0) saturate(100%) opacity(0.92)");
 }
 
+function atualizarThemeColor(color) {
+  try {
+    const cor = String(color || '').trim();
+    if (!cor) return;
+    let meta = document.querySelector('meta[name="theme-color"]');
+    if (!meta) {
+      meta = document.createElement('meta');
+      meta.setAttribute('name', 'theme-color');
+      document.head.appendChild(meta);
+    }
+    meta.setAttribute('content', cor);
+  } catch (error) {}
+}
+
+function aplicarCorNosFundosDoDocumento(color) {
+  try {
+    const cor = String(color || '').trim();
+    if (!cor) return;
+    document.documentElement.style.setProperty('--site-bg-color', cor);
+    document.documentElement.style.backgroundColor = cor;
+    document.body.style.setProperty('--site-bg-color', cor);
+    document.body.style.backgroundColor = 'transparent';
+    const bgFill = document.getElementById('site-bg-fill');
+    if (bgFill) {
+      bgFill.style.backgroundColor = cor;
+    }
+    atualizarThemeColor(cor);
+  } catch (error) {}
+}
+
 function persistirCorPrepaint(escolha) {
   try {
     sessionStorage.setItem("laforismos_prepaint_bg_v1", JSON.stringify(escolha));
@@ -3275,9 +3326,7 @@ function aplicarNovaCorDoSite() {
   ultimaCorDoSite = escolha.color;
   ultimoIndiceCorDoSite = escolha.index;
   persistirCorPrepaint(escolha);
-  document.documentElement.style.setProperty("--site-bg-color", escolha.color);
-  document.documentElement.style.backgroundColor = escolha.color;
-  document.body.style.setProperty("--site-bg-color", escolha.color);
+  aplicarCorNosFundosDoDocumento(escolha.color);
   if (window.LaforismoPopup && typeof LaforismoPopup.syncColor === "function") { LaforismoPopup.syncColor(); }
   aplicarEstiloDaCorAtual(escolha.index);
   atualizarFaviconDinamico(escolha.color);
@@ -3286,9 +3335,7 @@ function aplicarNovaCorDoSite() {
 
 function aplicarCorInicialDoSite() {
   if (ultimaCorDoSite) {
-    document.documentElement.style.setProperty("--site-bg-color", ultimaCorDoSite);
-    document.documentElement.style.backgroundColor = ultimaCorDoSite;
-    document.body.style.setProperty("--site-bg-color", ultimaCorDoSite);
+    aplicarCorNosFundosDoDocumento(ultimaCorDoSite);
     persistirCorPrepaint({ color: ultimaCorDoSite, index: ultimoIndiceCorDoSite });
     if (window.LaforismoPopup && typeof LaforismoPopup.syncColor === "function") { LaforismoPopup.syncColor(); }
     aplicarEstiloDaCorAtual(ultimoIndiceCorDoSite);
