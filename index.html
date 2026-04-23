@@ -8,7 +8,9 @@
   <meta http-equiv="X-Frame-Options" content="DENY">
   <meta name="description" content="Nanocontos improváveis, inviáveis e irritantes. Um livro vivo em busca de leitores desavisados.">
   <meta name="viewport" content="width=device-width, initial-scale=1.0">
-  <meta name="theme-color" content="#78fffd" id="theme-color-meta">
+  <meta name="theme-color" content="#78fffd">
+  <meta name="apple-mobile-web-app-capable" content="yes">
+  <meta name="apple-mobile-web-app-status-bar-style" content="default">
   <script>
     (function () {
       try {
@@ -27,15 +29,22 @@
           try { sessionStorage.setItem(STORAGE_KEY, JSON.stringify(pick)); } catch (e) {}
         }
         window.__LAFORISMOS_PREPAINT_BG__ = pick;
-        document.documentElement.style.setProperty("--site-bg-color", pick.color);
-        document.documentElement.style.backgroundColor = pick.color;
-        var themeMeta = document.querySelector('meta[name="theme-color"]');
-        if (!themeMeta) {
-          themeMeta = document.createElement('meta');
-          themeMeta.setAttribute('name', 'theme-color');
-          document.head.appendChild(themeMeta);
+        var root = document.documentElement;
+        root.style.setProperty("--site-bg-color", pick.color);
+        root.style.backgroundColor = pick.color;
+        document.addEventListener('DOMContentLoaded', function () {
+          try {
+            document.body.style.setProperty("--site-bg-color", pick.color);
+            document.body.style.backgroundColor = pick.color;
+          } catch (e) {}
+        }, { once: true });
+        var metaTheme = document.querySelector('meta[name=\"theme-color\"]');
+        if (!metaTheme) {
+          metaTheme = document.createElement('meta');
+          metaTheme.setAttribute('name', 'theme-color');
+          document.head.appendChild(metaTheme);
         }
-        themeMeta.setAttribute('content', pick.color);
+        metaTheme.setAttribute('content', pick.color);
       } catch (e) {}
     })();
   </script>
@@ -102,7 +111,7 @@ html {
       min-height: 100dvh;
       overflow-x: hidden;
       overflow-y: auto;
-      background-color: transparent;
+      background-color: var(--site-bg-color);
       background-image: none !important;
       isolation: isolate;
     }
@@ -1572,7 +1581,7 @@ body.bg-verde.sobre-aberto .interacao-area .box {
 
     @media (max-width: 768px) {
       body {
-        background: transparent;
+        background: var(--site-bg-color);
         min-height: 100dvh;
       }
 
@@ -2356,7 +2365,7 @@ body.ebook-offer-open .site-header,
       min-height: 100dvh;
       overflow: hidden !important;
       overscroll-behavior: none;
-      background-color: transparent !important;
+      background-color: var(--site-bg-color) !important;
       background-image: none !important;
     }
 
@@ -2375,7 +2384,7 @@ body.ebook-offer-open .site-header,
       inset: 0;
       display: flex;
       flex-direction: column;
-      background-color: transparent !important;
+      background-color: var(--site-bg-color) !important;
       background-image: none !important;
       -webkit-overflow-scrolling: auto;
     }
@@ -2401,7 +2410,7 @@ body.ebook-offer-open .site-header,
     @supports (-webkit-touch-callout: none) {
       html,
       body {
-        background-color: transparent !important;
+        background-color: var(--site-bg-color) !important;
         background-image: none !important;
       }
     }
@@ -2867,19 +2876,6 @@ body.ebook-offer-open .site-header,
 
 <body>
 <div id="site-bg-fill" aria-hidden="true"></div>
-<script>
-  (function(){
-    try {
-      var corInicial = (window.__LAFORISMOS_PREPAINT_BG__ && window.__LAFORISMOS_PREPAINT_BG__.color) || getComputedStyle(document.documentElement).getPropertyValue("--site-bg-color").trim();
-      if (corInicial) {
-        var bgFill = document.getElementById("site-bg-fill");
-        if (bgFill) bgFill.style.backgroundColor = corInicial;
-        var themeMeta = document.querySelector('meta[name="theme-color"]');
-        if (themeMeta) themeMeta.setAttribute("content", corInicial);
-      }
-    } catch (e) {}
-  })();
-</script>
 
 
 <main>
@@ -3285,40 +3281,37 @@ function aplicarEstiloDaCorAtual(index) {
   document.body.style.setProperty("--stamp-filter", fonteBranca ? "brightness(0) invert(1)" : "brightness(0) saturate(100%) opacity(0.92)");
 }
 
-function atualizarThemeColor(color) {
-  try {
-    const cor = String(color || '').trim();
-    if (!cor) return;
-    let meta = document.querySelector('meta[name="theme-color"]');
-    if (!meta) {
-      meta = document.createElement('meta');
-      meta.setAttribute('name', 'theme-color');
-      document.head.appendChild(meta);
-    }
-    meta.setAttribute('content', cor);
-  } catch (error) {}
-}
-
-function aplicarCorNosFundosDoDocumento(color) {
-  try {
-    const cor = String(color || '').trim();
-    if (!cor) return;
-    document.documentElement.style.setProperty('--site-bg-color', cor);
-    document.documentElement.style.backgroundColor = cor;
-    document.body.style.setProperty('--site-bg-color', cor);
-    document.body.style.backgroundColor = 'transparent';
-    const bgFill = document.getElementById('site-bg-fill');
-    if (bgFill) {
-      bgFill.style.backgroundColor = cor;
-    }
-    atualizarThemeColor(cor);
-  } catch (error) {}
-}
-
 function persistirCorPrepaint(escolha) {
   try {
     sessionStorage.setItem("laforismos_prepaint_bg_v1", JSON.stringify(escolha));
   } catch (error) {}
+}
+
+function garantirMetaThemeColor() {
+  let meta = document.querySelector('meta[name="theme-color"]');
+  if (!meta) {
+    meta = document.createElement('meta');
+    meta.setAttribute('name', 'theme-color');
+    document.head.appendChild(meta);
+  }
+  return meta;
+}
+
+function sincronizarCorDoChromeDoSafari(cor) {
+  if (!cor) return;
+  const root = document.documentElement;
+  root.style.setProperty('--site-bg-color', cor);
+  root.style.backgroundColor = cor;
+  if (document.body) {
+    document.body.style.setProperty('--site-bg-color', cor);
+    document.body.style.backgroundColor = cor;
+  }
+  const fill = document.getElementById('site-bg-fill');
+  if (fill) {
+    fill.style.backgroundColor = cor;
+  }
+  const metaTheme = garantirMetaThemeColor();
+  metaTheme.setAttribute('content', cor);
 }
 
 function aplicarNovaCorDoSite() {
@@ -3326,7 +3319,7 @@ function aplicarNovaCorDoSite() {
   ultimaCorDoSite = escolha.color;
   ultimoIndiceCorDoSite = escolha.index;
   persistirCorPrepaint(escolha);
-  aplicarCorNosFundosDoDocumento(escolha.color);
+  sincronizarCorDoChromeDoSafari(escolha.color);
   if (window.LaforismoPopup && typeof LaforismoPopup.syncColor === "function") { LaforismoPopup.syncColor(); }
   aplicarEstiloDaCorAtual(escolha.index);
   atualizarFaviconDinamico(escolha.color);
@@ -3335,7 +3328,7 @@ function aplicarNovaCorDoSite() {
 
 function aplicarCorInicialDoSite() {
   if (ultimaCorDoSite) {
-    aplicarCorNosFundosDoDocumento(ultimaCorDoSite);
+    sincronizarCorDoChromeDoSafari(ultimaCorDoSite);
     persistirCorPrepaint({ color: ultimaCorDoSite, index: ultimoIndiceCorDoSite });
     if (window.LaforismoPopup && typeof LaforismoPopup.syncColor === "function") { LaforismoPopup.syncColor(); }
     aplicarEstiloDaCorAtual(ultimoIndiceCorDoSite);
@@ -4206,6 +4199,8 @@ function aplicarBackgroundVisualEstático(bg) {
 function aplicarBackgroundAleatorio(semRepetirAtual = false) {
   backgroundEmUso = null;
   aplicarCorInicialDoSite();
+requestAnimationFrame(() => sincronizarCorDoChromeDoSafari(ultimaCorDoSite || PREPAINT_BG_STATE?.color || getComputedStyle(document.documentElement).getPropertyValue("--site-bg-color").trim()));
+window.addEventListener("pageshow", () => sincronizarCorDoChromeDoSafari(ultimaCorDoSite || getComputedStyle(document.documentElement).getPropertyValue("--site-bg-color").trim()));
   document.body.classList.remove("bg-verde");
 }
 
