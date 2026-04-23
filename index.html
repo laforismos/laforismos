@@ -3779,11 +3779,22 @@ async function baixarEbookOferta(event) {
     event.stopPropagation();
   }
 
-  const btn = document.querySelector(".ebook-offer-btn");
-  const textoOriginal = btn ? btn.textContent : "";
+  const trigger = event?.currentTarget instanceof HTMLElement
+    ? event.currentTarget
+    : document.activeElement?.closest?.('#popup-btn-download, .ebook-offer-btn[data-action="baixar-ebook"]')
+      || document.querySelector('.ebook-offer-btn[data-action="baixar-ebook"], #popup-btn-download');
+
+  const btn = trigger instanceof HTMLElement ? trigger : null;
+  const textoOriginal = btn ? btn.innerHTML : "";
+
+  if (btn?.classList.contains("is-busy")) {
+    return;
+  }
+
   if (btn) {
-    btn.textContent = "Gerando…";
+    btn.innerHTML = "Gerando…";
     btn.classList.add("is-busy");
+    btn.setAttribute("aria-busy", "true");
   }
 
   try {
@@ -3801,8 +3812,9 @@ async function baixarEbookOferta(event) {
     alert("Não consegui gerar o PDF agora. Tente de novo em alguns segundos. Se persistir, abra o Console do navegador para ver o erro.");
   } finally {
     if (btn) {
-      btn.textContent = textoOriginal || "Baixar";
+      btn.innerHTML = textoOriginal || "Baixar";
       btn.classList.remove("is-busy");
+      btn.removeAttribute("aria-busy");
     }
   }
 }
