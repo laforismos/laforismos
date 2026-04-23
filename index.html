@@ -27,13 +27,6 @@
           try { sessionStorage.setItem(STORAGE_KEY, JSON.stringify(pick)); } catch (e) {}
         }
         window.__LAFORISMOS_PREPAINT_BG__ = pick;
-        var themeMeta = document.querySelector('meta[name="theme-color"]');
-        if (!themeMeta) {
-          themeMeta = document.createElement('meta');
-          themeMeta.setAttribute('name', 'theme-color');
-          document.head.appendChild(themeMeta);
-        }
-        themeMeta.setAttribute('content', pick.color);
         document.documentElement.style.setProperty("--site-bg-color", pick.color);
         document.documentElement.style.backgroundColor = pick.color;
         var themeMeta = document.querySelector('meta[name="theme-color"]');
@@ -3306,19 +3299,38 @@ function atualizarThemeColor(color) {
   } catch (error) {}
 }
 
-function aplicarCorNosFundosDoDocumento(color) {
+function aplicarCorVisualDoSite(color) {
   try {
     const cor = String(color || '').trim();
     if (!cor) return;
     document.documentElement.style.setProperty('--site-bg-color', cor);
-    document.documentElement.style.backgroundColor = cor;
     document.body.style.setProperty('--site-bg-color', cor);
     document.body.style.backgroundColor = 'transparent';
     const bgFill = document.getElementById('site-bg-fill');
     if (bgFill) {
       bgFill.style.backgroundColor = cor;
     }
+  } catch (error) {}
+}
+
+function aplicarCorNoChromeDoSafari(color) {
+  try {
+    const cor = String(color || '').trim();
+    if (!cor) return;
+    document.documentElement.style.backgroundColor = cor;
     atualizarThemeColor(cor);
+  } catch (error) {}
+}
+
+function aplicarCorNosFundosDoDocumento(color, options) {
+  try {
+    const cor = String(color || '').trim();
+    if (!cor) return;
+    const opts = options || {};
+    aplicarCorVisualDoSite(cor);
+    if (opts.atualizarChromeSafari !== false) {
+      aplicarCorNoChromeDoSafari(cor);
+    }
   } catch (error) {}
 }
 
@@ -3328,12 +3340,15 @@ function persistirCorPrepaint(escolha) {
   } catch (error) {}
 }
 
-function aplicarNovaCorDoSite() {
+function aplicarNovaCorDoSite(options) {
   const escolha = escolherCorAleatoriaSemRepeticao();
+  const opts = options || {};
   ultimaCorDoSite = escolha.color;
   ultimoIndiceCorDoSite = escolha.index;
   persistirCorPrepaint(escolha);
-  aplicarCorNosFundosDoDocumento(escolha.color);
+  aplicarCorNosFundosDoDocumento(escolha.color, {
+    atualizarChromeSafari: opts.atualizarChromeSafari !== false
+  });
   if (window.LaforismoPopup && typeof LaforismoPopup.syncColor === "function") { LaforismoPopup.syncColor(); }
   aplicarEstiloDaCorAtual(escolha.index);
   atualizarFaviconDinamico(escolha.color);
@@ -3342,7 +3357,7 @@ function aplicarNovaCorDoSite() {
 
 function aplicarCorInicialDoSite() {
   if (ultimaCorDoSite) {
-    aplicarCorNosFundosDoDocumento(ultimaCorDoSite);
+    aplicarCorNosFundosDoDocumento(ultimaCorDoSite, { atualizarChromeSafari: true });
     persistirCorPrepaint({ color: ultimaCorDoSite, index: ultimoIndiceCorDoSite });
     if (window.LaforismoPopup && typeof LaforismoPopup.syncColor === "function") { LaforismoPopup.syncColor(); }
     aplicarEstiloDaCorAtual(ultimoIndiceCorDoSite);
@@ -3351,7 +3366,7 @@ function aplicarCorInicialDoSite() {
     return;
   }
 
-  aplicarNovaCorDoSite();
+  aplicarNovaCorDoSite({ atualizarChromeSafari: true });
 }
 
 let frases = [];
@@ -4923,7 +4938,7 @@ function irParaProximaFrase() {
 
   acabou = false;
   const proxima = fila.shift();
-  aplicarNovaCorDoSite();
+  aplicarNovaCorDoSite({ atualizarChromeSafari: false });
   mostrarFraseObjeto(proxima, 1);
   aplicarTravaHoverParaEstadoAtual(proxima, 1, true);
 }
