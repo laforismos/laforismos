@@ -530,13 +530,13 @@ body {
     @keyframes boxCliqueHintCycle {
       0% {
         opacity: 0;
-        transform: translateX(340px) translateY(-180px) rotate(-34deg);
+        transform: translateX(220px) translateY(-110px) rotate(-34deg);
       }
-      20% {
+      8% {
         opacity: 0.96;
         transform: translateX(72px) translateY(10px) rotate(-34deg);
       }
-      26% {
+      14% {
         opacity: 0.96;
         transform: translateX(84px) translateY(0) rotate(-34deg);
       }
@@ -1215,13 +1215,13 @@ body.bg-verde.sobre-aberto .interacao-area .box {
       @keyframes boxCliqueHintCycle {
         0% {
           opacity: 0;
-          transform: translateX(220px) translateY(-140px) rotate(-34deg);
+          transform: translateX(150px) translateY(-90px) rotate(-34deg);
         }
-        20% {
+        8% {
           opacity: 0.96;
           transform: translateX(44px) translateY(10px) rotate(-34deg);
         }
-        26% {
+        14% {
           opacity: 0.96;
           transform: translateX(54px) translateY(0) rotate(-34deg);
         }
@@ -2267,9 +2267,48 @@ body.ebook-offer-open .site-header,
     line-height: 1;
   }
 
-  .ebook-offer-btn.is-busy {
-    opacity: 0.5;
+  .ebook-offer-btn.is-busy,
+  .lf-btn-download.is-busy {
+    opacity: 0.82;
     pointer-events: none;
+  }
+
+  .ebook-download-progress {
+    display: inline-flex;
+    flex-direction: column;
+    align-items: stretch;
+    justify-content: center;
+    gap: 5px;
+    min-width: 96px;
+    line-height: 1;
+  }
+
+  .ebook-download-progress-label {
+    display: block;
+    white-space: nowrap;
+  }
+
+  .ebook-download-progress-track {
+    position: relative;
+    display: block;
+    width: 100%;
+    height: 3px;
+    overflow: hidden;
+    border-radius: 999px;
+    background: rgba(20,20,20,0.18);
+  }
+
+  .ebook-download-progress-bar {
+    position: absolute;
+    inset: 0 auto 0 0;
+    width: var(--ebook-download-progress, 0%);
+    border-radius: inherit;
+    background: currentColor;
+    transition: width 0.18s ease;
+  }
+
+  .lf-btn-download.is-busy {
+    min-width: 104px;
   }
   </style>
 
@@ -3696,13 +3735,21 @@ async function rasterizarElementoParaDataUrl(el) {
   return canvas.toDataURL("image/png");
 }
 
-async function gerarPdfLaforismosBlob() {
+async function gerarPdfLaforismosBlob(onProgress) {
   if (!window.jspdf?.jsPDF) {
     throw new Error("Biblioteca PDF indisponível.");
   }
   if (typeof html2canvas !== "function") {
     throw new Error("Biblioteca de renderização indisponível.");
   }
+
+  const emitirProgresso = (percentual, etapa = "") => {
+    if (typeof onProgress !== "function") return;
+    const valor = Math.max(0, Math.min(100, Math.round(percentual)));
+    onProgress(valor, etapa);
+  };
+
+  emitirProgresso(1, "Preparando");
 
   if (frasesApiPromise) {
     try {
@@ -3715,15 +3762,21 @@ async function gerarPdfLaforismosBlob() {
     throw new Error("Nenhuma frase ativa foi carregada para o e-book.");
   }
 
+  emitirProgresso(6, "Carregando frases");
+
   const preloadList = [
     ...EBOOK_RANDOM_ICON_PATHS,
     EBOOK_METALINGUAGEM_SELO_PATH
   ];
 
   await Promise.all(preloadList.map((src) => preloadImagemEbook(src).catch(() => null)));
+  emitirProgresso(12, "Preparando imagens");
+
   if (document.fonts?.ready) {
     try { await document.fonts.ready; } catch (e) {}
   }
+
+  emitirProgresso(15, "Preparando fontes");
 
   const { jsPDF } = window.jspdf;
   const pdf = new jsPDF({
@@ -3743,6 +3796,8 @@ async function gerarPdfLaforismosBlob() {
   EBOOK_STATIC_PAGES.forEach((imgData, index) => {
     adicionarPaginaImagem(imgData, "JPEG", index === 0);
   });
+
+  emitirProgresso(18, "Montando capa");
 
   const renderRoot = obterRenderRootEbook();
   renderRoot.innerHTML = "";
@@ -3765,12 +3820,41 @@ async function gerarPdfLaforismosBlob() {
     const dataUrl = await rasterizarElementoParaDataUrl(pageEl);
     renderRoot.removeChild(pageEl);
     adicionarPaginaImagem(dataUrl, "PNG", false);
+
+    const progressoPaginas = frasesAtivas.length > 0
+      ? 18 + (((i + 1) / frasesAtivas.length) * 72)
+      : 90;
+    emitirProgresso(progressoPaginas, `Renderizando ${i + 1}/${frasesAtivas.length}`);
   }
+
+  emitirProgresso(93, "Finalizando");
 
   adicionarPaginaImagem(EBOOK_END_PAGE, "JPEG", false);
 
   renderRoot.innerHTML = "";
-  return pdf.output("blob");
+  emitirProgresso(97, "Preparando download");
+  const blob = pdf.output("blob");
+  emitirProgresso(100, "Pronto");
+  return blob;
+}
+
+function atualizarProgressoDownloadEbook(btn, percentual, etapa = "Gerando") {
+  if (!(btn instanceof HTMLElement)) return;
+
+  const valor = Math.max(0, Math.min(100, Math.round(percentual)));
+  const etapaSegura = String(etapa || "Gerando");
+  const ariaTexto = `${etapaSegura}… ${valor}%`;
+
+  btn.style.setProperty("--ebook-download-progress", `${valor}%`);
+  btn.setAttribute("aria-label", ariaTexto);
+  btn.innerHTML = `
+    <span class="ebook-download-progress" aria-hidden="true">
+      <span class="ebook-download-progress-label">${etapaSegura}… ${valor}%</span>
+      <span class="ebook-download-progress-track">
+        <span class="ebook-download-progress-bar"></span>
+      </span>
+    </span>
+  `;
 }
 
 async function baixarEbookOferta(event) {
@@ -3792,13 +3876,15 @@ async function baixarEbookOferta(event) {
   }
 
   if (btn) {
-    btn.innerHTML = "Gerando…";
     btn.classList.add("is-busy");
     btn.setAttribute("aria-busy", "true");
+    atualizarProgressoDownloadEbook(btn, 0, "Gerando");
   }
 
   try {
-    const blob = await gerarPdfLaforismosBlob();
+    const blob = await gerarPdfLaforismosBlob((percentual, etapa) => {
+      atualizarProgressoDownloadEbook(btn, percentual, etapa);
+    });
     const url = URL.createObjectURL(blob);
     const link = document.createElement("a");
     link.href = url;
@@ -3815,6 +3901,8 @@ async function baixarEbookOferta(event) {
       btn.innerHTML = textoOriginal || "Baixar";
       btn.classList.remove("is-busy");
       btn.removeAttribute("aria-busy");
+      btn.removeAttribute("aria-label");
+      btn.style.removeProperty("--ebook-download-progress");
     }
   }
 }
@@ -4718,7 +4806,7 @@ function ativarHoverPreviewParaProxima() {
   if (!box) return;
   prontoParaProximaTroca = true;
   aguardandoCliqueParaTroca = false;
-  box.classList.add("hover-preview");
+  box.classList.remove("hover-preview");
 }
 
 function desativarHoverPreviewParaProxima() {
@@ -4827,7 +4915,7 @@ function proximaFrase() {
   }
 
   if (prontoParaProximaTroca) {
-    irParaProximaFrase();
+    entrarModoCarregandoTroca();
     return;
   }
 
@@ -6356,10 +6444,10 @@ LaforismoPopup.init({ delay: 0, ebookUrl: '' });
   const Laforismos = window.Laforismos || (window.Laforismos = {});
   const LOADER_TEXT = 'carregando espasmo';
   const INITIAL_HINT_TEXTS = [
-    'carregando espasmo',
     'clique aqui nesta caixa de texto',
     'carregando espasmo',
-    'vai, clica!'
+    'vai, clica!',
+    'carregando espasmo'
   ];
   const FOLLOWUP_HINT_SEQUENCES = {
     1: [
@@ -6386,7 +6474,7 @@ LaforismoPopup.init({ delay: 0, ebookUrl: '' });
     2: [4000, 3000, 3000, 2000],
     3: [4000, 2000, 4000, 3000]
   };
-  const INITIAL_HINT_INTERVALS_MS = [3000, 3000, 3000, 2000];
+  const INITIAL_HINT_INTERVALS_MS = [4200, 2200, 2600, 2200];
   const LOADER_FONT_STACKS = [
     'Arial, Helvetica, sans-serif',
     '"Trebuchet MS", Arial, sans-serif',
