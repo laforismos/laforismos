@@ -77,7 +77,7 @@
   }
   .submarca{
     /* Antes era mono/uppercase (era um conceito rotativo).
-       Agora é o nome do autor — Fraunces itálica casa melhor com a marca. */
+       Agora é o nome  — Fraunces itálica casa melhor com a marca. */
     font-family:'Fraunces',serif;
     font-style:italic;
     font-weight:500;
@@ -254,6 +254,9 @@
     transition:opacity .18s ease;
   }
   .frase em{font-style:italic}
+  .frase i{font-style:italic}
+  .frase b,.frase strong{font-weight:700}
+  .frase u{text-decoration:underline;text-underline-offset:.12em}
   .frase-parte{
     display:inline;
     opacity:1;
@@ -720,6 +723,14 @@
     .frase{font-size:clamp(16px,4.8vw,22px)}
   }
 </style>
+<script async src="https://www.googletagmanager.com/gtag/js?id=G-02B0NJF559"></script>
+<script>
+  window.dataLayer = window.dataLayer || [];
+  function gtag(){dataLayer.push(arguments);}
+  gtag('js', new Date());
+  gtag('config', 'G-02B0NJF559');
+</script>
+
 </head>
 <body class="txt-escuro">
 
@@ -879,22 +890,17 @@
              onerror="this.replaceWith(Object.assign(document.createElement('div'),{className:'sobre-foto-fallback',textContent:'F'}))">
       </div>
       <div>
-        <h2 class="sobre-titulo" id="sobreTitulo">Sobre (e sob)</h2>
-        <p class="sobre-subtitulo">do autor</p>
+        <h2 class="sobre-titulo" id="sobreTitulo">Descobrindo que escrever mal é fácil, caractere por caractere.</h2>
       </div>
     </header>
 
     <div class="sobre-corpo">
-      <p>Sobre sobras, sobresaltos, sobrenomes, sobremesas e sobrevivência.</p>
-      <p>Não vou falar mais de mim do que o próprio site. Um dia, se tudo der certo, ainda acho uma vítima pra assinar um prefácio.</p>
-      <p>O plano por ora é criar um alterego: vai se chamar Hamlet, o escritor que se apaixonou pelo Html. E vai dar mensagens de erro floreadas:</p>
-      <p class="quote">"Eu e a Janela. Estou elocubrante e inocuamente buscando um texto dinâmico pra adentrar neste espaço, mas sinto-me insuficiente"</p>
-      <p>Eu podia tá bebendo, podia tá comendo açúcar. Mas tô só fazendo um trocadilho.</p>
-      <p>Obrigado por ler, muito prazer.</p>
+      <p>Acompanhe minha jornada em busca dos 50 nanocontos tentando ser impressos.</p>
+
       <div class="sobre-assinatura">
         <strong>Felipe Koraicho Sauma</strong>
-        CTO e Escritor do Box de Frases
       </div>
+    </div>
     </div>
   </div>
 </div>
@@ -1008,13 +1014,12 @@
 
   // Subtítulos rotativos (5s cada)
   const SUBTITULOS = [
-    "Laforismos: rizoma do carilho.",
-    "La-forismos e aqui-dentrismos.",
-    "Do tempo pré-fácil. Pré-fax.",
-    "Cuidado, metalinguagem.",
-    "A vírgula entrou em coma.",
-    "Ponto gagejou, virou reticências."
-  ];
+  "Nanocontos. Mais nano do que contos.",
+  "O texto é ruim, mas a paleta é tesuda.",
+  "0,1% biográfico. Em caso de egotrip, denuncie.",
+  "Um box de frases. Ou um rizoma do carilho.",
+  "Rede social de 1 cara só: já nasce cancelada."
+];
 
   // Ebook taglines rotativas (loader) — textos do site original
   // A 5ª é dinâmica: timestamp atual (mesmo padrão do site original)
@@ -1344,7 +1349,7 @@
     numEl.textContent = '#' + pos;
     marcarComoVista(item); // (2) registra leitura — popup só abre quando todas foram vistas
     // (Antes aqui sobrescrevíamos o subtítulo do header com item.subtitulo;
-    // o subtítulo deixou de ser dinâmico — virou o nome do autor — então
+    // o subtítulo deixou de ser dinâmico — virou o nome  — então
     // a coluna "subtítulo" da planilha passa a ser ignorada.)
     if(item.cor && /^#([0-9a-f]{3}|[0-9a-f]{6})$/i.test(item.cor)){
       root.style.setProperty('--bg', item.cor);
