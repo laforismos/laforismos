@@ -1133,7 +1133,7 @@
   function renderizarPartes(partes, ateTempo){
     return partes.map((p, idx) => {
       const oculta = p.tempo > ateTempo ? ' oculta' : '';
-      return `<span class="frase-parte${oculta}" data-tempo="${p.tempo}" data-parte="${idx}">${p.html ? p.html : formatarInline(p.texto)}</span>`;
+      return `<span class="frase-parte${oculta}" data-tempo="${p.tempo}" data-parte="${idx}">${formatarInline(p.texto)}</span>`;
     }).join('');
   }
   function calcularTempoLeitura(partes, tempo){
@@ -1212,132 +1212,6 @@
     if(row.some(c => String(c).trim() !== '')) rows.push(row);
     return rows;
   }
-  function getSheetsRichHtmlUrl(){
-    const cfg = SHEETS_CONFIG;
-    if(!cfg.sheetId || cfg.sheetId.includes('COLE_AQUI') || cfg.apiKey) return '';
-    return `https://docs.google.com/spreadsheets/d/${cfg.sheetId}/gviz/tq?tqx=out:html&gid=${encodeURIComponent(cfg.gid || '0')}`;
-  }
-  function parseSheetsHtmlTable(html){
-    const doc = new DOMParser().parseFromString(html, 'text/html');
-    const table = doc.querySelector('table');
-    if(!table) return [];
-    const trs = Array.from(table.querySelectorAll('tr'));
-    if(!trs.length) return [];
-    const matrix = trs.map(tr => Array.from(tr.children).map(td => ({
-      text: (td.textContent || '').trim(),
-      html: td.innerHTML || ''
-    })));
-    const headers = (matrix[0] || []).map(c => normalizarChave(c.text));
-    return matrix.slice(1).map(cols => {
-      const row = {};
-      headers.forEach((h,i)=>{
-        if(!h) return;
-        const cell = cols[i] || { text:'', html:'' };
-        row[h] = cell.text || '';
-        row[`__html_${h}`] = cell.html || '';
-      });
-      return row;
-    });
-  }
-  function valorHtml(row, nomes){
-    for(const nome of nomes){
-      const key = normalizarChave(nome);
-      const htmlKey = `__html_${key}`;
-      if(row[htmlKey] !== undefined && String(row[htmlKey]).trim() !== '') return String(row[htmlKey]).trim();
-    }
-    return '';
-  }
-  function escapeHtmlChar(ch){
-    return String(ch || '').replace(/[&<>"']/g, c => ({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;',"'":'&#39;'}[c]));
-  }
-  function lerEstiloRich(el, atual){
-    const tag = (el.tagName || '').toLowerCase();
-    const style = String(el.getAttribute('style') || '').toLowerCase();
-    const classe = String(el.getAttribute('class') || '').toLowerCase();
-    const prox = { ...atual };
-    if(tag === 'b' || tag === 'strong') prox.bold = true;
-    if(tag === 'i' || tag === 'em') prox.italic = true;
-    if(tag === 'u') prox.underline = true;
-    if(/font-weight\s*:\s*(bold|[6-9]00)/.test(style) || /\bfont-weight-bold\b/.test(classe)) prox.bold = true;
-    if(/font-style\s*:\s*italic/.test(style)) prox.italic = true;
-    if(/text-decoration[^:]*:\s*[^;]*underline/.test(style)) prox.underline = true;
-    return prox;
-  }
-  function richHtmlParaCaracteres(html){
-    const doc = new DOMParser().parseFromString(`<div>${html || ''}</div>`, 'text/html');
-    const chars = [];
-    function walk(node, estilo){
-      if(node.nodeType === Node.TEXT_NODE){
-        for(const ch of node.nodeValue || '') chars.push({ ch, ...estilo });
-        return;
-      }
-      if(node.nodeType !== Node.ELEMENT_NODE) return;
-      const tag = (node.tagName || '').toLowerCase();
-      if(tag === 'br'){
-        chars.push({ ch:'\n', ...estilo });
-        return;
-      }
-      const prox = lerEstiloRich(node, estilo);
-      Array.from(node.childNodes || []).forEach(child => walk(child, prox));
-    }
-    Array.from(doc.body.firstChild.childNodes || []).forEach(child => walk(child, { bold:false, italic:false, underline:false }));
-    return chars;
-  }
-  function charsParaHtml(chars){
-    if(!chars || !chars.length) return '';
-    const parts = [];
-    let bucket = [];
-    let last = null;
-    function same(a,b){ return a && b && a.bold===b.bold && a.italic===b.italic && a.underline===b.underline; }
-    function flush(){
-      if(!bucket.length || !last) return;
-      let html = bucket.map(c => c.ch === '\n' ? '<br>' : escapeHtmlChar(c.ch)).join('');
-      if(last.underline) html = `<u>${html}</u>`;
-      if(last.italic) html = `<em>${html}</em>`;
-      if(last.bold) html = `<strong>${html}</strong>`;
-      parts.push(html);
-      bucket = [];
-    }
-    chars.forEach(c => {
-      if(!same(c, last)){ flush(); last = c; }
-      bucket.push(c);
-    });
-    flush();
-    return parts.join('');
-  }
-  function parsePartesTemporizadasRich(html){
-    const chars = richHtmlParaCaracteres(html);
-    if(!chars.length) return [];
-    const partes = [];
-    const pares = { '[':']', '{':'}', '*':'*', '\\':'\\' };
-    const tempos = { '[':2, '{':3, '*':4, '\\':5 };
-    let i = 0;
-    function pushSegmento(seg, tempo){
-      if(!seg.length) return;
-      const texto = seg.map(c => c.ch).join('').replace(/[\[\]{}*\\]/g, '');
-      const htmlSeg = charsParaHtml(seg).replace(/[\[\]{}*\\]/g, '');
-      if(texto.length) partes.push({ texto, html:htmlSeg, tempo });
-    }
-    while(i < chars.length){
-      const ch = chars[i].ch;
-      const fecha = pares[ch];
-      if(fecha){
-        let j = i + 1;
-        while(j < chars.length && chars[j].ch !== fecha) j++;
-        if(j < chars.length){
-          pushSegmento(chars.slice(i + 1, j), tempos[ch]);
-          i = j + 1;
-          continue;
-        }
-      }
-      let j = i + 1;
-      while(j < chars.length && !pares[chars[j].ch]) j++;
-      pushSegmento(chars.slice(i, j), 1);
-      i = j;
-    }
-    return partes.length ? partes : [{ texto: chars.map(c=>c.ch).join(''), html: charsParaHtml(chars), tempo:1 }];
-  }
-
   function rowsParaObjetos(rows){
     if(!rows || rows.length < 2) return [];
     const headers = rows[0].map(normalizarChave);
@@ -1349,7 +1223,6 @@
   }
   function normalizarFrase(row, i){
     const texto = valor(row, ['frase','texto','laforismo','espasmo','copy','content','conteudo','conteúdo']);
-    const textoHtml = valorHtml(row, ['frase','texto','laforismo','espasmo','copy','content','conteudo','conteúdo']);
     if(!texto) return null;
     const ativoBruto = valor(row, ['ativo','active','publicar','publicado','visivel','visível','online']);
     const ativo = boolPlanilha(ativoBruto);
@@ -1358,7 +1231,7 @@
     let icones = metalinguagem ? ['meta'] : splitIcones(brutoIcones);
     if(!icones.length) icones = detectarIcones(brutoIcones + ' ' + texto);
     if(!icones.length) icones = ['default'];
-    const partesTemporizadas = textoHtml ? parsePartesTemporizadasRich(textoHtml) : parsePartesTemporizadas(texto);
+    const partesTemporizadas = parsePartesTemporizadas(texto);
     const maxTempo = Math.max(1, ...partesTemporizadas.map(p => p.tempo));
     return {
       id: valor(row, ['id','numero','n','num','#']) || String(i + 1),
@@ -1394,30 +1267,17 @@
       return;
     }
     try{
-      let carregadas = [];
-      const richUrl = getSheetsRichHtmlUrl();
-      if(richUrl){
-        try{
-          const richRes = await fetch(richUrl, { cache:'no-store' });
-          if(!richRes.ok) throw new Error(`Sheets HTML HTTP ${richRes.status}`);
-          carregadas = parseSheetsHtmlTable(await richRes.text()).map(normalizarFrase).filter(Boolean);
-        }catch(richErr){
-          console.warn('Falha ao carregar rich text do Sheets. Tentando CSV.', richErr);
-        }
+      const res = await fetch(url, { cache:'no-store' });
+      if(!res.ok) throw new Error(`Sheets HTTP ${res.status}`);
+      let rows;
+      const tipo = res.headers.get('content-type') || '';
+      if(tipo.includes('application/json') || url.includes('sheets.googleapis.com')){
+        const json = await res.json();
+        rows = json.values || [];
+      }else{
+        rows = parseCSV(await res.text());
       }
-      if(!carregadas.length){
-        const res = await fetch(url, { cache:'no-store' });
-        if(!res.ok) throw new Error(`Sheets HTTP ${res.status}`);
-        let rows;
-        const tipo = res.headers.get('content-type') || '';
-        if(tipo.includes('application/json') || url.includes('sheets.googleapis.com')){
-          const json = await res.json();
-          rows = json.values || [];
-        }else{
-          rows = parseCSV(await res.text());
-        }
-        carregadas = rowsParaObjetos(rows).map(normalizarFrase).filter(Boolean);
-      }
+      const carregadas = rowsParaObjetos(rows).map(normalizarFrase).filter(Boolean);
       if(!carregadas.length) throw new Error('Nenhuma coluna de frase/texto encontrada.');
 
       // (5) Coluna "teste": se houver QUALQUER linha com ON em teste,
