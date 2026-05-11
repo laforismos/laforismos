@@ -256,7 +256,11 @@
   .frase em{font-style:italic}
   .frase i{font-style:italic}
   .frase b,.frase strong{font-weight:700}
-  .frase u{text-decoration:underline;text-underline-offset:.12em}
+  .frase u,
+  .frase .frase-underline{
+    text-decoration:underline;
+    text-underline-offset:.12em;
+  }
   .frase-parte{
     display:inline;
     opacity:1;
@@ -958,14 +962,29 @@
     gid: "0",
     sheetName: "",
     publishedCsvUrl: "",
+    // Apps Script antigo do Laforismos. Quando disponível, entrega rich text
+    // em partes: { texto, bold, italic, underline }. Se falhar, cai no CSV/GViz.
+    apiUrl: "https://script.google.com/macros/s/AKfycbwBDi5_TcZxil7dD0IEstmFwvFj4LnzB9AjMiG-SLHx3i4PvAN8EhpHyNsGLBTgreNp/exec",
     apiKey: "" // opcional. Se vazio, usa CSV/GViz público.
   };
 
   const FRASES_FALLBACK = [
-    { texto:"Frase sem marcação. [Segundo tempo.] {Terceiro tempo.} *Quarto tempo.* \\Quinto tempo.\\", icones:["heart"], obsceno:false, nova:true, metalinguagem:false },
-    { texto:"O coração cobra juros. [A caveira parcela.] {O dinheiro assina.}", icones:["heart","skull","money"], obsceno:false, nova:true, metalinguagem:false, ativo:true },
-    { texto:"A pena escreveu a sentença. [A bigorna revisou.]", icones:["pena","bigorna"], obsceno:false, nova:false, metalinguagem:false, ativo:true },
-    { texto:"Isto fala sobre isto. [E isto sabe.]", icones:["meta"], obsceno:false, nova:false, metalinguagem:true, ativo:true }
+    {
+      texto:"Pooooxa. Deu erro: as frases que deveriam estar aqui não estão aparecendo.",
+      icones:["skull"],
+      obsceno:false,
+      nova:false,
+      metalinguagem:false,
+      ativo:true
+    },
+    {
+      texto:"Tente de novo daqui a pouco, por favor.",
+      icones:["heart"],
+      obsceno:false,
+      nova:false,
+      metalinguagem:false,
+      ativo:true
+    }
   ];
 
   let FRASES = [...FRASES_FALLBACK];
@@ -1087,53 +1106,111 @@
   function escapeHtml(str){
     return String(str || '').replace(/[&<>"']/g, ch => ({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;',"'":'&#39;'}[ch]));
   }
-  function parsePartesTemporizadas(txt){
-    const raw = String(txt || '');
-    const partes = [];
-    // [..]=t2 · {..}=t3 · *..*=t4 · \..\=t5. Aceita conteúdo vazio,
-    // não-greedy e multilinha. Os DELIMITADORES nunca entram no texto exibido.
-    const regex = /(\[[\s\S]*?\])|(\{[\s\S]*?\})|(\*[\s\S]*?\*)|(\\[\s\S]*?\\)/g;
-    let last = 0;
-    let match;
-    function pushTexto(t, tempo){
-      if(!t) return;
-      partes.push({ texto:t, tempo });
+  function normalizarBoolean(valor){
+    if(typeof valor === "boolean") return valor;
+    if(typeof valor === "number") return valor === 1;
+    if(valor && typeof valor === "object"){
+      if("value" in valor) return normalizarBoolean(valor.value);
+      if("booleanValue" in valor) return normalizarBoolean(valor.booleanValue);
+      if("boolValue" in valor) return normalizarBoolean(valor.boolValue);
+      if("underlined" in valor) return normalizarBoolean(valor.underlined);
+      if("underline" in valor) return normalizarBoolean(valor.underline);
+      if("textDecoration" in valor) return normalizarBoolean(valor.textDecoration);
     }
-    while((match = regex.exec(raw))){
-      pushTexto(raw.slice(last, match.index), 1);
-      const bloco = match[0];
-      let tempo = 1;
-      const ch0 = bloco[0];
-      if(ch0 === '[') tempo = 2;
-      else if(ch0 === '{') tempo = 3;
-      else if(ch0 === '*') tempo = 4;
-      else if(ch0 === '\\') tempo = 5;
-      // Remove SEMPRE o 1º e o último caractere (os delimitadores).
-      pushTexto(bloco.slice(1, -1), tempo);
-      last = regex.lastIndex;
-    }
-    pushTexto(raw.slice(last), 1);
-    // Safety net: caso reste algum delimitador solto no texto (ex.: marcação
-    // mal-fechada na planilha), tira do que vai para a tela.
-    return (partes.length ? partes : [{ texto:raw, tempo:1 }]).map(p => ({
-      ...p,
-      texto: String(p.texto).replace(/[\[\]{}*\\]/g, '')
-    })).filter(p => p.texto.length > 0);
+    const v = String(valor ?? '').trim().toLowerCase();
+    return ["true","verdadeiro","1","sim","s","yes","y","x","on","underline","underlined","single","solid"].includes(v);
   }
-  function formatarInline(txt){
+  function procurarUnderlineRecursivo(valor, profundidade = 0){
+    if(profundidade > 4 || valor == null) return false;
+    if(typeof valor !== "object") return normalizarBoolean(valor);
+    const entradas = Array.isArray(valor) ? valor.map((item,index)=>[String(index), item]) : Object.entries(valor);
+    for(const [chave, conteudo] of entradas){
+      const k = String(chave || '').toLowerCase();
+      if(k.includes('underline') || k.includes('underlined') || k.includes('sublinh') || k.includes('textdecoration')){
+        if(normalizarBoolean(conteudo)) return true;
+        if(conteudo && typeof conteudo === 'object' && procurarUnderlineRecursivo(conteudo, profundidade + 1)) return true;
+      }
+      if(conteudo && typeof conteudo === 'object' && procurarUnderlineRecursivo(conteudo, profundidade + 1)) return true;
+    }
+    return false;
+  }
+  function normalizarMarcacaoUnderline(parte){
+    const valorDireto = parte?.underline ?? parte?.underlined ?? parte?.sublinhado ?? parte?.sublinhada ?? parte?.textUnderline ?? parte?.isUnderline ?? parte?.format?.underline ?? parte?.format?.underlined ?? parte?.style?.underline ?? parte?.style?.underlined ?? parte?.textFormat?.underline ?? parte?.textStyle?.underline ?? parte?.textStyle?.underlined ?? parte?.textFormat?.textDecoration ?? parte?.textStyle?.textDecoration;
+    if(valorDireto != null && normalizarBoolean(valorDireto)) return true;
+    return procurarUnderlineRecursivo(parte);
+  }
+  function estiloDaParte(parte){
+    return {
+      bold: normalizarBoolean(parte?.bold ?? parte?.negrito ?? parte?.format?.bold ?? parte?.style?.bold ?? parte?.textFormat?.bold ?? parte?.textStyle?.bold ?? false),
+      italic: normalizarBoolean(parte?.italic ?? parte?.italico ?? parte?.itálico ?? parte?.format?.italic ?? parte?.style?.italic ?? parte?.textFormat?.italic ?? parte?.textStyle?.italic ?? false),
+      underline: normalizarMarcacaoUnderline(parte)
+    };
+  }
+  function parsePartesTemporizadasRich(partesOriginais){
+    const caracteres = [];
+    const pilhaTempos = [1];
+    const tempoAtualDaPilha = () => pilhaTempos[pilhaTempos.length - 1] || 1;
+    function removerUltimaOcorrenciaDoTempo(tempo){
+      for(let i = pilhaTempos.length - 1; i >= 1; i--){
+        if(pilhaTempos[i] === tempo){ pilhaTempos.splice(i, 1); break; }
+      }
+    }
+    for(const parteOriginal of (partesOriginais || [])){
+      const texto = String(parteOriginal?.texto ?? parteOriginal?.text ?? '');
+      const estilo = estiloDaParte(parteOriginal || {});
+      for(const ch of texto){
+        if(ch === '['){ pilhaTempos.push(2); continue; }
+        if(ch === ']'){ removerUltimaOcorrenciaDoTempo(2); continue; }
+        if(ch === '{'){ pilhaTempos.push(3); continue; }
+        if(ch === '}'){ removerUltimaOcorrenciaDoTempo(3); continue; }
+        if(ch === '*'){
+          if(tempoAtualDaPilha() === 4) removerUltimaOcorrenciaDoTempo(4);
+          else pilhaTempos.push(4);
+          continue;
+        }
+        if(ch === '\\'){
+          if(tempoAtualDaPilha() === 5) removerUltimaOcorrenciaDoTempo(5);
+          else pilhaTempos.push(5);
+          continue;
+        }
+        caracteres.push({ texto:ch, tempo:tempoAtualDaPilha(), ...estilo });
+      }
+    }
+    const resultado = [];
+    for(const caractere of caracteres){
+      const ultima = resultado[resultado.length - 1];
+      if(ultima && ultima.tempo === caractere.tempo && ultima.bold === caractere.bold && ultima.italic === caractere.italic && ultima.underline === caractere.underline){
+        ultima.texto += caractere.texto;
+      }else{
+        resultado.push({ ...caractere });
+      }
+    }
+    return resultado.filter(p => p.texto.length > 0);
+  }
+  function parsePartesTemporizadas(txt){
+    return parsePartesTemporizadasRich([{ texto:String(txt || ''), bold:false, italic:false, underline:false }]);
+  }
+  function aplicarEstiloDaCelula(html, parte){
+    let out = html;
+    if(parte?.underline) out = `<span class="frase-underline">${out}</span>`;
+    if(parte?.italic) out = `<em>${out}</em>`;
+    if(parte?.bold) out = `<strong>${out}</strong>`;
+    return out;
+  }
+  function formatarInline(txt, parte={}){
     // 1) Escapa tudo (segurança contra HTML arbitrário).
     let s = escapeHtml(txt);
-    // 2) Reabilita SOMENTE tags de formatação (itálico, negrito, sublinhado),
-    //    aceitando tanto a forma curta quanto a longa, com qualquer caixa.
-    //    Permite escrever na planilha: <i>, <em>, <b>, <strong>, <u>.
+    // 2) Reabilita SOMENTE tags de formatação digitadas manualmente na célula.
     s = s.replace(/&lt;(\/?)(i|em|b|strong|u)&gt;/gi, '<$1$2>');
     // 3) Quebras de linha viram <br>.
-    return s.replace(/\n/g,'<br>');
+    s = s.replace(/\n/g,'<br>');
+    // 4) Aplica a formatação real in-cell vinda do Apps Script antigo.
+    return aplicarEstiloDaCelula(s, parte);
   }
   function renderizarPartes(partes, ateTempo){
     return partes.map((p, idx) => {
       const oculta = p.tempo > ateTempo ? ' oculta' : '';
-      return `<span class="frase-parte${oculta}" data-tempo="${p.tempo}" data-parte="${idx}">${formatarInline(p.texto)}</span>`;
+      return `<span class="frase-parte${oculta}" data-tempo="${p.tempo}" data-parte="${idx}">${formatarInline(p.texto, p)}</span>`;
     }).join('');
   }
   function calcularTempoLeitura(partes, tempo){
@@ -1258,7 +1335,57 @@
     }
     return `https://docs.google.com/spreadsheets/d/${cfg.sheetId}/gviz/tq?tqx=out:csv&gid=${encodeURIComponent(cfg.gid || '0')}`;
   }
+  function normalizarFraseDaApi(item, i){
+    const partesBrutas = Array.isArray(item?.partes) ? item.partes : null;
+    const texto = partesBrutas ? partesBrutas.map(p => String(p?.texto ?? p?.text ?? '')).join('') : String(item?.texto ?? item?.frase ?? '');
+    if(!texto.trim()) return null;
+    const partesTemporizadas = partesBrutas ? parsePartesTemporizadasRich(partesBrutas) : parsePartesTemporizadas(texto);
+    const maxTempo = Math.max(1, ...partesTemporizadas.map(p => p.tempo || 1));
+    const metalinguagem = normalizarBoolean(item?.metalinguagem ?? item?.metaLinguagem ?? item?.meta_linguagem ?? item?.meta);
+    let icones = metalinguagem ? ['meta'] : splitIcones(item?.icone ?? item?.icones ?? item?.categoria ?? item?.categorias ?? item?.tema ?? item?.tags ?? '');
+    if(!icones.length) icones = detectarIcones(texto);
+    if(!icones.length) icones = ['default'];
+    return {
+      id: item?.id || item?.numero || String(i + 1),
+      texto,
+      partesTemporizadas,
+      maxTempo,
+      icones,
+      obsceno: normalizarBoolean(item?.obsceno ?? item?.obscenidade ?? item?.obs ?? item?.obceno),
+      nova: normalizarBoolean(item?.nova ?? item?.novo ?? item?.new),
+      metalinguagem,
+      ativo: item?.ativo === undefined ? true : normalizarBoolean(item?.ativo),
+      teste: normalizarBoolean(item?.teste ?? item?.test ?? item?.debug),
+      subtitulo: item?.subtitulo || item?.subtítulo || '',
+      cor: item?.cor || item?.bg || item?.background || item?.fundo || ''
+    };
+  }
+  async function carregarFrasesDaApiRichText(){
+    const apiUrl = SHEETS_CONFIG.apiUrl;
+    if(!SHEETS_CONFIG.enabled || !apiUrl) return null;
+    const res = await fetch(apiUrl, { cache:'no-store' });
+    if(!res.ok) throw new Error(`API rich text HTTP ${res.status}`);
+    const data = await res.json();
+    if(!data?.ok || !Array.isArray(data.frases)) throw new Error('Resposta inválida da API rich text.');
+    const carregadas = data.frases.map(normalizarFraseDaApi).filter(Boolean);
+    if(!carregadas.length) throw new Error('API rich text sem frases válidas.');
+    return carregadas;
+  }
+
   async function carregarFrasesDoSheets(){
+    try{
+      const carregadasApi = await carregarFrasesDaApiRichText();
+      if(carregadasApi && carregadasApi.length){
+        const emTesteApi = carregadasApi.filter(f => f.teste === true);
+        const ativasApi  = carregadasApi.filter(f => f.ativo === true);
+        FRASES = emTesteApi.length ? emTesteApi : (ativasApi.length ? ativasApi : carregadasApi);
+        fraseIdx = Math.floor(Math.random() * FRASES.length);
+        renderizarFraseAtual();
+        return;
+      }
+    }catch(err){
+      console.warn('Falha ao carregar API rich text. Tentando CSV/GViz público.', err);
+    }
     const url = getSheetsUrl();
     if(!SHEETS_CONFIG.enabled || !url){
       fraseIdx = Math.floor(Math.random() * FRASES.length); // (4) frase inicial aleatória
