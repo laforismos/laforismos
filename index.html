@@ -878,7 +878,7 @@
   <!-- COLUNA CENTRAL: caixa -->
   <section class="caixa-col">
     <div class="index-frase" id="indexFrase">Laforismo nº 001.</div>
-    <div class="box" id="box" tabindex="0">
+    <div class="box loading" id="box" tabindex="0">
       <span class="box-num" id="boxNum">#001</span>
       <p class="frase" id="frase">carregando espasmo…</p>
       <span class="box-meta">clique para a próxima</span>
@@ -1100,6 +1100,9 @@
   let tempoTimer = null;
   let fraseRenderId = 0;
   const TEMPOS_FRASE = { 1:0, 2:900, 3:1200, 4:1500, 5:1800 }; // base; soma-se ao tempo de leitura
+  const CARREGAMENTO_INICIAL_MS = 3000;
+  const inicioCarregamentoInicial = Date.now();
+  let carregamentoInicialAtivo = true;
 
   // (2) Pop-up E! Book: só dispara depois que TODAS as frases foram vistas,
   // ou quando o usuário clica no botão E! Book do rodapé.
@@ -1410,7 +1413,7 @@
         const ativasApi  = carregadasApi.filter(f => f.ativo === true);
         FRASES = emTesteApi.length ? emTesteApi : (ativasApi.length ? ativasApi : carregadasApi);
         fraseIdx = Math.floor(Math.random() * FRASES.length);
-        renderizarFraseAtual();
+        revelarPrimeiraFraseAposCarregamento();
         return;
       }
     }catch(err){
@@ -1419,8 +1422,7 @@
     const url = getSheetsUrl();
     if(!SHEETS_CONFIG.enabled || !url){
       fraseIdx = Math.floor(Math.random() * FRASES.length); // (4) frase inicial aleatória
-      renderizarFraseAtual();
-      atualizarSlot(FRASES[fraseIdx]);
+      revelarPrimeiraFraseAposCarregamento();
       return;
     }
     try{
@@ -1448,12 +1450,12 @@
         FRASES = ativas;
       }
       fraseIdx = Math.floor(Math.random() * FRASES.length); // (4) sorteio inicial
-      renderizarFraseAtual();
+      revelarPrimeiraFraseAposCarregamento();
     }catch(err){
       console.warn('Falha ao carregar Google Sheets. Usando fallback local.', err);
       FRASES = [...FRASES_FALLBACK];
       fraseIdx = Math.floor(Math.random() * FRASES.length); // (4) sorteio inicial
-      renderizarFraseAtual();
+      revelarPrimeiraFraseAposCarregamento();
     }
   }
   function obterFrasesElegiveis(){
@@ -1517,6 +1519,18 @@
     maquinaCol?.classList.toggle('modo-meta', !!item.metalinguagem);
     atualizarSlot(item);
     agendarProximoTempo(item, fraseRenderId);
+  }
+  function revelarPrimeiraFraseAposCarregamento(){
+    if(!carregamentoInicialAtivo) return;
+    atualizarSlot(FRASES[fraseIdx] || FRASES[0] || FRASES_FALLBACK[0], true);
+    const restante = Math.max(0, CARREGAMENTO_INICIAL_MS - (Date.now() - inicioCarregamentoInicial));
+    setTimeout(()=>{
+      if(!carregamentoInicialAtivo) return;
+      carregamentoInicialAtivo = false;
+      renderizarFraseAtual();
+      box.classList.remove('loading');
+      reels.forEach(r => r.classList.remove('spin'));
+    }, restante);
   }
 
   // ===== COR DO SITE =====
@@ -1748,7 +1762,7 @@
   setTimeout(rajadaDigitacao, 1200);
 
   // Inicialização
-  atualizarSlot(FRASES_FALLBACK[0]);
+  atualizarSlot(FRASES_FALLBACK[0], true);
   carregarFrasesDoSheets();
 </script>
 </body>
